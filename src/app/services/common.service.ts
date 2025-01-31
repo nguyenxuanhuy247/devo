@@ -1,10 +1,21 @@
 import { Injectable } from '@angular/core';
 
+const POSSSIBLE =
+  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+
 @Injectable({
   providedIn: 'root',
 })
 export class CommonService {
   constructor() {}
+
+  static generateEnumFromInterface<T>(): { [K in keyof T]: K } {
+    return new Proxy({} as { [K in keyof T]: K }, {
+      get(_, prop) {
+        return prop as keyof T;
+      },
+    });
+  }
 
   parseObjToParams(obj: Record<string, any>) {
     let str = '';
@@ -27,5 +38,13 @@ export class CommonService {
     }
 
     return params;
+  }
+
+  makeRandom(lengthOfCode: number = 10, possible: string = POSSSIBLE) {
+    let text = '';
+    for (let i = 0; i < lengthOfCode; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
   }
 }

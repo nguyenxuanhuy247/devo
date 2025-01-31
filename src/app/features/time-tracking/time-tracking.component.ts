@@ -1,7 +1,6 @@
-import { Component, Injector, signal } from '@angular/core';
+import { Component, computed, Injector, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TabViewModule } from 'primeng/tabview';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
@@ -10,8 +9,29 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { TableModule } from 'primeng/table';
 import { FormBaseComponent } from '../../shared';
 import { TimeTrackingService } from './time-tracking.service';
-import { ITimeTrackingRequestDTO } from './time-tracking.dto';
+import {
+  EGetApiMode,
+  ITimeTrackingTableDataRequestDTO,
+} from './time-tracking.dto';
 import { PaginatorModule } from 'primeng/paginator';
+import { combineLatest, filter, Subscription } from 'rxjs';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
+import { ToggleButton } from 'primeng/togglebutton';
+import {
+  EColumnField,
+  estimateHeaderColumns,
+  issuesHeaderColumns,
+  logWorkHeaderColumns,
+  SELECT_FORM_GROUP_KEY,
+} from './time-tracking.model';
+import { TabsModule } from 'primeng/tabs';
+import { CreateFormComponent } from './create-form/create-form.component';
+import { FormatDatePipe } from '../../pipes';
+import { TooltipModule } from 'primeng/tooltip';
+import { EMode } from '../../contants/common.constant';
+import { SplitButtonModule } from 'primeng/splitbutton';
+import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-time-tracking',
@@ -25,107 +45,230 @@ import { PaginatorModule } from 'primeng/paginator';
     DropdownModule,
     ButtonModule,
     InputNumberModule,
-    TabViewModule,
     TableModule,
     PaginatorModule,
+    SelectModule,
+    DatePickerModule,
+    ToggleButton,
+    TabsModule,
+    FormatDatePipe,
+    TooltipModule,
+    SplitButtonModule,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
 })
-export class TimeTrackingComponent extends FormBaseComponent {
-  columns = [
-    'ID',
-    'Dự án',
-    'PIC',
-    'Module',
-    'Menu',
-    'Màn hình',
-    'Tính năng',
-    'Phân loại',
-    'Nội dung công việc',
-    'Thời gian bắt đầu',
-    'Thời gian hoàn thành',
-    'Thời lượng',
-    'Nghỉ trưa',
-    'Giải quyết vấn đề',
-    'Vấn đề gặp phải',
-    'Ngày tạo',
-  ];
-  // Dữ liệu mẫu
-  workData: any = [
-    {
-      ID: 1,
-      'Dự án': 'Project A',
-      PIC: 'Nguyễn Văn A',
-      Module: 'Module X',
-      Menu: 'Menu 1',
-      'Màn hình': 'Screen A',
-      'Tính năng': 'Feature 1',
-      'Phân loại': 'Type A',
-      'Nội dung công việc': 'Task 1',
-      'Thời gian bắt đầu': '2024-01-01 08:00',
-      'Thời gian hoàn thành': '2024-01-01 10:00',
-      'Thời lượng': '2 giờ',
-      'Nghỉ trưa': '30 phút',
-      'Giải quyết vấn đề': 'None',
-      'Vấn đề gặp phải': 'None',
-      'Ngày tạo': '2024-01-01',
-    },
-  ];
+export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
+  headerColumnNames: string[] = [];
+  headerColumnKeys: string[] = [];
 
-  requestDTO = signal<ITimeTrackingRequestDTO>({
+  tableData: any[];
+
+  requestDTO = signal<ITimeTrackingTableDataRequestDTO>({
+    tabIndex: 0,
+    startTime: null,
+    endTime: null,
+    pic: null,
     page: 0,
     size: 10,
-    tabIndex: 0,
+    mode: EGetApiMode.TABLE_DATA,
   });
 
-  pagination = {};
+  pagination = signal<{
+    page: number;
+    size: number;
+    totalPages: number;
+    totalElements: number;
+  }>({
+    page: 0,
+    size: 10,
+    totalPages: null,
+    totalElements: null,
+  });
 
   timeTrackingService = this.injector.get(TimeTrackingService);
-  total = 0;
+
+  userListOptions = signal<string[]>([]);
+  checked: string;
+  selectFormGroup: FormGroup = this.formBuilder.group({
+    pic: null,
+    dateRange: null,
+    project: null,
+  });
+  subscription: Subscription = new Subscription();
+
+  SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
+  activeTabIndex = signal<number>(1);
+  headerColumns = computed(() => {
+    switch (this.activeTabIndex()) {
+      case 0:
+        return estimateHeaderColumns;
+      case 1:
+        return logWorkHeaderColumns;
+      case 2:
+        return issuesHeaderColumns;
+      default:
+        return null;
+    }
+  });
+
+  EColumnField = EColumnField;
+  mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.CREATE);
+  EMode = EMode;
+  createButtonMenu: MenuItem[] = [
+    {
+      label: 'Mở drawer',
+      command: () => {
+        this.openCreateDrawer();
+      },
+    },
+  ];
 
   constructor(override injector: Injector) {
     super(injector);
 
-    this.formGroup = this.formBuilder.group({
-      id: null,
-      project: null,
-      pic: null,
-      module: null,
-      menu: null,
-      screen: null,
-      feature: null,
-      category: null,
-      workContent: null,
-      startTime: null,
-      endTime: null,
-      duration: null,
-      isLunchBreak: null,
-      isSolveIssue: null,
-      encounteredIssue: null,
-      creationDate: null,
+    // Phải gọi trước khi khởi tạo giá trị cho dateRange
+    this.initSubscriptions();
+
+    this.getControl(
+      SELECT_FORM_GROUP_KEY.dateRange,
+      this.selectFormGroup,
+    ).setValue([new Date(), new Date()]);
+  }
+
+  get tabIndexModel(): number {
+    return this.activeTabIndex();
+  }
+
+  set tabIndexModel(value: number) {
+    this.activeTabIndex.set(value);
+  }
+
+  initSubscriptions() {
+    this.onDestroy$.subscribe(() => {
+      this.subscription.unsubscribe();
     });
+
+    this.subscription.add(
+      combineLatest(
+        this.getControlValueChanges(
+          SELECT_FORM_GROUP_KEY.pic,
+          this.selectFormGroup,
+        ),
+        this.getControlValueChanges(
+          SELECT_FORM_GROUP_KEY.dateRange,
+          this.selectFormGroup,
+        ).pipe(filter((range) => range.every((date: Date) => !!date))),
+      ).subscribe(([user, dateRange]) => {
+        console.log(SELECT_FORM_GROUP_KEY.pic, user, dateRange);
+
+        this.requestDTO.update((oldValue) => ({
+          ...oldValue,
+          pic: user,
+          startTime: dateRange[0].toISOString(),
+          endTime: dateRange[1].toISOString(),
+        }));
+
+        this.callAAIGetTableData();
+      }),
+    );
+  }
+
+  ngOnInit() {
+    this.callAPIGetUserList();
+  }
+
+  callAPIGetUserList() {
+    this.timeTrackingService
+      .getUserListAsync({ mode: EGetApiMode.USER_LIST })
+      .pipe(filter((list: string[]) => list?.length > 0))
+      .subscribe((userList: string[]) => {
+        this.userListOptions.set(userList);
+        this.getControl(
+          SELECT_FORM_GROUP_KEY.pic,
+          this.selectFormGroup,
+        ).setValue(userList[0]);
+      });
   }
 
   onPageChange(event: any) {
+    console.log('onPageChange', event);
     this.requestDTO.update((oldValue) => ({
       ...oldValue,
-      page: event.first,
+      page: event.page,
       size: event.rows,
     }));
+
+    this.callAAIGetTableData();
   }
 
-  submitForm() {
+  submitForm() {}
+
+  getDetailById() {
     this.timeTrackingService
-      .getTableDataAsync({
-        page: 0,
-        size: 10,
+      .getDetailByIdAsync({
         tabIndex: 0,
+        id: 1111,
       })
       .subscribe((response) => {
-        console.log('aaa', response);
-        this.workData = response.data as any;
-        this.total = response.totalElements;
+        this.formGroup.patchValue(response);
       });
+  }
+
+  callAAIGetTableData() {
+    this.timeTrackingService
+      .getListAsync(this.requestDTO())
+      .subscribe((response) => {
+        this.tableData = response.data;
+        const header = response.header;
+        this.headerColumnNames = Object.values(header);
+        this.headerColumnKeys = Object.keys(header);
+
+        this.pagination.update((oldValue) => ({
+          ...oldValue,
+          totalElements: response.totalElements,
+          totalPages: response.totalPages,
+        }));
+      });
+  }
+
+  getHeaderColumns() {
+    switch (this.activeTabIndex()) {
+      case 0:
+        return estimateHeaderColumns;
+      case 1:
+        return logWorkHeaderColumns;
+      case 2:
+        return issuesHeaderColumns;
+      default:
+        return null;
+    }
+  }
+
+  onTabChange(value: unknown) {
+    this.activeTabIndex.set(value as number);
+  }
+
+  openCreateDrawer() {
+    const drawerRef = this.drawerService.create({
+      component: CreateFormComponent,
+      data: {},
+      configs: {
+        width: '51.5rem',
+      },
+    });
+
+    drawerRef.onClose.subscribe((res: any) => {
+      console.log('aaaaaaaaaaa ', res);
+    });
+  }
+
+  onAddNewRow() {
+    this.requestDTO.update((oldValue) => ({
+      ...oldValue,
+      page: this.pagination().totalPages - 1,
+    }));
+
+    this.callAAIGetTableData();
   }
 }

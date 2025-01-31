@@ -1,0 +1,22 @@
+<p-drawer
+  #drawer
+  (visibleChange)="onCloseEvent()"
+  [(visible)]="isVisible"
+  [closeOnEscape]="configs.closeOnEscape"
+  [dismissible]="configs.dismissible"
+  [position]="this.configs?.position || 'right'"
+  [style]="{
+    width: this.configs?.width,
+    'min-width': configs.minWidth,
+    transition: 'width 0.2s ease-in-out'
+  }"
+  [transitionOptions]="durationDefault + 'ms ease-in-out'"
+>
+  <ng-template pTemplate="headless">
+    <div class="body">
+      <ng-container
+        *ngComponentOutlet="component; inputs: inputData"
+      ></ng-container>
+    </div>
+  </ng-template>
+</p-drawer>

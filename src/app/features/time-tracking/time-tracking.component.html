@@ -1,154 +1,124 @@
 <div class="container grid">
-  <div class="col-9">
-    <p-tabView>
-      <p-tabPanel header="Dự toán">
-        <ng-container *ngTemplateOutlet="tableData"></ng-container>
-      </p-tabPanel>
+  <div class="col-12">
+    <div [formGroup]="selectFormGroup" class="card flex justify-content-between">
+      <p-select
+        [formControlName]="SELECT_FORM_GROUP_KEY.pic"
+        [options]="userListOptions()"
+        placeholder="Chọn tên nhân viên" />
 
-      <p-tabPanel header="Log work">
-        <p>Chi tiết log công việc...</p>
-      </p-tabPanel>
+      <p-select
+        [formControlName]="SELECT_FORM_GROUP_KEY.project"
+        [options]="userListOptions()"
+        placeholder="Chọn dự án" />
 
-      <p-tabPanel header="Vấn đề">
-        <p>Các vấn đề phát sinh trong dự án...</p>
-      </p-tabPanel>
 
-      <p-tabPanel header="Bug & Improvement">
-        <p>Danh sách bug và cải tiến...</p>
-      </p-tabPanel>
-    </p-tabView>
+      <span>Thống kê theo : </span>
+      <p-togglebutton [(ngModel)]="checked" offLabel="Hôm nay" onLabel="Hôm nay" styleClass="w-24"></p-togglebutton>
+      <p-togglebutton [(ngModel)]="checked" offLabel="Tuần này" onLabel="Tuần này" styleClass="w-24"></p-togglebutton>
+      <p-togglebutton [(ngModel)]="checked" offLabel="Tháng này" onLabel="Tháng này" styleClass="w-24"></p-togglebutton>
+      <p-datepicker
+        [formControlName]="SELECT_FORM_GROUP_KEY.dateRange"
+        selectionMode="range"></p-datepicker>
+    </div>
   </div>
 
-  <div class="col-3">
-    <div [formGroup]="formGroup" class="p-fluid form-container">
-      <div class="p-field">
-        <label for="project">Dự án</label>
-        <input formControlName="project" id="project" pInputText type="text" />
-      </div>
-
-      <div class="p-field">
-        <label for="pic">PIC</label>
-        <input formControlName="pic" id="pic" pInputText type="text" />
-      </div>
-
-      <div class="p-field">
-        <label for="module">Module</label>
-        <input formControlName="module" id="module" pInputText type="text" />
-      </div>
-
-      <div class="p-field">
-        <label for="menu">Menu</label>
-        <input formControlName="menu" id="menu" pInputText type="text" />
-      </div>
-
-      <div class="p-field">
-        <label for="screen">Màn hình</label>
-        <input formControlName="screen" id="screen" pInputText type="text" />
-      </div>
-
-      <div class="p-field">
-        <label for="feature">Tính năng</label>
-        <input formControlName="feature" id="feature" pInputText type="text" />
-      </div>
-
-      <div class="p-field">
-        <label for="category">Phân loại</label>
-        <p-dropdown
-          [options]="[]"
-          formControlName="category"
-          id="category"
-          optionLabel="label"
-          optionValue="value"></p-dropdown>
-      </div>
-
-      <div class="p-field">
-        <label for="workContent">Nội dung công việc</label>
-        <input formControlName="workContent" id="workContent" pInputText type="text" />
-      </div>
-
-      <div class="p-field">
-        <label for="startTime">Thời gian bắt đầu</label>
-        <p-calendar
-          [showTime]="true"
-          formControlName="startTime" hourFormat="24"
-          id="startTime"></p-calendar>
-      </div>
-
-      <div class="p-field">
-        <label for="endTime">Thời gian hoàn thành</label>
-        <p-calendar
-          [showTime]="true"
-          formControlName="endTime"
-          hourFormat="24"
-          id="endTime"></p-calendar>
-      </div>
-
-      <div class="p-field">
-        <label for="duration">Thời lượng (giờ)</label>
-        <p-inputNumber
-          [min]="0"
-          formControlName="duration"
-          id="duration"></p-inputNumber>
-      </div>
-
-      <div class="p-field">
-        <label for="isLunchBreak">Nghỉ trưa (phút)</label>
-        <p-inputNumber
-          [min]="0"
-          formControlName="isLunchBreak"
-          id="isLunchBreak"></p-inputNumber>
-      </div>
-
-      <div class="p-field">
-        <label for="isSolveIssue">Giải quyết vấn đề</label>
-        <input
-          formControlName="isSolveIssue"
-          id="isSolveIssue"
-          pInputText type="text" />
-      </div>
-
-      <div class="p-field">
-        <label for="encounteredIssue">Vấn đề gặp phải</label>
-        <input
-          formControlName="encounteredIssue"
-          id="encounteredIssue"
-          pInputText
-          type="text" />
-      </div>
-
-      <div class="p-field">
-        <label for="creationDate">Ngày tạo</label>
-        <p-calendar
-          formControlName="creationDate"
-          id="creationDate"></p-calendar>
-      </div>
-
-      <div class="p-field">
-        <button (click)="submitForm()" icon="pi pi-save" label="Lưu" pButton type="button"></button>
-      </div>
-    </div>
+  <div class="col-12">
+    <p-tabs (valueChange)="onTabChange($event)" [value]="activeTabIndex()">
+      <p-tablist>
+        <p-tab [value]="0">Dự toán</p-tab>
+        <p-tab [value]="1">Log work</p-tab>
+        <p-tab [value]="2">Vấn đề</p-tab>
+        <p-tab [value]="3">Bug & Improvement</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel [value]="activeTabIndex()">
+          <div class="flex justify-content-end">
+            <p-splitbutton
+              (onClick)="onAddNewRow()"
+              [model]="createButtonMenu"
+              icon="pi pi-plus"
+              label="Thêm mới" />
+          </div>
+          <ng-container *ngTemplateOutlet="tableDataTemplate"></ng-container>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
   </div>
 </div>
 
-<ng-template #tableData>
-  <p-table [value]="workData" responsiveLayout="scroll">
+<ng-template #tableDataTemplate>
+  <p-table
+    [value]="tableData"
+    responsiveLayout="scroll"
+  >
     <ng-template pTemplate="header">
       <tr>
-        <th *ngFor="let col of columns">{{ col }}</th>
+        @for (col of headerColumns(); track col.value) {
+          <th>{{ col.label }}</th>
+        }
       </tr>
     </ng-template>
-    <ng-template let-rowData pTemplate="body">
+
+    <ng-template pTemplate="frozenbody">
+      @if (mode() === EMode.CREATE) {
+        <tr>
+          <td>11111</td>
+          <td>11111</td>
+          <td>11111</td>
+          <td>11111</td>
+          <td>11111</td>
+          <td>11111</td>
+          <td>11111</td>
+          <td>11111</td>
+          <td>11111</td>
+          <td>11111</td>
+          <td>11111</td>
+          <td>11111</td>
+          <td>
+            <div class="flex align-items-center justify-content-between gap-1">
+              <p-button
+                variant="outlined" severity="secondary" size="small" icon="pi pi-save"
+                aria-label="Lưu" pTooltip="Lưu" tooltipPosition="bottom" />
+              <p-button
+                variant="outlined" severity="secondary" size="small" icon="pi pi-times" aria-label="Hủy"
+                pTooltip="Hủy" tooltipPosition="bottom" />
+            </div>
+          </td>
+        </tr>
+      }
+    </ng-template>
+
+    <ng-template let-l let-rowData pTemplate="body">
       <tr>
-        <td *ngFor="let col of columns; let index = index">{{ rowData[index] }}</td>
+        @for (col of headerColumns(); track col.value) {
+          @if (col.value === EColumnField.START_TIME || col.value === EColumnField.END_TIME) {
+            <td>{{ rowData[col.value] | formatDate }}</td>
+          } @else if (col.value === EColumnField.ACTIONS) {
+            <td>
+              <div class="flex align-items-center justify-content-between gap-1">
+                <p-button
+                  variant="outlined" severity="secondary" size="small" icon="pi pi-file-edit"
+                  aria-label="Chỉnh sửa" pTooltip="Chỉnh sửa" tooltipPosition="bottom" />
+                <p-button
+                  variant="outlined" severity="secondary" size="small" icon="pi pi-trash" aria-label="Xóa"
+                  pTooltip="Xóa" tooltipPosition="bottom" />
+              </div>
+            </td>
+          } @else {
+            <td>{{ rowData[col.value] }}</td>
+          }
+        }
       </tr>
     </ng-template>
   </p-table>
   <div class="card flex justify-center">
     <p-paginator
       (onPageChange)="onPageChange($event)"
-      [first]="requestDTO().page * requestDTO().size"
-      [rowsPerPageOptions]="[10, 20, 30]"
-      [rows]="requestDTO().size"
-      [totalRecords]="120" />
+      [first]="pagination().page"
+      [rowsPerPageOptions]="[10, 20, 30, 40, 50]"
+      [rows]="pagination().size"
+      [showCurrentPageReport]="true"
+      [totalRecords]="pagination().totalElements"
+      currentPageReportTemplate="Đang xem {first} - {last} / {totalRecords}" />
   </div>
 </ng-template>

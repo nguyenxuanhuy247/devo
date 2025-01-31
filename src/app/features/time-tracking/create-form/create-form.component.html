@@ -1,0 +1,111 @@
+<div [formGroup]="formGroup" class="p-fluid form-container">
+  <div class="p-field">
+    <label for="project">Dự án</label>
+    <input formControlName="project" id="project" pInputText type="text" />
+  </div>
+
+  <div class="p-field">
+    <label for="pic">PIC</label>
+    <input formControlName="pic" id="pic" pInputText type="text" />
+  </div>
+
+  <div class="p-field">
+    <label for="module">Module</label>
+    <input formControlName="module" id="module" pInputText type="text" />
+  </div>
+
+  <div class="p-field">
+    <label for="menu">Menu</label>
+    <input formControlName="menu" id="menu" pInputText type="text" />
+  </div>
+
+  <div class="p-field">
+    <label for="screen">Màn hình</label>
+    <input formControlName="screen" id="screen" pInputText type="text" />
+  </div>
+
+  <div class="p-field">
+    <label for="feature">Tính năng</label>
+    <input formControlName="feature" id="feature" pInputText type="text" />
+  </div>
+
+  <div class="p-field">
+    <label for="category">Phân loại</label>
+    <p-select
+      [options]="[]"
+      formControlName="category"
+      id="category"
+      optionLabel="label"
+      optionValue="value"></p-select>
+  </div>
+
+  <div class="p-field">
+    <label for="workContent">Nội dung công việc</label>
+    <input formControlName="workContent" id="workContent" pInputText type="text" />
+  </div>
+
+  <div class="p-field">
+    <label for="startTime">Thời gian bắt đầu</label>
+    <p-datepicker
+      [showTime]="true"
+      formControlName="startTime" hourFormat="24"
+      id="startTime"></p-datepicker>
+  </div>
+
+  <div class="p-field">
+    <label for="endTime">Thời gian hoàn thành</label>
+    <p-datepicker
+      [showTime]="true"
+      formControlName="endTime"
+      hourFormat="24"
+      id="endTime"></p-datepicker>
+  </div>
+
+  <div class="p-field">
+    <label for="duration">Thời lượng (giờ)</label>
+    <p-inputNumber
+      [min]="0"
+      formControlName="duration"
+      id="duration"></p-inputNumber>
+  </div>
+
+  <div class="p-field">
+    <label for="isLunchBreak">Nghỉ trưa (phút)</label>
+    <p-inputNumber
+      [min]="0"
+      formControlName="isLunchBreak"
+      id="isLunchBreak"></p-inputNumber>
+  </div>
+
+  <div class="p-field">
+    <label for="isSolveIssue">Giải quyết vấn đề</label>
+    <input
+      formControlName="isSolveIssue"
+      id="isSolveIssue"
+      pInputText type="text" />
+  </div>
+
+  <div class="p-field">
+    <label for="encounteredIssue">Vấn đề gặp phải</label>
+    <input
+      formControlName="encounteredIssue"
+      id="encounteredIssue"
+      pInputText
+      type="text" />
+  </div>
+
+  <div class="p-field">
+    <label for="createdDate">Ngày tạo</label>
+    <p-date-picker
+      formControlName="createdDate"
+      id="createdDate"></p-date-picker>
+  </div>
+
+  <div class="p-field">
+    <button (click)="submitForm()" icon="pi pi-save" label="Lấy danh sách" pButton type="button"></button>
+  </div>
+  <div class="p-field">
+    <button (click)="getDetailById()" icon="pi pi-plus" label="Lấy thông tin chi tiết" pButton
+            type="button"></button>
+  </div>
+</div>
