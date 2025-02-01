@@ -6,8 +6,14 @@ export enum DATE_FORMAT {
 }
 
 export enum EMode {
-  VIEW,
-  CREATE,
-  UPDATE,
-  DELETE,
+  VIEW = 'view',
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+}
+
+export enum EClosePopupCode {
+  CANCEL = 'cancel',
+  SAVE = 'save',
+  CONFIRM = 'confirm',
 }

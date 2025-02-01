@@ -1,6 +1,6 @@
-<div class="container grid">
+<div [formGroup]="formGroup" class="container grid">
   <div class="col-12">
-    <div [formGroup]="selectFormGroup" class="card flex justify-content-between">
+    <div class="card flex justify-content-between">
       <p-select
         [formControlName]="SELECT_FORM_GROUP_KEY.pic"
         [options]="userListOptions()"
@@ -13,9 +13,21 @@
 
 
       <span>Thống kê theo : </span>
-      <p-togglebutton [(ngModel)]="checked" offLabel="Hôm nay" onLabel="Hôm nay" styleClass="w-24"></p-togglebutton>
-      <p-togglebutton [(ngModel)]="checked" offLabel="Tuần này" onLabel="Tuần này" styleClass="w-24"></p-togglebutton>
-      <p-togglebutton [(ngModel)]="checked" offLabel="Tháng này" onLabel="Tháng này" styleClass="w-24"></p-togglebutton>
+      <p-togglebutton
+        [formControlName]="FORM_GROUP_KEYS.quickDateRange"
+        offLabel="Hôm nay"
+        onLabel="Hôm nay"
+        styleClass="w-24"></p-togglebutton>
+      <p-togglebutton
+        [formControlName]="FORM_GROUP_KEYS.quickDateRange"
+        offLabel="Tuần này"
+        onLabel="Tuần này"
+        styleClass="w-24"></p-togglebutton>
+      <p-togglebutton
+        [formControlName]="FORM_GROUP_KEYS.quickDateRange"
+        offLabel="Tháng này"
+        onLabel="Tháng này"
+        styleClass="w-24"></p-togglebutton>
       <p-datepicker
         [formControlName]="SELECT_FORM_GROUP_KEY.dateRange"
         selectionMode="range"></p-datepicker>
@@ -46,79 +58,189 @@
   </div>
 </div>
 
+<p-blockui [blocked]="isLoading()">
+  <p-progress-spinner ariaLabel="loading" />
+</p-blockui>
+
+
 <ng-template #tableDataTemplate>
-  <p-table
-    [value]="tableData"
-    responsiveLayout="scroll"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        @for (col of headerColumns(); track col.value) {
-          <th>{{ col.label }}</th>
-        }
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="frozenbody">
-      @if (mode() === EMode.CREATE) {
+  <div [formGroup]="formGroup">
+    <p-table
+      [value]="formArrayObservable | async"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
         <tr>
-          <td>11111</td>
-          <td>11111</td>
-          <td>11111</td>
-          <td>11111</td>
-          <td>11111</td>
-          <td>11111</td>
-          <td>11111</td>
-          <td>11111</td>
-          <td>11111</td>
-          <td>11111</td>
-          <td>11111</td>
-          <td>11111</td>
-          <td>
-            <div class="flex align-items-center justify-content-between gap-1">
-              <p-button
-                variant="outlined" severity="secondary" size="small" icon="pi pi-save"
-                aria-label="Lưu" pTooltip="Lưu" tooltipPosition="bottom" />
-              <p-button
-                variant="outlined" severity="secondary" size="small" icon="pi pi-times" aria-label="Hủy"
-                pTooltip="Hủy" tooltipPosition="bottom" />
-            </div>
-          </td>
+          @for (col of headerColumns(); track col.value) {
+            <th>{{ col.label }}</th>
+          }
         </tr>
-      }
-    </ng-template>
+      </ng-template>
 
-    <ng-template let-l let-rowData pTemplate="body">
-      <tr>
-        @for (col of headerColumns(); track col.value) {
-          @if (col.value === EColumnField.START_TIME || col.value === EColumnField.END_TIME) {
-            <td>{{ rowData[col.value] | formatDate }}</td>
-          } @else if (col.value === EColumnField.ACTIONS) {
+      <ng-template pTemplate="body" let-rowData let-index="rowIndex">
+        <tr>
+          @if (rowData.mode === EMode.VIEW) {
+            @for (col of headerColumns(); track col.value) {
+              <!-- Chế độ VIEW chỉ hiển thị text -->
+              @if (col.value === COLUMN_FIELD.startTime || col.value === COLUMN_FIELD.endTime) {
+                <td>{{ rowData[col.value] | formatDate }}</td>
+              } @else if (col.value === COLUMN_FIELD.actions) {
+                <td>
+                  <div class="flex align-items-center justify-content-between gap-1">
+                    <p-button
+                      variant="outlined" severity="secondary" size="small" icon="pi pi-file-edit"
+                      aria-label="Chỉnh sửa" pTooltip="Chỉnh sửa" tooltipPosition="bottom" />
+                    <p-button
+                      variant="outlined" severity="secondary" size="small" icon="pi pi-trash" aria-label="Xóa"
+                      pTooltip="Xóa" tooltipPosition="bottom" />
+                  </div>
+                </td>
+              } @else {
+                <td>{{ rowData[col.value] }}</td>
+              }
+            }
+          } @else {
+            <!-- Chế độ CREATE / UPDATE hiển thị form -->
+            <td>
+              <p-select
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.module)"
+                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+              ></p-select>
+            </td>
+
+            <td>
+              <p-select
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.menu)"
+                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+              ></p-select>
+            </td>
+
+            <td>
+              <p-select
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.screen)"
+                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+              ></p-select>
+            </td>
+
+            <td>
+              <p-select
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.feature)"
+                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+              ></p-select>
+            </td>
+
+            <td>
+              <p-select
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.category)"
+                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+              ></p-select>
+            </td>
+
+            <td>
+                  <textarea
+                    [formControl]="getFormGroup(index, FORM_GROUP_KEYS.category)"
+                    rows="5"
+                    cols="30"
+                    pTextarea
+                    placeholder="Nhập nội dung công việc"
+                  ></textarea>
+            </td>
+
+            <td>
+              <p-datepicker
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.startTime)"
+                [showTime]="true"
+                hourFormat="24"
+                dateFormat="HH:mm dd/mm"
+                appendTo="body"
+              ></p-datepicker>
+            </td>
+
+            <td>
+              <p-datepicker
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.endTime)"
+                [showTime]="true"
+                hourFormat="24"
+                dateFormat="HH:mm dd/mm"
+                appendTo="body"
+              ></p-datepicker>
+            </td>
+
+            <td>
+              <p-inputnumber
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.duration)"
+                mode="decimal"
+                [minFractionDigits]="2"
+                [maxFractionDigits]="5"
+                [useGrouping]="false"></p-inputnumber>
+            </td>
+
+            <td>
+              <p-checkbox
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.isLunchBreak)"
+                [binary]="true"
+              />
+            </td>
+
+            <td>
+              <p-checkbox
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.isSolveIssue)"
+                [binary]="true"
+              />
+            </td>
+
+            <td>
+              <p-select
+                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.encounteredIssue)"
+                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+              ></p-select>
+            </td>
+
             <td>
               <div class="flex align-items-center justify-content-between gap-1">
                 <p-button
-                  variant="outlined" severity="secondary" size="small" icon="pi pi-file-edit"
-                  aria-label="Chỉnh sửa" pTooltip="Chỉnh sửa" tooltipPosition="bottom" />
+                  variant="outlined"
+                  severity="secondary"
+                  size="small"
+                  icon="pi pi-times"
+                  aria-label="Hủy"
+                  pTooltip="Hủy"
+                  tooltipPosition="bottom"
+                  (click)="onCancelCreate()"
+                />
                 <p-button
-                  variant="outlined" severity="secondary" size="small" icon="pi pi-trash" aria-label="Xóa"
-                  pTooltip="Xóa" tooltipPosition="bottom" />
+                  variant="outlined"
+                  severity="secondary"
+                  size="small"
+                  icon="pi pi-save"
+                  aria-label="Lưu"
+                  pTooltip="Lưu"
+                  tooltipPosition="bottom"
+                  (click)="onCreate()"
+                />
               </div>
             </td>
-          } @else {
-            <td>{{ rowData[col.value] }}</td>
           }
-        }
-      </tr>
-    </ng-template>
-  </p-table>
-  <div class="card flex justify-center">
-    <p-paginator
-      (onPageChange)="onPageChange($event)"
-      [first]="pagination().page"
-      [rowsPerPageOptions]="[10, 20, 30, 40, 50]"
-      [rows]="pagination().size"
-      [showCurrentPageReport]="true"
-      [totalRecords]="pagination().totalElements"
-      currentPageReportTemplate="Đang xem {first} - {last} / {totalRecords}" />
+        </tr>
+      </ng-template>
+    </p-table>
   </div>
 </ng-template>

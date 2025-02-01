@@ -1,6 +1,11 @@
 import { Component, computed, Injector, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormArray,
+  FormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
@@ -11,6 +16,7 @@ import { FormBaseComponent } from '../../shared';
 import { TimeTrackingService } from './time-tracking.service';
 import {
   EGetApiMode,
+  ILogWorkTableDataResponseDTO,
   ITimeTrackingTableDataRequestDTO,
 } from './time-tracking.dto';
 import { PaginatorModule } from 'primeng/paginator';
@@ -19,10 +25,12 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ToggleButton } from 'primeng/togglebutton';
 import {
-  EColumnField,
+  COLUMN_FIELD,
   estimateHeaderColumns,
+  FORM_GROUP_KEYS,
   issuesHeaderColumns,
   logWorkHeaderColumns,
+  nullableObj,
   SELECT_FORM_GROUP_KEY,
 } from './time-tracking.model';
 import { TabsModule } from 'primeng/tabs';
@@ -32,6 +40,10 @@ import { TooltipModule } from 'primeng/tooltip';
 import { EMode } from '../../contants/common.constant';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { MenuItem } from 'primeng/api';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { BlockUIModule } from 'primeng/blockui';
+import { TextareaModule } from 'primeng/textarea';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-time-tracking',
@@ -54,47 +66,34 @@ import { MenuItem } from 'primeng/api';
     FormatDatePipe,
     TooltipModule,
     SplitButtonModule,
+    ProgressSpinnerModule,
+    BlockUIModule,
+    TextareaModule,
+    DatePickerModule,
+    CheckboxModule,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  headerColumnNames: string[] = [];
-  headerColumnKeys: string[] = [];
-
-  tableData: any[];
-
   requestDTO = signal<ITimeTrackingTableDataRequestDTO>({
     tabIndex: 0,
     startTime: null,
     endTime: null,
     pic: null,
-    page: 0,
-    size: 10,
     mode: EGetApiMode.TABLE_DATA,
-  });
-
-  pagination = signal<{
-    page: number;
-    size: number;
-    totalPages: number;
-    totalElements: number;
-  }>({
-    page: 0,
-    size: 10,
-    totalPages: null,
-    totalElements: null,
   });
 
   timeTrackingService = this.injector.get(TimeTrackingService);
 
   userListOptions = signal<string[]>([]);
-  checked: string;
-  selectFormGroup: FormGroup = this.formBuilder.group({
-    pic: null,
-    dateRange: null,
-    project: null,
-  });
+
+  // selectFormGroup: FormGroup = this.formBuilder.group({
+  //   pic: null,
+  //   dateRange: null,
+  //   project: null,
+  //   quickDateRange: null,
+  // });
   subscription: Subscription = new Subscription();
 
   SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
@@ -112,7 +111,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     }
   });
 
-  EColumnField = EColumnField;
+  COLUMN_FIELD = COLUMN_FIELD;
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.CREATE);
   EMode = EMode;
   createButtonMenu: MenuItem[] = [
@@ -124,24 +123,34 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     },
   ];
 
+  isLoading = signal(false);
+  formArray!: FormArray;
+
+  FORM_GROUP_KEYS = FORM_GROUP_KEYS;
+
   constructor(override injector: Injector) {
     super(injector);
+  }
+
+  ngOnInit() {
+    this.formGroup = this.formBuilder.group({
+      pic: null,
+      dateRange: null,
+      project: null,
+      quickDateRange: null,
+      formArray: this.formBuilder.array([]),
+    });
+    this.formArray = this.formGroup.get('formArray') as FormArray;
+
+    this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
+      new Date(),
+      new Date(),
+    ]);
+
+    this.callAPIGetUserList();
 
     // Phải gọi trước khi khởi tạo giá trị cho dateRange
     this.initSubscriptions();
-
-    this.getControl(
-      SELECT_FORM_GROUP_KEY.dateRange,
-      this.selectFormGroup,
-    ).setValue([new Date(), new Date()]);
-  }
-
-  get tabIndexModel(): number {
-    return this.activeTabIndex();
-  }
-
-  set tabIndexModel(value: number) {
-    this.activeTabIndex.set(value);
   }
 
   initSubscriptions() {
@@ -151,17 +160,11 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
     this.subscription.add(
       combineLatest(
-        this.getControlValueChanges(
-          SELECT_FORM_GROUP_KEY.pic,
-          this.selectFormGroup,
+        this.getControlValueChanges(SELECT_FORM_GROUP_KEY.pic),
+        this.getControlValueChanges(SELECT_FORM_GROUP_KEY.dateRange).pipe(
+          filter((range) => range.every((date: Date) => !!date)),
         ),
-        this.getControlValueChanges(
-          SELECT_FORM_GROUP_KEY.dateRange,
-          this.selectFormGroup,
-        ).pipe(filter((range) => range.every((date: Date) => !!date))),
       ).subscribe(([user, dateRange]) => {
-        console.log(SELECT_FORM_GROUP_KEY.pic, user, dateRange);
-
         this.requestDTO.update((oldValue) => ({
           ...oldValue,
           pic: user,
@@ -174,75 +177,33 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     );
   }
 
-  ngOnInit() {
-    this.callAPIGetUserList();
-  }
-
   callAPIGetUserList() {
+    this.isLoading.set(true);
     this.timeTrackingService
       .getUserListAsync({ mode: EGetApiMode.USER_LIST })
       .pipe(filter((list: string[]) => list?.length > 0))
       .subscribe((userList: string[]) => {
         this.userListOptions.set(userList);
-        this.getControl(
-          SELECT_FORM_GROUP_KEY.pic,
-          this.selectFormGroup,
-        ).setValue(userList[0]);
-      });
-  }
-
-  onPageChange(event: any) {
-    console.log('onPageChange', event);
-    this.requestDTO.update((oldValue) => ({
-      ...oldValue,
-      page: event.page,
-      size: event.rows,
-    }));
-
-    this.callAAIGetTableData();
-  }
-
-  submitForm() {}
-
-  getDetailById() {
-    this.timeTrackingService
-      .getDetailByIdAsync({
-        tabIndex: 0,
-        id: 1111,
-      })
-      .subscribe((response) => {
-        this.formGroup.patchValue(response);
+        this.getControl(SELECT_FORM_GROUP_KEY.pic).setValue(userList[0]);
+        this.isLoading.set(false);
       });
   }
 
   callAAIGetTableData() {
+    this.isLoading.set(true);
     this.timeTrackingService
       .getListAsync(this.requestDTO())
       .subscribe((response) => {
-        this.tableData = response.data;
-        const header = response.header;
-        this.headerColumnNames = Object.values(header);
-        this.headerColumnKeys = Object.keys(header);
+        response.data.forEach((rowData: ILogWorkTableDataResponseDTO) => {
+          const formGroup = this.formBuilder.group({
+            ...rowData,
+            mode: EMode.VIEW,
+          });
+          this.formArray.push(formGroup);
+        });
 
-        this.pagination.update((oldValue) => ({
-          ...oldValue,
-          totalElements: response.totalElements,
-          totalPages: response.totalPages,
-        }));
+        this.isLoading.set(false);
       });
-  }
-
-  getHeaderColumns() {
-    switch (this.activeTabIndex()) {
-      case 0:
-        return estimateHeaderColumns;
-      case 1:
-        return logWorkHeaderColumns;
-      case 2:
-        return issuesHeaderColumns;
-      default:
-        return null;
-    }
   }
 
   onTabChange(value: unknown) {
@@ -263,12 +224,26 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     });
   }
 
-  onAddNewRow() {
-    this.requestDTO.update((oldValue) => ({
-      ...oldValue,
-      page: this.pagination().totalPages - 1,
-    }));
-
-    this.callAAIGetTableData();
+  get formArrayObservable() {
+    return this.formArray.valueChanges;
   }
+
+  onAddNewRow() {
+    this.formArray.push(
+      this.formBuilder.group({ ...nullableObj, mode: EMode.CREATE }),
+    );
+  }
+
+  getFormGroup(index: number, formControlName: string): FormControl {
+    return this.formArray?.at(index).get(formControlName) as FormControl;
+  }
+
+  onCancelCreate() {
+    const lastIndex = this.formArray.length - 1;
+    if (lastIndex >= 0) {
+      this.formArray.removeAt(lastIndex); // Xóa control cuối cùng
+    }
+  }
+
+  onCreate() {}
 }

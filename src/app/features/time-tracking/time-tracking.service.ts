@@ -12,7 +12,7 @@ import { IHttpResponse } from '../../shared/interface/common.interface';
 export class TimeTrackingService {
   constructor(private http: HttpClient, private commonService: CommonService) {}
 
-  getListAsync(requestDTO: any): Observable<any> {
+  getListAsync(requestDTO: any) {
     const params = this.commonService.parseObjToParams(
       this.commonService.getParamsNotEmpty(requestDTO),
     );

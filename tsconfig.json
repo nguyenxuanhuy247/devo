@@ -23,7 +23,8 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "useDefineForClassFields": false
   },
   "files": [],
   "include": [],
