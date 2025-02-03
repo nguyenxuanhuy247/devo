@@ -10,3 +10,10 @@ export interface IHttpResponse<T> {
   message: string;
   data: T;
 }
+
+export interface IOption {
+  label: string;
+  value: any;
+
+  [s: string]: any;
+}

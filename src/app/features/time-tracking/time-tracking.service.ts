@@ -68,13 +68,13 @@ export class TimeTrackingService {
     );
   }
 
-  getUserListAsync(requestDTO: ITimeTrackingRequestDTO) {
+  getDropdownListAsync(requestDTO: ITimeTrackingRequestDTO): Observable<any[]> {
     const params = this.commonService.parseObjToParams(
       this.commonService.getParamsNotEmpty(requestDTO),
     );
 
     return this.http
-      .get<IHttpResponse<string[]>>(apiManager.DATABASE + '?' + params)
+      .get<IHttpResponse<any[]>>(apiManager.DATABASE + '?' + params)
       .pipe(
         map((response) => {
           return response.data;

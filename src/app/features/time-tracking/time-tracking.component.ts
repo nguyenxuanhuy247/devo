@@ -180,7 +180,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   callAPIGetUserList() {
     this.isLoading.set(true);
     this.timeTrackingService
-      .getUserListAsync({ mode: EGetApiMode.USER_LIST })
+      .getDropdownListAsync({ mode: EGetApiMode.USERS })
       .pipe(filter((list: string[]) => list?.length > 0))
       .subscribe((userList: string[]) => {
         this.userListOptions.set(userList);
