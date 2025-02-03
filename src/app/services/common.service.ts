@@ -47,4 +47,21 @@ export class CommonService {
     }
     return text;
   }
+
+  convertToDependentDropdown(
+    list: any[],
+    key: string,
+    subListName: string,
+    optionValue: string,
+  ) {
+    return list.reduce((acc, item) => {
+      acc[item[key]] = item[subListName]
+        .filter((subItem: any) => subItem[optionValue]) // Lọc những project có tên
+        .map((subItem: any) => ({
+          label: subItem[optionValue],
+          value: subItem[optionValue],
+        }));
+      return acc;
+    }, {});
+  }
 }

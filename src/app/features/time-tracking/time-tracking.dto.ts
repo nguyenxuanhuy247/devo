@@ -1,7 +1,7 @@
 import { ID } from '../../shared/interface/common.interface';
 
 export enum EGetApiMode {
-  USERS = 1,
+  EMPLOYEES = 1,
   PROJECTS = 2,
   MODULES = 3,
   MENUS = 4,

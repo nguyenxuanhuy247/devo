@@ -1,14 +1,15 @@
 import { CommonService } from '../../services';
-import { ID } from '../../shared/interface/common.interface';
+import { ID, IOption } from '../../shared/interface/common.interface';
 import { EMode } from '../../contants/common.constant';
 
 export const SELECT_FORM_GROUP_KEY =
   CommonService.generateEnumFromInterface<ISelectFormGroup>();
 
 export interface ISelectFormGroup {
-  pic: string;
+  employee: string;
   project: string;
   dateRange: [Date, Date];
+  quickDateRange: any;
 }
 
 export const TIME_TRACKING_ROW_DATA_KEYS =
@@ -246,3 +247,7 @@ export const nullableObj: ITimeTrackingRowData = {
   notes: null,
   createdDate: null,
 };
+
+export interface IDependentDropDown {
+  [s: string]: IOption[];
+}

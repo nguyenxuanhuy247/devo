@@ -28,6 +28,7 @@ import {
   COLUMN_FIELD,
   estimateHeaderColumns,
   FORM_GROUP_KEYS,
+  IDependentDropDown,
   issuesHeaderColumns,
   logWorkHeaderColumns,
   nullableObj,
@@ -44,6 +45,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { BlockUIModule } from 'primeng/blockui';
 import { TextareaModule } from 'primeng/textarea';
 import { CheckboxModule } from 'primeng/checkbox';
+import { CommonService } from '../../services';
+import { IOption } from '../../shared/interface/common.interface';
 
 @Component({
   selector: 'app-time-tracking',
@@ -85,15 +88,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   });
 
   timeTrackingService = this.injector.get(TimeTrackingService);
+  commonService = this.injector.get(CommonService);
 
-  userListOptions = signal<string[]>([]);
+  selectOptions = signal<string[]>([]);
 
-  // selectFormGroup: FormGroup = this.formBuilder.group({
-  //   pic: null,
-  //   dateRange: null,
-  //   project: null,
-  //   quickDateRange: null,
-  // });
   subscription: Subscription = new Subscription();
 
   SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
@@ -134,10 +132,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   ngOnInit() {
     this.formGroup = this.formBuilder.group({
-      pic: null,
-      dateRange: null,
-      project: null,
-      quickDateRange: null,
+      [SELECT_FORM_GROUP_KEY.employee]: null,
+      [SELECT_FORM_GROUP_KEY.project]: null,
+      [SELECT_FORM_GROUP_KEY.dateRange]: null,
+      [SELECT_FORM_GROUP_KEY.quickDateRange]: null,
       formArray: this.formBuilder.array([]),
     });
     this.formArray = this.formGroup.get('formArray') as FormArray;
@@ -147,10 +145,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       new Date(),
     ]);
 
-    this.callAPIGetUserList();
-
     // Phải gọi trước khi khởi tạo giá trị cho dateRange
     this.initSubscriptions();
+
+    this.callAPIGetDependentDropdown(EGetApiMode.EMPLOYEES);
   }
 
   initSubscriptions() {
@@ -160,7 +158,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
     this.subscription.add(
       combineLatest(
-        this.getControlValueChanges(SELECT_FORM_GROUP_KEY.pic),
+        this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employee),
         this.getControlValueChanges(SELECT_FORM_GROUP_KEY.dateRange).pipe(
           filter((range) => range.every((date: Date) => !!date)),
         ),
@@ -175,18 +173,106 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         this.callAAIGetTableData();
       }),
     );
+
+    this.subscription.add(
+      this.getControlValueChanges(SELECT_FORM_GROUP_KEY.project).subscribe(
+        (_: string) => {
+          if (!this.projectModuleDropdown()) {
+            this.callAPIGetDependentDropdown(EGetApiMode.PROJECTS);
+            this.callAPIGetDependentDropdown(EGetApiMode.MODULES);
+          }
+        },
+      ),
+    );
   }
 
-  callAPIGetUserList() {
+  employeeOptions = signal<IOption[]>([]);
+  employeeProjectDropDown = signal<IDependentDropDown>({});
+  projectModuleDropdown = signal<IDependentDropDown>(null);
+  moduleMenuDropdown = signal<IDependentDropDown>(null);
+
+  callAPIGetDependentDropdown(mode: EGetApiMode) {
     this.isLoading.set(true);
     this.timeTrackingService
-      .getDropdownListAsync({ mode: EGetApiMode.USERS })
+      .getDropdownListAsync({ mode: mode })
       .pipe(filter((list: string[]) => list?.length > 0))
-      .subscribe((userList: string[]) => {
-        this.userListOptions.set(userList);
-        this.getControl(SELECT_FORM_GROUP_KEY.pic).setValue(userList[0]);
+      .subscribe((mainList: string[]) => {
+        switch (mode) {
+          case EGetApiMode.EMPLOYEES: {
+            const options = mainList?.map((item: any) => ({
+              label: item['username'],
+              value: item['username'],
+            }));
+            this.employeeOptions.set(options);
+            const userProjectDropdown =
+              this.commonService.convertToDependentDropdown(
+                mainList,
+                'username',
+                'projects',
+                'projectName',
+              );
+            this.employeeProjectDropDown.set(userProjectDropdown);
+            console.log('userProjectDropdown ', userProjectDropdown);
+            break;
+          }
+          case EGetApiMode.PROJECTS: {
+            const projectModuleDropdown =
+              this.commonService.convertToDependentDropdown(
+                mainList,
+                'projectName',
+                'modules',
+                'moduleName',
+              );
+            this.projectModuleDropdown.set(projectModuleDropdown);
+            console.log('projectModuleDropdown ', projectModuleDropdown);
+            break;
+          }
+          case EGetApiMode.MODULES: {
+            const moduleMenuDropdown =
+              this.commonService.convertToDependentDropdown(
+                mainList,
+                'moduleName',
+                'menus',
+                'menuName',
+              );
+            this.moduleMenuDropdown.set(moduleMenuDropdown);
+            console.log('moduleMenuDropdown ', moduleMenuDropdown);
+            break;
+          }
+          case EGetApiMode.MENUS: {
+            const menuScreenMenuDropdown =
+              this.commonService.convertToDependentDropdown(
+                mainList,
+                'moduleName',
+                'menus',
+                'menuName',
+              );
+            this.moduleMenuDropdown.set(menuScreenMenuDropdown);
+            console.log('moduleMenuDropdown ', menuScreenMenuDropdown);
+            break;
+          }
+        }
+
+        // this.selectOptions.set(userList);
+        // this.getControl(SELECT_FORM_GROUP_KEY.employee).setValue(userList[0]);
         this.isLoading.set(false);
       });
+  }
+
+  getDependentProjectDropDown(formControlName: string) {
+    const key = this.getControlValue(formControlName);
+    return this.employeeProjectDropDown()[key];
+  }
+
+  getDependentModuleDropDown(index: number, formControlName: string) {
+    const value = this.getControlValue(formControlName);
+    return this.projectModuleDropdown()?.[value] || [];
+  }
+
+  getDependentMenuDropDown(index: number, formControlName: string) {
+    const value = this.getFormControl(index, formControlName).value;
+    console.log('555555 ', this.moduleMenuDropdown()?.[value]);
+    return this.moduleMenuDropdown()?.[value] || [];
   }
 
   callAAIGetTableData() {
@@ -232,9 +318,14 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.formArray.push(
       this.formBuilder.group({ ...nullableObj, mode: EMode.CREATE }),
     );
+
+    this.formArray.controls.forEach((formGroup: any) => {
+      const controlObj = formGroup.controls;
+    });
+    console.log('this.formArray', this.formArray);
   }
 
-  getFormGroup(index: number, formControlName: string): FormControl {
+  getFormControl(index: number, formControlName: string): FormControl {
     return this.formArray?.at(index).get(formControlName) as FormControl;
   }
 

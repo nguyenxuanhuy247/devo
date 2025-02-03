@@ -2,13 +2,13 @@
   <div class="col-12">
     <div class="card flex justify-content-between">
       <p-select
-        [formControlName]="SELECT_FORM_GROUP_KEY.pic"
-        [options]="userListOptions()"
+        [formControlName]="SELECT_FORM_GROUP_KEY.employee"
+        [options]="employeeOptions()"
         placeholder="Chọn tên nhân viên" />
 
       <p-select
         [formControlName]="SELECT_FORM_GROUP_KEY.project"
-        [options]="userListOptions()"
+        [options]="getDependentProjectDropDown(SELECT_FORM_GROUP_KEY.employee)"
         placeholder="Chọn dự án" />
 
 
@@ -103,7 +103,27 @@
             <!-- Chế độ CREATE / UPDATE hiển thị form -->
             <td>
               <p-select
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.module)"
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.module)"
+                [options]="getDependentModuleDropDown(index, FORM_GROUP_KEYS.project)"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+              ></p-select>
+            </td>
+
+            <td>
+              <p-select
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.menu)"
+                [options]="getDependentMenuDropDown(index, FORM_GROUP_KEYS.module)"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+              ></p-select>
+            </td>
+
+            <td>
+              <p-select
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.screen)"
                 [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
                 optionLabel="label"
                 optionValue="value"
@@ -113,7 +133,7 @@
 
             <td>
               <p-select
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.menu)"
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.feature)"
                 [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
                 optionLabel="label"
                 optionValue="value"
@@ -123,27 +143,7 @@
 
             <td>
               <p-select
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.screen)"
-                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-              ></p-select>
-            </td>
-
-            <td>
-              <p-select
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.feature)"
-                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-              ></p-select>
-            </td>
-
-            <td>
-              <p-select
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.category)"
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.category)"
                 [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
                 optionLabel="label"
                 optionValue="value"
@@ -153,7 +153,7 @@
 
             <td>
                   <textarea
-                    [formControl]="getFormGroup(index, FORM_GROUP_KEYS.category)"
+                    [formControl]="getFormControl(index, FORM_GROUP_KEYS.category)"
                     rows="5"
                     cols="30"
                     pTextarea
@@ -163,7 +163,7 @@
 
             <td>
               <p-datepicker
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.startTime)"
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.startTime)"
                 [showTime]="true"
                 hourFormat="24"
                 dateFormat="HH:mm dd/mm"
@@ -173,7 +173,7 @@
 
             <td>
               <p-datepicker
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.endTime)"
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.endTime)"
                 [showTime]="true"
                 hourFormat="24"
                 dateFormat="HH:mm dd/mm"
@@ -183,7 +183,7 @@
 
             <td>
               <p-inputnumber
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.duration)"
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.duration)"
                 mode="decimal"
                 [minFractionDigits]="2"
                 [maxFractionDigits]="5"
@@ -192,21 +192,21 @@
 
             <td>
               <p-checkbox
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.isLunchBreak)"
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.isLunchBreak)"
                 [binary]="true"
               />
             </td>
 
             <td>
               <p-checkbox
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.isSolveIssue)"
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.isSolveIssue)"
                 [binary]="true"
               />
             </td>
 
             <td>
               <p-select
-                [formControl]="getFormGroup(index, FORM_GROUP_KEYS.encounteredIssue)"
+                [formControl]="getFormControl(index, FORM_GROUP_KEYS.encounteredIssue)"
                 [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
                 optionLabel="label"
                 optionValue="value"
