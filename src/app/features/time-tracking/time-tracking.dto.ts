@@ -1,5 +1,6 @@
 import { ID } from '../../shared/interface/common.interface';
 import { EApiMethod } from '../../contants/common.constant';
+import { ITimeTrackingRowData } from './time-tracking.model';
 
 export enum EGetApiMode {
   EMPLOYEES = 1,
@@ -32,6 +33,7 @@ export interface ITimeTrackingDoGetRequestDTO {
 export interface ITimeTrackingDoPostRequestDTO {
   method: EApiMethod.POST | EApiMethod.PUT | EApiMethod.DELETE;
   id: ID;
+  data: ITimeTrackingRowData;
 }
 
 // 🡩🡩🡩🡩🡩 END REGION : Request DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩

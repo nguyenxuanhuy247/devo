@@ -6,10 +6,10 @@ export enum DATE_FORMAT {
 }
 
 export enum EMode {
-  VIEW = 'view',
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
+  VIEW = 'VIEW',
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
 }
 
 export enum EClosePopupCode {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import {
   FormArray,
   FormControl,
+  FormGroup,
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
@@ -13,7 +14,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TableModule } from 'primeng/table';
 import { FormBaseComponent } from '../../shared';
-import { TimeTrackingService } from './time-tracking.service';
+import { TimeTrackingApiService } from './time-tracking-api.service';
 import {
   EGetApiMode,
   ICategoriesInIndependentDropdownResponseDTO,
@@ -53,7 +54,11 @@ import { BlockUIModule } from 'primeng/blockui';
 import { TextareaModule } from 'primeng/textarea';
 import { CheckboxModule } from 'primeng/checkbox';
 import { CommonService } from '../../services';
-import { IOption } from '../../shared/interface/common.interface';
+import {
+  IColumnHeaderConfigs,
+  IOption,
+} from '../../shared/interface/common.interface';
+import { WorkDurationDirective } from '../../directives';
 
 @Component({
   selector: 'app-time-tracking',
@@ -81,6 +86,9 @@ import { IOption } from '../../shared/interface/common.interface';
     TextareaModule,
     DatePickerModule,
     CheckboxModule,
+    ButtonModule,
+    WorkDurationDirective,
+    InputTextModule,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
@@ -97,30 +105,29 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO>({
     method: EApiMethod.POST,
     id: null,
+    data: null,
   });
 
-  timeTrackingService = this.injector.get(TimeTrackingService);
+  timeTrackingService = this.injector.get(TimeTrackingApiService);
   commonService = this.injector.get(CommonService);
 
   subscription: Subscription = new Subscription();
 
   SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
   activeTabIndex = signal<number>(1);
-  headerColumns = computed(() => {
+  headerColumns = computed<IColumnHeaderConfigs[]>(() => {
     switch (this.activeTabIndex()) {
       case 0:
         return estimateHeaderColumns;
       case 1:
         return logWorkHeaderColumns;
-      case 2:
-        return issuesHeaderColumns;
       default:
-        return null;
+        return issuesHeaderColumns;
     }
   });
 
   COLUMN_FIELD = COLUMN_FIELD;
-  mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.CREATE);
+  mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
   EMode = EMode;
   createButtonMenu: MenuItem[] = [
     {
@@ -159,6 +166,13 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.initSubscriptions();
 
     this.callAPIGetDependentDropdown(EGetApiMode.EMPLOYEES);
+    this.callAPIGetDependentDropdown(EGetApiMode.PROJECTS);
+    this.callAPIGetDependentDropdown(EGetApiMode.MODULES);
+    this.callAPIGetDependentDropdown(EGetApiMode.MENUS);
+    this.callAPIGetDependentDropdown(EGetApiMode.SCREENS);
+    this.callAPIGetDependentDropdown(EGetApiMode.FEATURES);
+    this.callAPIGetDependentDropdown(EGetApiMode.DEPARTMENTS);
+
     this.callAPIGetAllIndependentDropdown();
   }
 
@@ -189,12 +203,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.project).subscribe(
         (_: string) => {
           if (!this.projectModuleDropdown()) {
-            this.callAPIGetDependentDropdown(EGetApiMode.PROJECTS);
-            this.callAPIGetDependentDropdown(EGetApiMode.MODULES);
-            this.callAPIGetDependentDropdown(EGetApiMode.MENUS);
-            this.callAPIGetDependentDropdown(EGetApiMode.SCREENS);
-            this.callAPIGetDependentDropdown(EGetApiMode.FEATURES);
-            this.callAPIGetDependentDropdown(EGetApiMode.DEPARTMENTS);
           }
         },
       ),
@@ -218,8 +226,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.isLoading.set(true);
     this.timeTrackingService
       .getDropdownListAsync({ mode: mode })
-      .pipe(filter((list: string[]) => list?.length > 0))
-      .subscribe((mainList: string[]) => {
+      .pipe(filter((list: any[]) => list?.length > 0))
+      .subscribe((mainList: any[]) => {
         switch (mode) {
           case EGetApiMode.EMPLOYEES: {
             const options = mainList?.map((item: any) => ({
@@ -250,6 +258,9 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
                 'moduleName',
               );
             this.projectModuleDropdown.set(projectModuleDropdown);
+            this.getControl(SELECT_FORM_GROUP_KEY.project).setValue(
+              mainList[0]['projectName'],
+            );
             console.log('projectModuleDropdown ', projectModuleDropdown);
             break;
           }
@@ -266,7 +277,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
             break;
           }
           case EGetApiMode.MENUS: {
-            console.log('menuScreenDropdown 111');
             const menuScreenDropdown =
               this.commonService.convertToDependentDropdown(
                 mainList,
@@ -425,13 +435,15 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   onAddNewRow() {
-    this.formArray.push(
-      this.formBuilder.group({ ...nullableObj, mode: EMode.CREATE }),
-    );
-
-    this.formArray.controls.forEach((formGroup: any) => {
-      const controlObj = formGroup.controls;
+    this.mode.set(EMode.CREATE);
+    const formGroup = this.formBuilder.group({ ...nullableObj });
+    formGroup.setValue({
+      ...nullableObj,
+      mode: EMode.CREATE,
+      isLunchBreak: true,
     });
+    this.formArray.push(formGroup);
+
     console.log('this.formArray', this.formArray);
   }
 
@@ -439,14 +451,33 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     return this.formArray?.at(index).get(formControlName) as FormControl;
   }
 
-  onCancelCreate() {
+  getFormGroup(index: number): FormGroup {
+    return this.formArray?.at(index) as FormGroup;
+  }
+
+  onCancelCreateMode() {
+    this.mode.set(EMode.VIEW);
     const lastIndex = this.formArray.length - 1;
     if (lastIndex >= 0) {
       this.formArray.removeAt(lastIndex); // Xóa control cuối cùng
     }
   }
 
-  onCreate() {}
+  onSaveCreate(index: number) {
+    const value = this.formArray?.at(index)?.value;
+    console.log('value ', value);
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.POST,
+      data: value,
+    }));
+
+    this.timeTrackingService
+      .createItemAsync(this.doPostRequestDTO())
+      .subscribe((response) => {
+        console.log('response', response);
+      });
+  }
 
   onUpdate(rowData: ITimeTrackingRowData) {}
 
@@ -461,5 +492,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       .subscribe((res) => {
         console.log('delete', res);
       });
+  }
+
+  onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
+    const control = this.getFormControl(index, formControlName);
+    control.setValue(new Date());
   }
 }

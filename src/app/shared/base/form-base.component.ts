@@ -45,6 +45,7 @@ export abstract class FormBaseComponent implements OnDestroy {
     controlName: string,
     customFormGroup?: FormGroup,
   ): Observable<any> {
-    return this.getControl(controlName, customFormGroup).valueChanges;
+    const control = this.getControl(controlName, customFormGroup);
+    return control ? control.valueChanges : new Observable(); // Tránh lỗi nếu control không tồn tại
   }
 }

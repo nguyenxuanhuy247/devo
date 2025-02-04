@@ -11,9 +11,13 @@ export interface IHttpResponse<T> {
   data: T;
 }
 
-export interface IOption {
+export interface IOption extends Record<string, unknown> {
   label: string;
   value: any;
+}
 
-  [s: string]: any;
+export interface IColumnHeaderConfigs extends Record<string, unknown> {
+  label: string;
+  value: string;
+  minWidth: number;
 }
