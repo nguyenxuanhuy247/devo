@@ -16,8 +16,13 @@ import { FormBaseComponent } from '../../shared';
 import { TimeTrackingService } from './time-tracking.service';
 import {
   EGetApiMode,
+  ICategoriesInIndependentDropdownResponseDTO,
+  IDayoffsInIndependentDropdownResponseDTO,
+  IIndependentDropdownResponseDTO,
   ILogWorkTableDataResponseDTO,
-  ITimeTrackingTableDataRequestDTO,
+  ITabsInIndependentDropdownResponseDTO,
+  ITimeTrackingDoGetRequestDTO,
+  ITimeTrackingDoPostRequestDTO,
 } from './time-tracking.dto';
 import { PaginatorModule } from 'primeng/paginator';
 import { combineLatest, filter, Subscription } from 'rxjs';
@@ -29,7 +34,9 @@ import {
   estimateHeaderColumns,
   FORM_GROUP_KEYS,
   IDependentDropDown,
+  IIndependentDropDownSignal,
   issuesHeaderColumns,
+  ITimeTrackingRowData,
   logWorkHeaderColumns,
   nullableObj,
   SELECT_FORM_GROUP_KEY,
@@ -38,7 +45,7 @@ import { TabsModule } from 'primeng/tabs';
 import { CreateFormComponent } from './create-form/create-form.component';
 import { FormatDatePipe } from '../../pipes';
 import { TooltipModule } from 'primeng/tooltip';
-import { EMode } from '../../contants/common.constant';
+import { EApiMethod, EMode } from '../../contants/common.constant';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { MenuItem } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -79,18 +86,21 @@ import { IOption } from '../../shared/interface/common.interface';
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  requestDTO = signal<ITimeTrackingTableDataRequestDTO>({
+  doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
+    method: EApiMethod.GET,
+    mode: EGetApiMode.TABLE_DATA,
     tabIndex: 0,
     startTime: null,
     endTime: null,
     pic: null,
-    mode: EGetApiMode.TABLE_DATA,
+  });
+  doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO>({
+    method: EApiMethod.POST,
+    id: null,
   });
 
   timeTrackingService = this.injector.get(TimeTrackingService);
   commonService = this.injector.get(CommonService);
-
-  selectOptions = signal<string[]>([]);
 
   subscription: Subscription = new Subscription();
 
@@ -149,6 +159,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.initSubscriptions();
 
     this.callAPIGetDependentDropdown(EGetApiMode.EMPLOYEES);
+    this.callAPIGetAllIndependentDropdown();
   }
 
   initSubscriptions() {
@@ -163,7 +174,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           filter((range) => range.every((date: Date) => !!date)),
         ),
       ).subscribe(([user, dateRange]) => {
-        this.requestDTO.update((oldValue) => ({
+        this.doGetRequestDTO.update((oldValue) => ({
           ...oldValue,
           pic: user,
           startTime: dateRange[0].toISOString(),
@@ -180,6 +191,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           if (!this.projectModuleDropdown()) {
             this.callAPIGetDependentDropdown(EGetApiMode.PROJECTS);
             this.callAPIGetDependentDropdown(EGetApiMode.MODULES);
+            this.callAPIGetDependentDropdown(EGetApiMode.MENUS);
+            this.callAPIGetDependentDropdown(EGetApiMode.SCREENS);
+            this.callAPIGetDependentDropdown(EGetApiMode.FEATURES);
+            this.callAPIGetDependentDropdown(EGetApiMode.DEPARTMENTS);
           }
         },
       ),
@@ -190,6 +205,14 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   employeeProjectDropDown = signal<IDependentDropDown>({});
   projectModuleDropdown = signal<IDependentDropDown>(null);
   moduleMenuDropdown = signal<IDependentDropDown>(null);
+  menuScreenDropdown = signal<IDependentDropDown>(null);
+  screenFeatureDropdown = signal<IDependentDropDown>(null);
+  departmentInterruptionReasonDropdown = signal<IDependentDropDown>(null);
+  independentDropdowns = signal<IIndependentDropDownSignal>({
+    tabs: null,
+    dayoffs: null,
+    categories: null,
+  });
 
   callAPIGetDependentDropdown(mode: EGetApiMode) {
     this.isLoading.set(true);
@@ -212,6 +235,9 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
                 'projectName',
               );
             this.employeeProjectDropDown.set(userProjectDropdown);
+            this.getControl(SELECT_FORM_GROUP_KEY.employee).setValue(
+              this.employeeOptions()[0].value,
+            );
             console.log('userProjectDropdown ', userProjectDropdown);
             break;
           }
@@ -236,25 +262,95 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
                 'menuName',
               );
             this.moduleMenuDropdown.set(moduleMenuDropdown);
-            console.log('moduleMenuDropdown ', moduleMenuDropdown);
+            console.log('moduleMenuDropdown', moduleMenuDropdown);
             break;
           }
           case EGetApiMode.MENUS: {
-            const menuScreenMenuDropdown =
+            console.log('menuScreenDropdown 111');
+            const menuScreenDropdown =
               this.commonService.convertToDependentDropdown(
                 mainList,
-                'moduleName',
-                'menus',
                 'menuName',
+                'screens',
+                'screenName',
               );
-            this.moduleMenuDropdown.set(menuScreenMenuDropdown);
-            console.log('moduleMenuDropdown ', menuScreenMenuDropdown);
+            this.menuScreenDropdown.set(menuScreenDropdown);
+            console.log('menuScreenDropdown ', menuScreenDropdown);
             break;
+          }
+          case EGetApiMode.SCREENS: {
+            const screenFeatureDropdown =
+              this.commonService.convertToDependentDropdown(
+                mainList,
+                'screenName',
+                'features',
+                'featureName',
+              );
+            this.screenFeatureDropdown.set(screenFeatureDropdown);
+            console.log('screenFeatureDropdown ', screenFeatureDropdown);
+            break;
+          }
+          case EGetApiMode.DEPARTMENTS: {
+            const departmentInterruptionReasonDropdown =
+              this.commonService.convertToDependentDropdown(
+                mainList,
+                'departmentName',
+                'interruptionReasons',
+                'interruptionReasonName',
+              );
+            this.departmentInterruptionReasonDropdown.set(
+              departmentInterruptionReasonDropdown,
+            );
+            console.log(
+              'screenFeatureDropdown ',
+              departmentInterruptionReasonDropdown,
+            );
           }
         }
 
-        // this.selectOptions.set(userList);
-        // this.getControl(SELECT_FORM_GROUP_KEY.employee).setValue(userList[0]);
+        this.isLoading.set(false);
+      });
+  }
+
+  callAPIGetAllIndependentDropdown() {
+    this.isLoading.set(true);
+    this.timeTrackingService
+      .getAllIndependentDropdownAsync({
+        mode: EGetApiMode.INDEPENDENT_DROPDOWN,
+      })
+      .pipe(
+        filter(
+          (obj: IIndependentDropdownResponseDTO) => Object.keys(obj).length > 0,
+        ),
+      )
+      .subscribe((obj: IIndependentDropdownResponseDTO) => {
+        const tabOptions = obj.tabs?.map(
+          (item: ITabsInIndependentDropdownResponseDTO) => ({
+            label: item.tabName,
+            value: item.tabName,
+          }),
+        );
+        const categoryOptions = obj.categories?.map(
+          (item: ICategoriesInIndependentDropdownResponseDTO) => ({
+            label: item.categoryName,
+            value: item.categoryName,
+          }),
+        );
+        const dayoffOptions = obj.dayoffs?.map(
+          (item: IDayoffsInIndependentDropdownResponseDTO) => ({
+            label: item.dayoff,
+            value: item.dayoff,
+          }),
+        );
+        this.independentDropdowns.update(
+          (oldValue: IIndependentDropDownSignal) => ({
+            ...oldValue,
+            tabs: tabOptions,
+            categories: categoryOptions,
+            dayoffs: dayoffOptions,
+          }),
+        );
+        console.log('obj ', obj);
         this.isLoading.set(false);
       });
   }
@@ -264,21 +360,35 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     return this.employeeProjectDropDown()[key];
   }
 
-  getDependentModuleDropDown(index: number, formControlName: string) {
+  getDependentModuleDropDown(formControlName: string) {
     const value = this.getControlValue(formControlName);
     return this.projectModuleDropdown()?.[value] || [];
   }
 
-  getDependentMenuDropDown(index: number, formControlName: string) {
+  getDependentDropDown(index: number, formControlName: string) {
     const value = this.getFormControl(index, formControlName).value;
-    console.log('555555 ', this.moduleMenuDropdown()?.[value]);
-    return this.moduleMenuDropdown()?.[value] || [];
+    let dropDownOptions: IDependentDropDown;
+    switch (formControlName) {
+      case FORM_GROUP_KEYS.module: {
+        dropDownOptions = this.moduleMenuDropdown();
+        break;
+      }
+      case FORM_GROUP_KEYS.menu: {
+        dropDownOptions = this.menuScreenDropdown();
+        break;
+      }
+      default: {
+        dropDownOptions = this.screenFeatureDropdown();
+        break;
+      }
+    }
+    return dropDownOptions?.[value] || [];
   }
 
   callAAIGetTableData() {
     this.isLoading.set(true);
     this.timeTrackingService
-      .getListAsync(this.requestDTO())
+      .getListAsync(this.doGetRequestDTO())
       .subscribe((response) => {
         response.data.forEach((rowData: ILogWorkTableDataResponseDTO) => {
           const formGroup = this.formBuilder.group({
@@ -337,4 +447,19 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   onCreate() {}
+
+  onUpdate(rowData: ITimeTrackingRowData) {}
+
+  onDelete(rowData: ITimeTrackingRowData) {
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      id: rowData.id,
+      method: EApiMethod.DELETE,
+    }));
+    this.timeTrackingService
+      .deleteItemAsync(this.doPostRequestDTO())
+      .subscribe((res) => {
+        console.log('delete', res);
+      });
+  }
 }

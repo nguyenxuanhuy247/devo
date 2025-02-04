@@ -1,4 +1,5 @@
 import { ID } from '../../shared/interface/common.interface';
+import { EApiMethod } from '../../contants/common.constant';
 
 export enum EGetApiMode {
   EMPLOYEES = 1,
@@ -7,8 +8,11 @@ export enum EGetApiMode {
   MENUS = 4,
   SCREENS = 5,
   FEATURES = 6,
-  TABLE_DATA = 1111,
-  DETAIL = 22222,
+  DEPARTMENTS = 7,
+  INDEPENDENT_DROPDOWN = 8,
+
+  TABLE_DATA = 10,
+  DETAIL = 11,
 }
 
 // 🡫🡫🡫🡫🡫 START REGION : Request DTO 🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫
@@ -16,12 +20,18 @@ export interface ITimeTrackingRequestDTO {
   mode: EGetApiMode;
 }
 
-export interface ITimeTrackingTableDataRequestDTO {
+export interface ITimeTrackingDoGetRequestDTO {
+  method: EApiMethod.GET;
+  mode: EGetApiMode;
   tabIndex: number;
   startTime: Date;
   endTime: Date;
   pic: string;
-  mode: EGetApiMode;
+}
+
+export interface ITimeTrackingDoPostRequestDTO {
+  method: EApiMethod.POST | EApiMethod.PUT | EApiMethod.DELETE;
+  id: ID;
 }
 
 // 🡩🡩🡩🡩🡩 END REGION : Request DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩
@@ -122,6 +132,27 @@ export interface IScreensResponseDTO {
 
 export interface IFeaturesInScreenResponseDTO {
   featureName: string;
+}
+
+export interface IIndependentDropdownResponseDTO {
+  tabs: ITabsInIndependentDropdownResponseDTO[];
+  categories: ICategoriesInIndependentDropdownResponseDTO[];
+  dayoffs: IDayoffsInIndependentDropdownResponseDTO[];
+}
+
+export interface ITabsInIndependentDropdownResponseDTO {
+  id: ID;
+  tabName: string;
+}
+
+export interface ICategoriesInIndependentDropdownResponseDTO {
+  id: ID;
+  categoryName: string;
+}
+
+export interface IDayoffsInIndependentDropdownResponseDTO {
+  id: ID;
+  dayoff: string;
 }
 
 // 🡩🡩🡩🡩🡩 END REGION : Response DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩

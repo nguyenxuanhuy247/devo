@@ -17,3 +17,10 @@ export enum EClosePopupCode {
   SAVE = 'save',
   CONFIRM = 'confirm',
 }
+
+export enum EApiMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  DELETE = 'DELETE',
+}

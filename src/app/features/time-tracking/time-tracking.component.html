@@ -88,11 +88,25 @@
                 <td>
                   <div class="flex align-items-center justify-content-between gap-1">
                     <p-button
-                      variant="outlined" severity="secondary" size="small" icon="pi pi-file-edit"
-                      aria-label="Chỉnh sửa" pTooltip="Chỉnh sửa" tooltipPosition="bottom" />
+                      variant="outlined"
+                      severity="secondary"
+                      size="small"
+                      icon="pi pi-file-edit"
+                      aria-label="Chỉnh sửa"
+                      pTooltip="Chỉnh sửa"
+                      tooltipPosition="bottom"
+                      (click)="onUpdate(rowData)"
+                    />
                     <p-button
-                      variant="outlined" severity="secondary" size="small" icon="pi pi-trash" aria-label="Xóa"
-                      pTooltip="Xóa" tooltipPosition="bottom" />
+                      variant="outlined"
+                      severity="secondary"
+                      size="small"
+                      icon="pi pi-trash"
+                      aria-label="Xóa"
+                      pTooltip="Xóa"
+                      tooltipPosition="bottom"
+                      (click)="onDelete(rowData)"
+                    />
                   </div>
                 </td>
               } @else {
@@ -104,7 +118,7 @@
             <td>
               <p-select
                 [formControl]="getFormControl(index, FORM_GROUP_KEYS.module)"
-                [options]="getDependentModuleDropDown(index, FORM_GROUP_KEYS.project)"
+                [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
                 optionLabel="label"
                 optionValue="value"
                 appendTo="body"
@@ -114,7 +128,7 @@
             <td>
               <p-select
                 [formControl]="getFormControl(index, FORM_GROUP_KEYS.menu)"
-                [options]="getDependentMenuDropDown(index, FORM_GROUP_KEYS.module)"
+                [options]="getDependentDropDown(index, FORM_GROUP_KEYS.module)"
                 optionLabel="label"
                 optionValue="value"
                 appendTo="body"
@@ -124,7 +138,7 @@
             <td>
               <p-select
                 [formControl]="getFormControl(index, FORM_GROUP_KEYS.screen)"
-                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                [options]="getDependentDropDown(index, FORM_GROUP_KEYS.menu)"
                 optionLabel="label"
                 optionValue="value"
                 appendTo="body"
@@ -134,7 +148,7 @@
             <td>
               <p-select
                 [formControl]="getFormControl(index, FORM_GROUP_KEYS.feature)"
-                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                [options]="getDependentDropDown(index, FORM_GROUP_KEYS.screen)"
                 optionLabel="label"
                 optionValue="value"
                 appendTo="body"
@@ -144,7 +158,7 @@
             <td>
               <p-select
                 [formControl]="getFormControl(index, FORM_GROUP_KEYS.category)"
-                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                [options]="independentDropdowns().categories"
                 optionLabel="label"
                 optionValue="value"
                 appendTo="body"

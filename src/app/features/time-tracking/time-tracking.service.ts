@@ -3,7 +3,11 @@ import { map, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { apiManager } from '../../contants/api.contant';
 import { CommonService } from '../../services';
-import { ITimeTrackingRequestDTO } from './time-tracking.dto';
+import {
+  IIndependentDropdownResponseDTO,
+  ITimeTrackingDoPostRequestDTO,
+  ITimeTrackingRequestDTO,
+} from './time-tracking.dto';
 import { IHttpResponse } from '../../shared/interface/common.interface';
 
 @Injectable({
@@ -60,7 +64,7 @@ export class TimeTrackingService {
     );
   }
 
-  deleteItemAsync(requestDTO: any): Observable<any> {
+  deleteItemAsync(requestDTO: ITimeTrackingDoPostRequestDTO): Observable<any> {
     return this.http.post(apiManager.DATABASE, requestDTO).pipe(
       map((response) => {
         return response;
@@ -75,6 +79,22 @@ export class TimeTrackingService {
 
     return this.http
       .get<IHttpResponse<any[]>>(apiManager.DATABASE + '?' + params)
+      .pipe(
+        map((response) => {
+          return response.data;
+        }),
+      );
+  }
+
+  getAllIndependentDropdownAsync(requestDTO: ITimeTrackingRequestDTO) {
+    const params = this.commonService.parseObjToParams(
+      this.commonService.getParamsNotEmpty(requestDTO),
+    );
+
+    return this.http
+      .get<IHttpResponse<IIndependentDropdownResponseDTO>>(
+        apiManager.DATABASE + '?' + params,
+      )
       .pipe(
         map((response) => {
           return response.data;

@@ -251,3 +251,9 @@ export const nullableObj: ITimeTrackingRowData = {
 export interface IDependentDropDown {
   [s: string]: IOption[];
 }
+
+export interface IIndependentDropDownSignal {
+  tabs: IOption[];
+  categories: IOption[];
+  dayoffs: IOption[];
+}
