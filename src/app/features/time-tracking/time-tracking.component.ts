@@ -26,7 +26,7 @@ import {
   ITimeTrackingDoPostRequestDTO,
 } from './time-tracking.dto';
 import { PaginatorModule } from 'primeng/paginator';
-import { combineLatest, filter, Subscription } from 'rxjs';
+import { catchError, combineLatest, EMPTY, filter, Subscription } from 'rxjs';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ToggleButton } from 'primeng/togglebutton';
@@ -400,6 +400,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.timeTrackingService
       .getListAsync(this.doGetRequestDTO())
       .subscribe((response) => {
+        this.formArray.clear();
+
         response.data.forEach((rowData: ILogWorkTableDataResponseDTO) => {
           const formGroup = this.formBuilder.group({
             ...rowData,
@@ -455,6 +457,27 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     return this.formArray?.at(index) as FormGroup;
   }
 
+  onCancelUpdateMode(index: number) {
+    this.mode.set(EMode.VIEW);
+    this.getFormGroup(index).patchValue({ mode: EMode.VIEW });
+  }
+
+  onSaveUpdate(index: number) {
+    const value = this.formArray?.at(index)?.value;
+    console.log('value ', value);
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.POST,
+      data: value,
+    }));
+
+    this.timeTrackingService
+      .createItemAsync(this.doPostRequestDTO())
+      .subscribe((response) => {
+        console.log('response 2222', response);
+      });
+  }
+
   onCancelCreateMode() {
     this.mode.set(EMode.VIEW);
     const lastIndex = this.formArray.length - 1;
@@ -475,22 +498,34 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.timeTrackingService
       .createItemAsync(this.doPostRequestDTO())
       .subscribe((response) => {
-        console.log('response', response);
+        console.log('response 2222', response);
       });
   }
 
-  onUpdate(rowData: ITimeTrackingRowData) {}
+  onOpenUpdateMode(index: number, rowData: ITimeTrackingRowData) {
+    this.mode.set(EMode.UPDATE);
+    const formGroup = this.getFormGroup(index);
+    formGroup.patchValue({ mode: EMode.UPDATE });
+  }
 
   onDelete(rowData: ITimeTrackingRowData) {
+    this.isLoading.set(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       id: rowData.id,
       method: EApiMethod.DELETE,
     }));
+
     this.timeTrackingService
       .deleteItemAsync(this.doPostRequestDTO())
-      .subscribe((res) => {
-        console.log('delete', res);
+      .pipe(
+        catchError((error: any) => {
+          this.isLoading.set(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((_) => {
+        this.callAAIGetTableData();
       });
   }
 

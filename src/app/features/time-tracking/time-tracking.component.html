@@ -99,7 +99,7 @@
                       aria-label="Chỉnh sửa"
                       pTooltip="Chỉnh sửa"
                       tooltipPosition="bottom"
-                      (click)="onUpdate(rowData)"
+                      (click)="onOpenUpdateMode(index, rowData)"
                     />
                     <p-button
                       variant="outlined"
@@ -261,28 +261,53 @@
             </td>
 
             <td>
-              <div class="flex align-items-center justify-content-between gap-1">
-                <p-button
-                  variant="outlined"
-                  severity="secondary"
-                  size="small"
-                  icon="pi pi-times"
-                  aria-label="Hủy"
-                  pTooltip="Hủy"
-                  tooltipPosition="bottom"
-                  (click)="onCancelCreateMode()"
-                />
-                <p-button
-                  variant="outlined"
-                  severity="secondary"
-                  size="small"
-                  icon="pi pi-save"
-                  aria-label="Lưu"
-                  pTooltip="Lưu"
-                  tooltipPosition="bottom"
-                  (click)="onSaveCreate(index)"
-                />
-              </div>
+              @if (mode() === EMode.CREATE) {
+                <div class="flex align-items-center justify-content-between gap-1">
+                  <p-button
+                    variant="outlined"
+                    severity="secondary"
+                    size="small"
+                    icon="pi pi-times"
+                    aria-label="Hủy"
+                    pTooltip="Hủy"
+                    tooltipPosition="bottom"
+                    (click)="onCancelCreateMode()"
+                  />
+                  <p-button
+                    variant="outlined"
+                    severity="secondary"
+                    size="small"
+                    icon="pi pi-save"
+                    aria-label="Lưu"
+                    pTooltip="Lưu"
+                    tooltipPosition="bottom"
+                    (click)="onSaveCreate(index)"
+                  />
+                </div>
+              } @else {
+                <div class="flex align-items-center justify-content-between gap-1">
+                  <p-button
+                    variant="outlined"
+                    severity="secondary"
+                    size="small"
+                    icon="pi pi-times"
+                    aria-label="Hủy"
+                    pTooltip="Hủy"
+                    tooltipPosition="bottom"
+                    (click)="onCancelUpdateMode(index)"
+                  />
+                  <p-button
+                    variant="outlined"
+                    severity="secondary"
+                    size="small"
+                    icon="pi pi-save"
+                    aria-label="Lưu"
+                    pTooltip="Lưu"
+                    tooltipPosition="bottom"
+                    (click)="onSaveUpdate(index)"
+                  />
+                </div>
+              }
             </td>
           }
         </tr>

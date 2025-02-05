@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { apiManager } from '../../contants/api.contant';
 import { CommonService } from '../../services';
 import {
@@ -48,45 +48,40 @@ export class TimeTrackingApiService {
       );
   }
 
-  // createItemAsync(requestDTO: any): Observable<any> {
-  //   const params = this.commonService.parseObjToParams(
-  //     this.commonService.getParamsNotEmpty(requestDTO),
-  //   );
-  //
-  //   return this.http
-  //     .get<IHttpResponse<any>>(apiManager.DATABASE + '?' + params)
-  //     .pipe(
-  //       map((response) => {
-  //         return response.data;
-  //       }),
-  //     );
-  // }
-
   createItemAsync(requestDTO: any): Observable<any> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(apiManager.DATABASE, requestDTO, { headers }).pipe(
-      map((response) => {
-        return response;
-      }),
-    );
+    return this.http
+      .post(apiManager.DATABASE, requestDTO, {
+        headers: { 'Content-Type': 'text/plain' },
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        }),
+      );
   }
 
   updateItemAsync(requestDTO: any): Observable<any> {
-    return this.http.post(apiManager.DATABASE, requestDTO).pipe(
-      map((response) => {
-        return response;
-      }),
-    );
+    return this.http
+      .post(apiManager.DATABASE, requestDTO, {
+        headers: { 'Content-Type': 'text/plain' },
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        }),
+      );
   }
 
   deleteItemAsync(requestDTO: ITimeTrackingDoPostRequestDTO): Observable<any> {
-    return this.http.post(apiManager.DATABASE, requestDTO).pipe(
-      map((response) => {
-        return response;
-      }),
-    );
+    return this.http
+      .post(apiManager.DATABASE, requestDTO, {
+        headers: { 'Content-Type': 'text/plain' },
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        }),
+      );
   }
 
   getDropdownListAsync(requestDTO: ITimeTrackingRequestDTO): Observable<any[]> {
