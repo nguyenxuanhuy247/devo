@@ -29,7 +29,6 @@ import { PaginatorModule } from 'primeng/paginator';
 import { catchError, combineLatest, EMPTY, filter, Subscription } from 'rxjs';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
-import { ToggleButton } from 'primeng/togglebutton';
 import {
   COLUMN_FIELD,
   estimateHeaderColumns,
@@ -59,6 +58,15 @@ import {
   IOption,
 } from '../../shared/interface/common.interface';
 import { WorkDurationDirective } from '../../directives';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import {
+  endOfDay,
+  endOfMonth,
+  endOfWeek,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns';
 
 @Component({
   selector: 'app-time-tracking',
@@ -76,7 +84,6 @@ import { WorkDurationDirective } from '../../directives';
     PaginatorModule,
     SelectModule,
     DatePickerModule,
-    ToggleButton,
     TabsModule,
     FormatDatePipe,
     TooltipModule,
@@ -89,6 +96,7 @@ import { WorkDurationDirective } from '../../directives';
     ButtonModule,
     WorkDurationDirective,
     InputTextModule,
+    RadioButtonModule,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
@@ -152,15 +160,16 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       [SELECT_FORM_GROUP_KEY.employee]: null,
       [SELECT_FORM_GROUP_KEY.project]: null,
       [SELECT_FORM_GROUP_KEY.dateRange]: null,
-      [SELECT_FORM_GROUP_KEY.quickDateRange]: null,
+      [SELECT_FORM_GROUP_KEY.quickDate]: 'TODAY',
       formArray: this.formBuilder.array([]),
     });
     this.formArray = this.formGroup.get('formArray') as FormArray;
 
-    this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
-      new Date(),
-      new Date(),
+    this.getControl(FORM_GROUP_KEYS.dateRange).setValue([
+      startOfDay(new Date()),
+      endOfDay(new Date()),
     ]);
+    this.getControl(SELECT_FORM_GROUP_KEY.dateRange).disable();
 
     // Phải gọi trước khi khởi tạo giá trị cho dateRange
     this.initSubscriptions();
@@ -207,6 +216,46 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         },
       ),
     );
+
+    this.subscription.add(
+      this.getControlValueChanges(SELECT_FORM_GROUP_KEY.quickDate).subscribe(
+        (dateString: string) => {
+          this.getControl(FORM_GROUP_KEYS.dateRange).disable({
+            emitEvent: false,
+          });
+
+          switch (dateString) {
+            case 'TODAY':
+              this.getControl(FORM_GROUP_KEYS.dateRange).setValue([
+                startOfDay(new Date()),
+                endOfDay(new Date()),
+              ]);
+              break;
+            case 'WEEK':
+              this.getControl(FORM_GROUP_KEYS.dateRange).setValue([
+                startOfWeek(new Date(), { weekStartsOn: 1 }),
+                endOfWeek(new Date(), { weekStartsOn: 1 }),
+              ]);
+              break;
+            case 'MONTH':
+              this.getControl(FORM_GROUP_KEYS.dateRange).setValue([
+                startOfMonth(new Date()),
+                endOfMonth(new Date()),
+              ]);
+              break;
+            default:
+              this.getControl(FORM_GROUP_KEYS.dateRange).enable({
+                emitEvent: false,
+              });
+          }
+          console.log('dateString ', dateString);
+        },
+      ),
+    );
+  }
+
+  formControl(index: number) {
+    return this.formArray.controls[index] as FormGroup;
   }
 
   employeeOptions = signal<IOption[]>([]);
@@ -246,7 +295,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
             this.getControl(SELECT_FORM_GROUP_KEY.employee).setValue(
               this.employeeOptions()[0].value,
             );
-            console.log('userProjectDropdown ', userProjectDropdown);
             break;
           }
           case EGetApiMode.PROJECTS: {
@@ -261,7 +309,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
             this.getControl(SELECT_FORM_GROUP_KEY.project).setValue(
               mainList[0]['projectName'],
             );
-            console.log('projectModuleDropdown ', projectModuleDropdown);
             break;
           }
           case EGetApiMode.MODULES: {
@@ -273,7 +320,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
                 'menuName',
               );
             this.moduleMenuDropdown.set(moduleMenuDropdown);
-            console.log('moduleMenuDropdown', moduleMenuDropdown);
             break;
           }
           case EGetApiMode.MENUS: {
@@ -285,7 +331,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
                 'screenName',
               );
             this.menuScreenDropdown.set(menuScreenDropdown);
-            console.log('menuScreenDropdown ', menuScreenDropdown);
             break;
           }
           case EGetApiMode.SCREENS: {
@@ -297,28 +342,23 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
                 'featureName',
               );
             this.screenFeatureDropdown.set(screenFeatureDropdown);
-            console.log('screenFeatureDropdown ', screenFeatureDropdown);
             break;
           }
-          case EGetApiMode.DEPARTMENTS: {
-            const departmentInterruptionReasonDropdown =
-              this.commonService.convertToDependentDropdown(
-                mainList,
-                'departmentName',
-                'interruptionReasons',
-                'interruptionReasonName',
+          case EGetApiMode.DEPARTMENTS:
+            {
+              const departmentInterruptionReasonDropdown =
+                this.commonService.convertToDependentDropdown(
+                  mainList,
+                  'departmentName',
+                  'interruptionReasons',
+                  'interruptionReasonName',
+                );
+              this.departmentInterruptionReasonDropdown.set(
+                departmentInterruptionReasonDropdown,
               );
-            this.departmentInterruptionReasonDropdown.set(
-              departmentInterruptionReasonDropdown,
-            );
-            console.log(
-              'screenFeatureDropdown ',
-              departmentInterruptionReasonDropdown,
-            );
-          }
+            }
+            this.isLoading.set(false);
         }
-
-        this.isLoading.set(false);
       });
   }
 
@@ -360,7 +400,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
             dayoffs: dayoffOptions,
           }),
         );
-        console.log('obj ', obj);
         this.isLoading.set(false);
       });
   }
@@ -410,6 +449,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           this.formArray.push(formGroup);
         });
 
+        this.formArrayData = this.formArray.value;
+
         this.isLoading.set(false);
       });
   }
@@ -432,9 +473,15 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     });
   }
 
+  trackByFn(index: number, item: any): any {
+    return item.id; // Hoặc giá trị duy nhất của hàng
+  }
+
   get formArrayObservable() {
     return this.formArray.valueChanges;
   }
+
+  formArrayData: any;
 
   onAddNewRow() {
     this.mode.set(EMode.CREATE);
@@ -445,8 +492,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       isLunchBreak: true,
     });
     this.formArray.push(formGroup);
-
-    console.log('this.formArray', this.formArray);
+    this.formArrayData = this.formArray.value;
   }
 
   getFormControl(index: number, formControlName: string): FormControl {
@@ -533,4 +579,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     const control = this.getFormControl(index, formControlName);
     control.setValue(new Date());
   }
+
+  protected readonly FormGroup = FormGroup;
 }

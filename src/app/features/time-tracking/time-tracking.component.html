@@ -1,49 +1,74 @@
 <div [formGroup]="formGroup" class="container grid">
-  <div class="w-full flex gap-3">  
+  <div class="w-full flex gap-3">
     <!-- BÊN TRÁI -->
     <div class="flex flex-1 gap-3">
       <div class="flex-1">
         <label for="employee" class="">Nhân viên</label>
         <div class="">
-          <p-select 
+          <p-select
             id="employee"
-            [formControlName]="SELECT_FORM_GROUP_KEY.employee" 
+            [formControlName]="SELECT_FORM_GROUP_KEY.employee"
             [options]="employeeOptions()"
-            placeholder="Chọn tên nhân viên" />
+            placeholder="Chọn tên nhân viên"
+          />
         </div>
       </div>
-    
+
       <div class="flex-1">
-        <label for="firstname4" class="">Dự án</label>
+        <label for="project" class="">Dự án</label>
         <div class="">
-          <p-select [formControlName]="SELECT_FORM_GROUP_KEY.project"
-            [options]="getDependentProjectDropDown(SELECT_FORM_GROUP_KEY.employee)" placeholder="Chọn dự án" />
+          <p-select
+            id="project"
+            [formControlName]="SELECT_FORM_GROUP_KEY.project"
+            [options]="getDependentProjectDropDown(SELECT_FORM_GROUP_KEY.employee)"
+            placeholder="Chọn dự án"
+          />
         </div>
       </div>
     </div>
 
     <!-- BÊN PHẢI -->
     <div class="flex-1 flex-col">
-      <span class="block">Thống kê theo : </span>
+      <label class="block">Thống kê theo : </label>
       <div class="flex gap-3">
-        <p-togglebutton
-          [formControlName]="FORM_GROUP_KEYS.quickDateRange"
-          offLabel="Hôm nay"
-          onLabel="Hôm nay"
-          styleClass="w-24"></p-togglebutton>
-        <p-togglebutton
-          [formControlName]="FORM_GROUP_KEYS.quickDateRange"
-          offLabel="Tuần này"
-          onLabel="Tuần này"
-          styleClass="w-24"></p-togglebutton>
-        <p-togglebutton
-          [formControlName]="FORM_GROUP_KEYS.quickDateRange"
-          offLabel="Tháng này"
-          onLabel="Tháng này"
-          styleClass="w-24"></p-togglebutton>
+        <div class="flex flex-wrap gap-4">
+          <div class="flex items-center">
+            <p-radiobutton
+              value="TODAY"
+              [formControlName]="SELECT_FORM_GROUP_KEY.quickDate"
+              inputId="today"></p-radiobutton>
+            <label for="today" class="ml-2">Hôm nay</label>
+          </div>
+
+          <div class="flex items-center">
+            <p-radiobutton
+              value="WEEK"
+              [formControlName]="SELECT_FORM_GROUP_KEY.quickDate"
+              inputId="week"></p-radiobutton>
+            <label for="week" class="ml-2">Tuần này</label>
+          </div>
+
+          <div class="flex items-center">
+            <p-radiobutton
+              value="MONTH"
+              [formControlName]="SELECT_FORM_GROUP_KEY.quickDate"
+              inputId="month"></p-radiobutton>
+            <label for="month" class="ml-2">Tháng này</label>
+          </div>
+
+          <div class="flex items-center">
+            <p-radiobutton
+              value="CUSTOM"
+              [formControlName]="SELECT_FORM_GROUP_KEY.quickDate"
+              inputId="custom"></p-radiobutton>
+            <label for="custom" class="ml-2">Tùy chỉnh</label>
+          </div>
+        </div>
+
         <p-datepicker
           class="ml-auto"
           [formControlName]="SELECT_FORM_GROUP_KEY.dateRange"
+          dateFormat="dd/mm/yy"
           selectionMode="range"></p-datepicker>
       </div>
     </div>
@@ -84,260 +109,283 @@
 
 
 <ng-template #tableDataTemplate>
-  <div>
-    <p-table
-      [value]="formArrayObservable | async"
-      responsiveLayout="scroll"
-    >
-      <ng-template pTemplate="header">
-        <tr>
-          @for (col of headerColumns(); track col.value) {
-            <th [style.min-width.px]="col.minWidth">{{ col.label }}</th>
-          }
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="body" let-rowData let-index="rowIndex">
-        <tr>
-          @if (rowData.mode === EMode.VIEW) {
+  <div [formGroup]="formGroup">
+    <div [formArrayName]="'formArray'">
+      <p-table
+        [value]="formArrayData"
+        responsiveLayout="scroll"
+      >
+        <ng-template pTemplate="header">
+          <tr>
             @for (col of headerColumns(); track col.value) {
-              <!-- Chế độ VIEW chỉ hiển thị text -->
-              @if (col.value === COLUMN_FIELD.startTime || col.value === COLUMN_FIELD.endTime) {
-                <td>{{ rowData[col.value] | formatDate }}</td>
-              } @else if (col.value === COLUMN_FIELD.actions) {
-                <td>
+              <th [style.min-width.px]="col.minWidth">{{ col.label }}</th>
+            }
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-rowData let-index="rowIndex">
+          @if (rowData.mode === EMode.VIEW) {
+            <tr>
+              @for (col of headerColumns(); track col.value) {
+                <!-- Chế độ VIEW chỉ hiển thị text -->
+                @if (col.value === COLUMN_FIELD.startTime || col.value === COLUMN_FIELD.endTime) {
+                  <td>{{ rowData[col.value] | formatDate }}</td>
+                } @else if (col.value === COLUMN_FIELD.actions) {
+                  <td>
+                    <div class="flex align-items-center justify-content-between gap-1">
+                      <p-button
+                        variant="outlined"
+                        severity="secondary"
+                        size="small"
+                        icon="pi pi-file-edit"
+                        aria-label="Chỉnh sửa"
+                        pTooltip="Chỉnh sửa"
+                        tooltipPosition="bottom"
+                        (click)="onOpenUpdateMode(index, rowData)"
+                      />
+                      <p-button
+                        variant="outlined"
+                        severity="secondary"
+                        size="small"
+                        icon="pi pi-trash"
+                        aria-label="Xóa"
+                        pTooltip="Xóa"
+                        tooltipPosition="bottom"
+                        (click)="onDelete(rowData)"
+                      />
+                    </div>
+                  </td>
+                } @else {
+                  <td>{{ rowData[col.value] }}</td>
+                }
+              }
+            </tr>
+          } @else {
+            <!-- Chế độ CREATE / UPDATE hiển thị form -->
+            <tr>
+              <td>
+                <div [formGroup]="getFormGroup(index)">
+                  <p-select
+                    [formControlName]="FORM_GROUP_KEYS.module"
+                    [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                  ></p-select>
+                </div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)">
+                  <p-select
+                    [formControlName]="FORM_GROUP_KEYS.menu"
+                    [options]="getDependentDropDown(index, FORM_GROUP_KEYS.module)"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                  ></p-select>
+                </div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)">
+                  <p-select
+                    [formControlName]="FORM_GROUP_KEYS.screen"
+                    [options]="getDependentDropDown(index, FORM_GROUP_KEYS.menu)"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                  ></p-select>
+                </div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)">
+                  <p-select
+                    [formControl]="getFormControl(index, FORM_GROUP_KEYS.feature)"
+                    [options]="getDependentDropDown(index, FORM_GROUP_KEYS.screen)"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                  ></p-select>
+                </div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)">
+                  <p-select
+                    [formControlName]="FORM_GROUP_KEYS.category"
+                    [options]="independentDropdowns().categories"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                  ></p-select>
+                </div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)">
+                  <textarea
+                    [formControl]="getFormControl(index, FORM_GROUP_KEYS.workContent)"
+                    rows="1"
+                    cols="30"
+                    pTextarea
+                    placeholder="Nhập nội dung công việc"
+                  ></textarea>
+                </div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)" class="flex align-items-center justify-content-center gap-1">
+                  <p-button
+                    variant="outlined"
+                    severity="secondary"
+                    size="small"
+                    icon="pi pi-clock"
+                    aria-label="Thời gian hiện tại"
+                    pTooltip="Thời gian hiện tại"
+                    tooltipPosition="bottom"
+                    (click)="onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.startTime)"
+                  />
+                  <p-datepicker
+                    [formControlName]="FORM_GROUP_KEYS.startTime"
+                    [showTime]="true"
+                    hourFormat="24"
+                    dateFormat="dd/mm"
+                    appendTo="body"
+                  >
+                  </p-datepicker>
+                </div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)" class="flex align-items-center justify-content-center gap-1">
+                  <p-button
+                    variant="outlined"
+                    severity="secondary"
+                    size="small"
+                    icon="pi pi-clock"
+                    aria-label="Thời gian hiện tại"
+                    pTooltip="Thời gian hiện tại"
+                    tooltipPosition="bottom"
+                    (click)="onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.endTime)"
+                  />
+
+                  <p-datepicker
+                    [formControlName]="FORM_GROUP_KEYS.endTime"
+                    [showTime]="true"
+                    hourFormat="24"
+                    dateFormat="dd/mm"
+                    appendTo="body"
+                  >
+                  </p-datepicker>
+                </div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)">
+                  <input
+                    [formControlName]="FORM_GROUP_KEYS.duration"
+                    id="duration"
+                    pInputText
+                    appWorkDuration
+                    [formGroupControl]="getFormGroup(index)"
+                  /></div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)">
+                  <p-checkbox
+                    [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
+                    [binary]="true"
+                  />
+                </div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)">
+                  <p-checkbox
+                    [formControlName]="FORM_GROUP_KEYS.isSolveIssue"
+                    [binary]="true"
+                  />
+                </div>
+              </td>
+
+              <td>
+                <div [formGroup]="getFormGroup(index)">
+                  <p-select
+                    [formControlName]="FORM_GROUP_KEYS.encounteredIssue"
+                    [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                  ></p-select>
+                </div>
+              </td>
+
+              <td>
+                @if (mode() === EMode.CREATE) {
                   <div class="flex align-items-center justify-content-between gap-1">
                     <p-button
                       variant="outlined"
                       severity="secondary"
                       size="small"
-                      icon="pi pi-file-edit"
-                      aria-label="Chỉnh sửa"
-                      pTooltip="Chỉnh sửa"
+                      icon="pi pi-times"
+                      aria-label="Hủy"
+                      pTooltip="Hủy"
                       tooltipPosition="bottom"
-                      (click)="onOpenUpdateMode(index, rowData)"
+                      (click)="onCancelCreateMode()"
                     />
                     <p-button
                       variant="outlined"
                       severity="secondary"
                       size="small"
-                      icon="pi pi-trash"
-                      aria-label="Xóa"
-                      pTooltip="Xóa"
+                      icon="pi pi-save"
+                      aria-label="Lưu"
+                      pTooltip="Lưu"
                       tooltipPosition="bottom"
-                      (click)="onDelete(rowData)"
+                      (click)="onSaveCreate(index)"
                     />
                   </div>
-                </td>
-              } @else {
-                <td>{{ rowData[col.value] }}</td>
-              }
-            }
-          } @else {
-            <!-- Chế độ CREATE / UPDATE hiển thị form -->
-            <td>
-              <p-select
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.module)"
-                [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-              ></p-select>
-            </td>
-
-            <td>
-              <p-select
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.menu)"
-                [options]="getDependentDropDown(index, FORM_GROUP_KEYS.module)"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-              ></p-select>
-            </td>
-
-            <td>
-              <p-select
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.screen)"
-                [options]="getDependentDropDown(index, FORM_GROUP_KEYS.menu)"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-              ></p-select>
-            </td>
-
-            <td>
-              <p-select
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.feature)"
-                [options]="getDependentDropDown(index, FORM_GROUP_KEYS.screen)"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-              ></p-select>
-            </td>
-
-            <td>
-              <p-select
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.category)"
-                [options]="independentDropdowns().categories"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-              ></p-select>
-            </td>
-
-            <td>
-              <textarea
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.workContent)"
-                rows="1"
-                cols="30"
-                pTextarea
-                placeholder="Nhập nội dung công việc"
-              ></textarea>
-            </td>
-
-            <td>
-              <div class="flex align-items-center justify-content-center gap-1">
-                <p-button
-                  variant="outlined"
-                  severity="secondary"
-                  size="small"
-                  icon="pi pi-clock"
-                  aria-label="Thời gian hiện tại"
-                  pTooltip="Thời gian hiện tại"
-                  tooltipPosition="bottom"
-                  (click)="onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.startTime)"
-                />
-                <p-datepicker
-                  [formControl]="getFormControl(index, FORM_GROUP_KEYS.startTime)"
-                  [showTime]="true"
-                  hourFormat="24"
-                  dateFormat="dd/mm"
-                  appendTo="body"
-                >
-                </p-datepicker>
-              </div>
-            </td>
-
-            <td>
-              <div class="flex align-items-center justify-content-center gap-1">
-                <p-button
-                  variant="outlined"
-                  severity="secondary"
-                  size="small"
-                  icon="pi pi-clock"
-                  aria-label="Thời gian hiện tại"
-                  pTooltip="Thời gian hiện tại"
-                  tooltipPosition="bottom"
-                  (click)="onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.endTime)"
-                />
-
-                <p-datepicker
-                  [formControl]="getFormControl(index, FORM_GROUP_KEYS.endTime)"
-                  [showTime]="true"
-                  hourFormat="24"
-                  dateFormat="dd/mm"
-                  appendTo="body"
-                >
-                </p-datepicker>
-              </div>
-            </td>
-
-            <td>
-              <input
-                id="duration"
-                pInputText
-                appWorkDuration
-                [formGroupControl]="getFormGroup(index)"
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.duration)"
-              />
-            </td>
-
-            <td>
-              <p-checkbox
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.isLunchBreak)"
-                [binary]="true"
-              />
-            </td>
-
-            <td>
-              <p-checkbox
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.isSolveIssue)"
-                [binary]="true"
-              />
-            </td>
-
-            <td>
-              <p-select
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.encounteredIssue)"
-                [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-              ></p-select>
-            </td>
-
-            <td>
-              @if (mode() === EMode.CREATE) {
-                <div class="flex align-items-center justify-content-between gap-1">
-                  <p-button
-                    variant="outlined"
-                    severity="secondary"
-                    size="small"
-                    icon="pi pi-times"
-                    aria-label="Hủy"
-                    pTooltip="Hủy"
-                    tooltipPosition="bottom"
-                    (click)="onCancelCreateMode()"
-                  />
-                  <p-button
-                    variant="outlined"
-                    severity="secondary"
-                    size="small"
-                    icon="pi pi-save"
-                    aria-label="Lưu"
-                    pTooltip="Lưu"
-                    tooltipPosition="bottom"
-                    (click)="onSaveCreate(index)"
-                  />
-                </div>
-              } @else {
-                <div class="flex align-items-center justify-content-between gap-1">
-                  <p-button
-                    variant="outlined"
-                    severity="secondary"
-                    size="small"
-                    icon="pi pi-times"
-                    aria-label="Hủy"
-                    pTooltip="Hủy"
-                    tooltipPosition="bottom"
-                    (click)="onCancelUpdateMode(index)"
-                  />
-                  <p-button
-                    variant="outlined"
-                    severity="secondary"
-                    size="small"
-                    icon="pi pi-save"
-                    aria-label="Lưu"
-                    pTooltip="Lưu"
-                    tooltipPosition="bottom"
-                    (click)="onSaveUpdate(index)"
-                  />
-                </div>
-              }
-            </td>
+                } @else {
+                  <div class="flex align-items-center justify-content-between gap-1">
+                    <p-button
+                      variant="outlined"
+                      severity="secondary"
+                      size="small"
+                      icon="pi pi-times"
+                      aria-label="Hủy"
+                      pTooltip="Hủy"
+                      tooltipPosition="bottom"
+                      (click)="onCancelUpdateMode(index)"
+                    />
+                    <p-button
+                      variant="outlined"
+                      severity="secondary"
+                      size="small"
+                      icon="pi pi-save"
+                      aria-label="Lưu"
+                      pTooltip="Lưu"
+                      tooltipPosition="bottom"
+                      (click)="onSaveUpdate(index)"
+                    />
+                  </div>
+                }
+              </td>
+            </tr>
           }
-        </tr>
-      </ng-template>
-    </p-table>
+        </ng-template>
+      </p-table>
 
-    <!-- Nút Thêm mới -->
-    @if (mode() === EMode.VIEW) {
-      <div class="flex justify-content-center">
-        <p-button
-          (onClick)="onAddNewRow()"
-          icon="pi pi-plus"
-          label="Thêm mới" />
-      </div>
-    }
+      <!-- Nút Thêm mới -->
+      @if (mode() === EMode.VIEW) {
+        <div class="flex justify-content-center">
+          <p-button
+            (onClick)="onAddNewRow()"
+            icon="pi pi-plus"
+            label="Thêm mới" />
+        </div>
+      }
+    </div>
   </div>
 </ng-template>

@@ -17,11 +17,11 @@ export const httpResponseInterceptor: HttpInterceptorFn = (req, next) => {
 
         if (response) {
           if (response.errorCode === EErrorCode.SUCCESS) {
-            messageService.add({
-              severity: 'success',
-              summary: 'Thành công',
-              detail: response?.message,
-            });
+            // messageService.add({
+            //   severity: 'success',
+            //   summary: 'Thành công',
+            //   detail: response?.message,
+            // });
           } else {
             messageService.add({
               severity: 'error',

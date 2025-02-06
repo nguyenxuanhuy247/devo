@@ -13,7 +13,7 @@ export interface ISelectFormGroup {
   employee: string;
   project: string;
   dateRange: [Date, Date];
-  quickDateRange: any;
+  quickDate: 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'CUSTOM';
 }
 
 export const TIME_TRACKING_ROW_DATA_KEYS =
