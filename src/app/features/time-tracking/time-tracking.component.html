@@ -1,38 +1,54 @@
 <div [formGroup]="formGroup" class="container grid">
-  <div class="col-12">
-    <div class="card flex justify-content-between">
-      <p-select
-        [formControlName]="SELECT_FORM_GROUP_KEY.employee"
-        [options]="employeeOptions()"
-        placeholder="Chọn tên nhân viên" />
+  <div class="w-full flex gap-3">  
+    <!-- BÊN TRÁI -->
+    <div class="flex flex-1 gap-3">
+      <div class="flex-1">
+        <label for="employee" class="">Nhân viên</label>
+        <div class="">
+          <p-select 
+            id="employee"
+            [formControlName]="SELECT_FORM_GROUP_KEY.employee" 
+            [options]="employeeOptions()"
+            placeholder="Chọn tên nhân viên" />
+        </div>
+      </div>
+    
+      <div class="flex-1">
+        <label for="firstname4" class="">Dự án</label>
+        <div class="">
+          <p-select [formControlName]="SELECT_FORM_GROUP_KEY.project"
+            [options]="getDependentProjectDropDown(SELECT_FORM_GROUP_KEY.employee)" placeholder="Chọn dự án" />
+        </div>
+      </div>
+    </div>
 
-      <p-select
-        [formControlName]="SELECT_FORM_GROUP_KEY.project"
-        [options]="getDependentProjectDropDown(SELECT_FORM_GROUP_KEY.employee)"
-        placeholder="Chọn dự án" />
-
-
-      <span>Thống kê theo : </span>
-      <p-togglebutton
-        [formControlName]="FORM_GROUP_KEYS.quickDateRange"
-        offLabel="Hôm nay"
-        onLabel="Hôm nay"
-        styleClass="w-24"></p-togglebutton>
-      <p-togglebutton
-        [formControlName]="FORM_GROUP_KEYS.quickDateRange"
-        offLabel="Tuần này"
-        onLabel="Tuần này"
-        styleClass="w-24"></p-togglebutton>
-      <p-togglebutton
-        [formControlName]="FORM_GROUP_KEYS.quickDateRange"
-        offLabel="Tháng này"
-        onLabel="Tháng này"
-        styleClass="w-24"></p-togglebutton>
-      <p-datepicker
-        [formControlName]="SELECT_FORM_GROUP_KEY.dateRange"
-        selectionMode="range"></p-datepicker>
+    <!-- BÊN PHẢI -->
+    <div class="flex-1 flex-col">
+      <span class="block">Thống kê theo : </span>
+      <div class="flex gap-3">
+        <p-togglebutton
+          [formControlName]="FORM_GROUP_KEYS.quickDateRange"
+          offLabel="Hôm nay"
+          onLabel="Hôm nay"
+          styleClass="w-24"></p-togglebutton>
+        <p-togglebutton
+          [formControlName]="FORM_GROUP_KEYS.quickDateRange"
+          offLabel="Tuần này"
+          onLabel="Tuần này"
+          styleClass="w-24"></p-togglebutton>
+        <p-togglebutton
+          [formControlName]="FORM_GROUP_KEYS.quickDateRange"
+          offLabel="Tháng này"
+          onLabel="Tháng này"
+          styleClass="w-24"></p-togglebutton>
+        <p-datepicker
+          class="ml-auto"
+          [formControlName]="SELECT_FORM_GROUP_KEY.dateRange"
+          selectionMode="range"></p-datepicker>
+      </div>
     </div>
   </div>
+
 
   <div class="col-12">
     <p-tabs (valueChange)="onTabChange($event)" [value]="activeTabIndex()">
