@@ -19,6 +19,7 @@ import {
   EGetApiMode,
   ICategoriesInIndependentDropdownResponseDTO,
   IDayoffsInIndependentDropdownResponseDTO,
+  IEmployeeResponseDTO,
   IIndependentDropdownResponseDTO,
   ILogWorkTableDataResponseDTO,
   ITabsInIndependentDropdownResponseDTO,
@@ -50,7 +51,7 @@ import {
 } from './time-tracking.model';
 import { TabsModule } from 'primeng/tabs';
 import { CreateFormComponent } from './create-form/create-form.component';
-import { FormatDatePipe } from '../../pipes';
+import { FormatDatePipe, RoundPipe } from '../../pipes';
 import { TooltipModule } from 'primeng/tooltip';
 import { EApiMethod, EMode } from '../../contants/common.constant';
 import { SplitButtonModule } from 'primeng/splitbutton';
@@ -104,6 +105,7 @@ import {
     WorkDurationDirective,
     InputTextModule,
     RadioButtonModule,
+    RoundPipe,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
@@ -112,10 +114,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
-    tabIndex: 0,
+    employee: null,
+    project: null,
     startTime: null,
     endTime: null,
-    pic: null,
   });
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO>({
     method: EApiMethod.POST,
@@ -129,12 +131,12 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   subscription: Subscription = new Subscription();
 
   SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
-  activeTabIndex = signal<number>(1);
+  activeTabIndex = signal<string>('Log work');
   headerColumns = computed<IColumnHeaderConfigs[]>(() => {
     switch (this.activeTabIndex()) {
-      case 0:
+      case 'Dự toán':
         return estimateHeaderColumns;
-      case 1:
+      case 'Log work':
         return logWorkHeaderColumns;
       default:
         return issuesHeaderColumns;
@@ -154,6 +156,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   ];
 
   isLoading = signal(false);
+  tableData: ITimeTrackingRowData[] = [];
+
   formArray!: FormArray;
 
   FORM_GROUP_KEYS = FORM_GROUP_KEYS;
@@ -165,6 +169,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   ngOnInit() {
     this.formGroup = this.formBuilder.group({
       [SELECT_FORM_GROUP_KEY.employee]: null,
+      [SELECT_FORM_GROUP_KEY.employeeLevel]: null,
       [SELECT_FORM_GROUP_KEY.project]: null,
       [SELECT_FORM_GROUP_KEY.dateRange]: null,
       [SELECT_FORM_GROUP_KEY.quickDate]: 'TODAY',
@@ -178,8 +183,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.initSubscriptions();
 
     this.callAPIGetDependentDropdown();
-
-    this.onAddNewRow();
   }
 
   initSubscriptions() {
@@ -190,19 +193,34 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.subscription.add(
       combineLatest(
         this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employee),
+        this.getControlValueChanges(SELECT_FORM_GROUP_KEY.project),
         this.getControlValueChanges(SELECT_FORM_GROUP_KEY.dateRange).pipe(
           filter((range) => range.every((date: Date) => !!date)),
         ),
-      ).subscribe(([user, dateRange]) => {
+      ).subscribe(([employee, project, dateRange]) => {
         this.doGetRequestDTO.update((oldValue) => ({
           ...oldValue,
-          pic: user,
+          employee: employee,
+          project: project,
           startTime: dateRange[0].toISOString(),
           endTime: dateRange[1].toISOString(),
         }));
 
         this.callAPIGetTableData();
       }),
+    );
+    this.subscription.add(
+      this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employee).subscribe(
+        (employeeName: string) => {
+          const employeeLevel = this.employeeList()?.find(
+            (employee) => employee.employeeName === employeeName,
+          )?.levelName;
+
+          this.getControl(SELECT_FORM_GROUP_KEY.employeeLevel).setValue(
+            employeeLevel,
+          );
+        },
+      ),
     );
 
     this.subscription.add(
@@ -253,10 +271,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     );
   }
 
-  formControl(index: number) {
-    return this.formArray.controls[index] as FormGroup;
-  }
-
   employeeOptions = signal<IOption[]>([]);
   employeeProjectDropDown = signal<IDependentDropDown>({});
   projectModuleDropdown = signal<IDependentDropDown>(null);
@@ -268,6 +282,15 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     tabs: null,
     dayoffs: null,
     categories: null,
+  });
+  employeeList = signal<IEmployeeResponseDTO[]>([]);
+  employeeLevel = computed(() => {
+    const employeeName: string = this.getControlValue(
+      this.FORM_GROUP_KEYS.employee,
+    );
+    return this.employeeList()?.find(
+      (employee) => employee.employeeName === employeeName,
+    )?.levelName;
   });
 
   callAPIGetDependentDropdown() {
@@ -298,14 +321,14 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
     forkJoin(apiObject).subscribe((result) => {
       // Nhân viên
-      const employees = result.employees;
-      const options = employees?.map((item: any) => ({
+      this.employeeList.set(result.employees);
+      const options = this.employeeList()?.map((item: any) => ({
         label: item['username'],
         value: item['username'],
       }));
       this.employeeOptions.set(options);
       const userProjectDropdown = this.commonService.convertToDependentDropdown(
-        employees,
+        this.employeeList(),
         'username',
         'projects',
         'projectName',
@@ -454,9 +477,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.timeTrackingService
       .getListAsync(this.doGetRequestDTO())
       .subscribe((response) => {
+        console.log('response', response);
         this.clearFormArrayKeepFirst(this.formArray);
-        // FIXME - Lỗi API tải dữ liệu về
-        response.data.forEach((rowData: ILogWorkTableDataResponseDTO) => {
+
+        response.forEach((rowData: ILogWorkTableDataResponseDTO) => {
           const formGroup = this.formBuilder.group({
             ...rowData,
             mode: EMode.VIEW,
@@ -478,7 +502,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   onTabChange(value: unknown) {
-    this.activeTabIndex.set(value as number);
+    this.activeTabIndex.set(value as string);
   }
 
   openCreateDrawer() {
@@ -495,23 +519,19 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     });
   }
 
-  trackByFn(index: number, item: any): any {
-    return item.id; // Hoặc giá trị duy nhất của hàng
-  }
-
-  get formArrayObservable() {
-    return this.formArray.valueChanges;
-  }
-
-  tableData: ITimeTrackingRowData[];
-
   onAddNewRow() {
     this.mode.set(EMode.CREATE);
-    const formGroup = this.formBuilder.group({ ...nullableObj });
+    const formGroup = this.formBuilder.group<ITimeTrackingRowData>({
+      ...nullableObj,
+    });
     formGroup.setValue({
       ...nullableObj,
       mode: EMode.CREATE,
+      tab: this.activeTabIndex(),
+      employee: this.getControlValue(this.FORM_GROUP_KEYS.employee),
+      employeeLevel: this.getControlValue(this.FORM_GROUP_KEYS.employeeLevel),
       isLunchBreak: true,
+      createdDate: new Date(),
     });
     this.formArray.push(formGroup);
     this.tableData = this.formArray.value;
@@ -605,6 +625,4 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   onReload() {
     this.callAPIGetTableData();
   }
-
-  protected readonly FormGroup = FormGroup;
 }

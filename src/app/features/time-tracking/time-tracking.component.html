@@ -73,17 +73,17 @@
       </div>
     </div>
 
-    <p-button label="Tải lại" icon="pi pi-refresh" (click)="onReload()"/>
+    <p-button label="Tải lại" icon="pi pi-refresh" (click)="onReload()" />
   </div>
 
 
   <div class="col-12">
     <p-tabs (valueChange)="onTabChange($event)" [value]="activeTabIndex()">
       <p-tablist>
-        <p-tab [value]="0">Dự toán</p-tab>
-        <p-tab [value]="1">Log work</p-tab>
-        <p-tab [value]="2">Vấn đề</p-tab>
-        <p-tab [value]="3">Bug & Improvement</p-tab>
+        <p-tab value="Dự toán">Dự toán</p-tab>
+        <p-tab value="Log work">Log work</p-tab>
+        <p-tab value="Vấn đề">Vấn đề</p-tab>
+        <p-tab value="Log work">Bug & Improvement</p-tab>
       </p-tablist>
       <p-tabpanels>
         <p-tabpanel [value]="activeTabIndex()">
@@ -132,6 +132,8 @@
                 <!-- Chế độ VIEW chỉ hiển thị text -->
                 @if (col.value === COLUMN_FIELD.startTime || col.value === COLUMN_FIELD.endTime) {
                   <td>{{ rowData[col.value] | formatDate }}</td>
+                } @else if (col.value === COLUMN_FIELD.duration) {
+                  <td>{{ rowData[col.value] | roundNumber }}</td>
                 } @else if (col.value === COLUMN_FIELD.actions) {
                   <td>
                     <div class="flex align-items-center justify-content-between gap-1">

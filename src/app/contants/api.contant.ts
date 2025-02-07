@@ -4,3 +4,7 @@ const APP_SCRIPT =
 export const apiManager = {
   DATABASE: APP_SCRIPT,
 };
+
+export const message = {
+  serverError: 'Lỗi Server, báo Nguyễn Xuân Huy để sửa',
+};

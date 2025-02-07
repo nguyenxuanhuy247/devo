@@ -11,6 +11,7 @@ export const SELECT_FORM_GROUP_KEY =
 
 export interface ISelectFormGroup {
   employee: string;
+  employeeLevel: string;
   project: string;
   dateRange: [Date, Date];
   quickDate: 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'CUSTOM';
@@ -26,8 +27,8 @@ export interface ITimeTrackingRowData {
   mode: EMode;
   id: ID;
   project: string;
-  pic: string;
-  picLevel: string;
+  employee: string;
+  employeeLevel: string;
   tab: string;
   module: string;
   menu: string;
@@ -44,7 +45,7 @@ export interface ITimeTrackingRowData {
   isLunchBreak: boolean;
   isProgressBlock: boolean;
   notes: string;
-  createdDate: string;
+  createdDate: Date;
 }
 
 export interface IFormGroup extends ITimeTrackingRowData {
@@ -236,37 +237,12 @@ export const issuesHeaderColumns: IColumnHeaderConfigs[] = [
   },
 ];
 
-// export enum COLUMN_FIELD {
-//   ID = 'id',
-//   PROJECT = 'project',
-//   PIC = 'pic',
-//   PIC_LEVEL = 'picLevel',
-//   TAB = 'tab',
-//   MODULE = 'module',
-//   MENU = 'menu',
-//   SCREEN = 'screen',
-//   FEATURE = 'feature',
-//   CATEGORY = 'category',
-//   WORK_CONTENT = 'workContent',
-//   IS_SOLVE_ISSUE = 'isSolveIssue',
-//   ENCOUNTERED_ISSUE = 'encounteredIssue',
-//   INTERRUPTION_REASON = 'interruptionReason',
-//   START_TIME = 'startTime',
-//   END_TIME = 'endTime',
-//   DURATION = 'duration',
-//   IS_LUNCH_BREAK = 'isLunchBreak',
-//   IS_PROGRESS_BLOCK = 'isProgressBlock',
-//   NOTES = 'notes',
-//   CREATED_DATE = 'createdDate',
-//   ACTIONS = 'actions',
-// }
-
 export const nullableObj: ITimeTrackingRowData = {
   mode: EMode.VIEW,
   id: null,
   project: null,
-  pic: null,
-  picLevel: null,
+  employee: null,
+  employeeLevel: null,
   tab: null,
   module: null,
   menu: null,

@@ -24,10 +24,10 @@ export interface ITimeTrackingRequestDTO {
 export interface ITimeTrackingDoGetRequestDTO {
   method: EApiMethod.GET;
   mode: EGetApiMode;
-  tabIndex: number;
+  employee: string;
+  project: string;
   startTime: Date;
   endTime: Date;
-  pic: string;
 }
 
 export interface ITimeTrackingDoPostRequestDTO {
@@ -67,24 +67,24 @@ export interface ILogWorkTableDataResponseDTO {
   createdDate: string;
 }
 
-export interface IUsersResponseDTO {
+export interface IEmployeeResponseDTO {
   id: ID;
   employeeName: string;
   employeeCode: number;
   username: string;
   email: string;
   levelName: string;
-  projects: IProjectsInUserResponseDTO[];
+  projects: IProjectInEmployeeResponseDTO[];
 }
 
-export interface IProjectsInUserResponseDTO {
+export interface IProjectInEmployeeResponseDTO {
   projectName: string;
   fk_modules: string;
 }
 
-export interface IProjectsResponseDTO {
+export interface IProjectResponseDTO {
   id: ID;
-  projectName: 'VOffice';
+  projectName: string;
   modules: IModulesInProjectResponseDTO[];
 }
 

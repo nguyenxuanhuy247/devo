@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { catchError, EMPTY, map, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { apiManager } from '../../contants/api.contant';
+import { apiManager, message } from '../../contants/api.contant';
 import { CommonService } from '../../services';
 import {
   IIndependentDropdownResponseDTO,
@@ -30,13 +30,14 @@ export class TimeTrackingApiService {
       .get<IHttpResponse<any>>(apiManager.DATABASE + '?' + params)
       .pipe(
         map((response) => {
+          console.log('service', response);
           return response.data;
         }),
         catchError((error: any) => {
           this.messageService.add({
             severity: 'error',
             summary: 'Thất bại',
-            detail: 'Xảy ra lỗi khi tải dữ liệu',
+            detail: message.serverError,
           });
 
           return EMPTY;
