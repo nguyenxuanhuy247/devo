@@ -29,7 +29,7 @@
 
     <!-- BÊN PHẢI -->
     <div class="flex-1 flex-col">
-      <label class="block">Thống kê theo : </label>
+      <span class="block">Thống kê theo : </span>
       <div class="flex gap-3">
         <div class="flex flex-wrap gap-4">
           <div class="flex items-center">
@@ -72,6 +72,8 @@
           selectionMode="range"></p-datepicker>
       </div>
     </div>
+
+    <p-button label="Tải lại" icon="pi pi-refresh" (click)="onReload()"/>
   </div>
 
 
@@ -112,7 +114,7 @@
   <div [formGroup]="formGroup">
     <div [formArrayName]="'formArray'">
       <p-table
-        [value]="formArrayData"
+        [value]="tableData"
         responsiveLayout="scroll"
       >
         <ng-template pTemplate="header">
@@ -162,9 +164,9 @@
             </tr>
           } @else {
             <!-- Chế độ CREATE / UPDATE hiển thị form -->
-            <tr>
+            <tr [formGroup]="getFormGroup(index)">
               <td>
-                <div [formGroup]="getFormGroup(index)">
+                <div>
                   <p-select
                     [formControlName]="FORM_GROUP_KEYS.module"
                     [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
@@ -176,7 +178,7 @@
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)">
+                <div>
                   <p-select
                     [formControlName]="FORM_GROUP_KEYS.menu"
                     [options]="getDependentDropDown(index, FORM_GROUP_KEYS.module)"
@@ -188,7 +190,7 @@
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)">
+                <div>
                   <p-select
                     [formControlName]="FORM_GROUP_KEYS.screen"
                     [options]="getDependentDropDown(index, FORM_GROUP_KEYS.menu)"
@@ -200,7 +202,7 @@
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)">
+                <div>
                   <p-select
                     [formControl]="getFormControl(index, FORM_GROUP_KEYS.feature)"
                     [options]="getDependentDropDown(index, FORM_GROUP_KEYS.screen)"
@@ -212,7 +214,7 @@
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)">
+                <div>
                   <p-select
                     [formControlName]="FORM_GROUP_KEYS.category"
                     [options]="independentDropdowns().categories"
@@ -224,7 +226,7 @@
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)">
+                <div>
                   <textarea
                     [formControl]="getFormControl(index, FORM_GROUP_KEYS.workContent)"
                     rows="1"
@@ -236,7 +238,7 @@
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)" class="flex align-items-center justify-content-center gap-1">
+                <div class="flex align-items-center justify-content-center gap-1">
                   <p-button
                     variant="outlined"
                     severity="secondary"
@@ -259,7 +261,7 @@
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)" class="flex align-items-center justify-content-center gap-1">
+                <div class="flex align-items-center justify-content-center gap-1">
                   <p-button
                     variant="outlined"
                     severity="secondary"
@@ -283,18 +285,18 @@
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)">
+                <div>
                   <input
+                    appWorkDuration
                     [formControlName]="FORM_GROUP_KEYS.duration"
                     id="duration"
                     pInputText
-                    appWorkDuration
-                    [formGroupControl]="getFormGroup(index)"
+                    [formGroup]="getFormGroup(index)"
                   /></div>
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)">
+                <div>
                   <p-checkbox
                     [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
                     [binary]="true"
@@ -303,7 +305,7 @@
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)">
+                <div>
                   <p-checkbox
                     [formControlName]="FORM_GROUP_KEYS.isSolveIssue"
                     [binary]="true"
@@ -312,7 +314,7 @@
               </td>
 
               <td>
-                <div [formGroup]="getFormGroup(index)">
+                <div>
                   <p-select
                     [formControlName]="FORM_GROUP_KEYS.encounteredIssue"
                     [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"

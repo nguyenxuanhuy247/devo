@@ -9,8 +9,8 @@ import { combineLatest, startWith } from 'rxjs';
   standalone: true, // Nếu dùng Angular 15+ và muốn directive hoạt động độc lập
 })
 export class WorkDurationDirective implements OnInit {
-  @Input() formGroupControl!: FormGroup;
-  @Input() formControl!: FormControl; // Trả về kết quả
+  @Input() formGroup!: FormGroup;
+  @Input() formControlName!: string; // Trả về kết quả
   @Input() isLunchBreak: boolean = true; // Mặc định có nghỉ trưa
 
   timeTrackingCalculateService = this.injector.get(
@@ -20,11 +20,11 @@ export class WorkDurationDirective implements OnInit {
   constructor(private injector: Injector) {}
 
   ngOnInit() {
-    if (this.formGroupControl) {
+    if (this.formGroup) {
       combineLatest(
-        this.formGroupControl.get(FORM_GROUP_KEYS.startTime).valueChanges,
-        this.formGroupControl.get(FORM_GROUP_KEYS.endTime).valueChanges,
-        this.formGroupControl
+        this.formGroup.get(FORM_GROUP_KEYS.startTime).valueChanges,
+        this.formGroup.get(FORM_GROUP_KEYS.endTime).valueChanges,
+        this.formGroup
           .get(FORM_GROUP_KEYS.isLunchBreak)
           .valueChanges.pipe(startWith(true)),
       ).subscribe(([startTime, endTime, isLunchBreak]) => {
@@ -34,7 +34,7 @@ export class WorkDurationDirective implements OnInit {
           isLunchBreak,
         );
         console.log('duration:', duration);
-        this.formControl.setValue(duration.toFixed(2));
+        this.formGroup.get(this.formControlName).setValue(duration.toFixed(2));
       });
     }
   }
