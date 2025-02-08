@@ -83,7 +83,8 @@
         <p-tab [value]="ETabName.ESTIMATE">Dự toán</p-tab>
         <p-tab [value]="ETabName.LOG_WORK">Log work</p-tab>
         <p-tab [value]="ETabName.ISSUE">Vấn đề</p-tab>
-        <p-tab [value]="ETabName.BUG_IMPROVEMENT">Bug & Improvement</p-tab>
+        <p-tab [value]="ETabName.BUG_IMPROVEMENT_FIX">Bug & Improvement đã fix</p-tab>
+        <p-tab [value]="ETabName.BUG_IMPROVEMENT_STATS">Thống kê Bug & Improvement</p-tab>
       </p-tablist>
       <p-tabpanels>
         <p-tabpanel [value]="activeTab()">
@@ -91,7 +92,7 @@
           <!-- Nút Thêm mới -->
           @if (mode() === EMode.VIEW) {
             <div class="flex justify-content-end">
-              @if (activeTab() === ETabName.BUG_IMPROVEMENT) {
+              @if (activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
                 <p-button
                   [outlined]="true"
                   severity="secondary"
@@ -104,14 +105,23 @@
 
               <p-button
                 icon="pi pi-plus"
-                label="Thêm mới"
+                label="Xóa hàng loạt"
+                (click)="onBulkDelete()"
               />
+
+              @if (activeTab() === ETabName.ESTIMATE || activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+                <p-button
+                  icon="pi pi-plus"
+                  label="Thêm hàng loạt"
+                  (click)="onBulkCreate()"
+                />
+              }
             </div>
           }
 
           <ng-container *ngTemplateOutlet="tableDataTemplate"></ng-container>
 
-          @if (activeTab() === ETabName.BUG_IMPROVEMENT) {
+          @if (activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
             <div class="huynx15-google-sheets">
               <iframe
                 width="100%"
@@ -165,8 +175,9 @@
         <ng-template pTemplate="frozenbody" let-rowData let-index="rowIndex">
           <tr [formGroup]="createFormGroup">
             <td>
-
+              <!-- Dòng STT -->
             </td>
+
             <td>
               <div>
                 <p-select
@@ -322,6 +333,12 @@
               </td>
             }
 
+            @if (activeTab() === ETabName.BUG_IMPROVEMENT_STATS) {
+              <td>
+                <!-- Mã bug & improvement -->
+              </td>
+            }
+
             <td>
               <div class="flex align-items-center justify-content-center gap-1">
                 <p-button
@@ -389,15 +406,6 @@
                 </div>
               </td>
             }
-            <!--            <td>-->
-            <!--              <div>-->
-            <!--                <p-checkbox-->
-            <!--                  [formControlName]="FORM_GROUP_KEYS.isSolveIssue"-->
-            <!--                  [binary]="true"-->
-            <!--                />-->
-            <!--              </div>-->
-            <!--            </td>-->
-
 
             <td>
               <div class="flex align-items-center justify-content-between gap-1">
@@ -562,17 +570,19 @@
                 </div>
               </td>
 
-              <td>
-                <div>
-                  <p-select
-                    [formControlName]="FORM_GROUP_KEYS.encounteredIssue"
-                    [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
-                </div>
-              </td>
+              @if (activeTab() !== ETabName.BUG_IMPROVEMENT_STATS) {
+                <td>
+                  <div>
+                    <p-select
+                      [formControlName]="FORM_GROUP_KEYS.encounteredIssue"
+                      [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
+                      optionLabel="label"
+                      optionValue="value"
+                      appendTo="body"
+                    ></p-select>
+                  </div>
+                </td>
+              }
 
               <td>
                 <div class="flex align-items-center justify-content-center gap-1">
@@ -632,23 +642,16 @@
                   /></div>
               </td>
 
-              <td>
-                <div>
-                  <p-checkbox
-                    [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
-                    [binary]="true"
-                  />
-                </div>
-              </td>
-
-              <!--              <td>-->
-              <!--                <div>-->
-              <!--                  <p-checkbox-->
-              <!--                    [formControlName]="FORM_GROUP_KEYS.isSolveIssue"-->
-              <!--                    [binary]="true"-->
-              <!--                  />-->
-              <!--                </div>-->
-              <!--              </td>-->
+              @if (activeTab() !== ETabName.BUG_IMPROVEMENT_STATS) {
+                <td>
+                  <div>
+                    <p-checkbox
+                      [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
+                      [binary]="true"
+                    />
+                  </div>
+                </td>
+              }
 
               <td>
                 <div class="flex align-items-center justify-content-between gap-1">
@@ -681,3 +684,5 @@
     </div>
   </div>
 </ng-template>
+
+<p-confirmdialog />

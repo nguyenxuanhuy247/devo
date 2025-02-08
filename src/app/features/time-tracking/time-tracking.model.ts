@@ -221,7 +221,7 @@ export const issuesHeaderColumns: IColumnHeaderConfigs[] = [
   },
 ];
 
-export const bugImprovementHeaderColumns: IColumnHeaderConfigs[] = [
+export const bugImprovementFixHeaderColumns: IColumnHeaderConfigs[] = [
   ...commonHeaderColumn,
   {
     label: 'Mã bug & improvement',
@@ -246,6 +246,35 @@ export const bugImprovementHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Thời lượng',
     field: COLUMN_FIELD.duration,
+    minWidth: 120,
+  },
+];
+
+export const bugImprovementStatsHeaderColumns: IColumnHeaderConfigs[] = [
+  ...commonHeaderColumn,
+  {
+    label: 'Mã bug & improvement',
+    field: COLUMN_FIELD.workContent,
+    minWidth: 120,
+  },
+  {
+    label: 'Thời gian bắt đầu',
+    field: COLUMN_FIELD.startTime,
+    minWidth: 120,
+  },
+  {
+    label: 'Thời gian hoàn thành',
+    field: COLUMN_FIELD.endTime,
+    minWidth: 120,
+  },
+  {
+    label: 'Thời lượng',
+    field: COLUMN_FIELD.duration,
+    minWidth: 120,
+  },
+  {
+    label: 'Hành động',
+    field: COLUMN_FIELD.actions,
     minWidth: 120,
   },
 ];

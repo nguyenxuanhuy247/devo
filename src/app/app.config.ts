@@ -7,7 +7,7 @@ import Aura from '@primeng/themes/aura';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { definePreset } from '@primeng/themes';
 import { httpResponseInterceptor } from './interceptors';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 const MyPreset = definePreset(Aura, {
   semantic: {
@@ -28,6 +28,7 @@ const MyPreset = definePreset(Aura, {
 });
 export const appConfig: ApplicationConfig = {
   providers: [
+    ConfirmationService,
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
     provideAnimationsAsync(),

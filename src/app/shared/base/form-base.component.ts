@@ -8,7 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { DrawerService } from '../../services';
 import { DomSanitizer } from '@angular/platform-browser';
 
@@ -26,6 +26,8 @@ export abstract class FormBaseComponent implements OnDestroy {
   drawerService = this.injector.get(DrawerService);
   messageService = this.injector.get(MessageService);
   sanitizer = this.injector.get(DomSanitizer);
+  confirmationService = this.injector.get(ConfirmationService);
+
   onDestroy$: Subject<any> = new Subject<any>();
 
   constructor(protected injector: Injector) {}

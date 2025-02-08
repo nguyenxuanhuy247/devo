@@ -20,7 +20,8 @@ export enum ETabName {
   ESTIMATE = 'Dự toán',
   LOG_WORK = 'Log work',
   ISSUE = 'Vấn đề',
-  BUG_IMPROVEMENT = 'Bug & Improvement',
+  BUG_IMPROVEMENT_FIX = 'Bug & Improvement fix',
+  BUG_IMPROVEMENT_STATS = 'Bug & Improvement',
 }
 
 // 🡫🡫🡫🡫🡫 START REGION : Request DTO 🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫
@@ -41,8 +42,8 @@ export interface ITimeTrackingDoGetRequestDTO {
 export interface ITimeTrackingDoPostRequestDTO {
   method: EApiMethod.POST | EApiMethod.PUT | EApiMethod.DELETE;
   isBulk: boolean;
-  id: ID;
-  data: ITimeTrackingRowData;
+  ids: ID[];
+  data: ITimeTrackingRowData[];
 }
 
 // 🡩🡩🡩🡩🡩 END REGION : Request DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩

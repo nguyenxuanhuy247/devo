@@ -124,4 +124,19 @@ export class TimeTrackingApiService {
   getBugImprovementContinuousUpdate(url: string) {
     return this.http.get<IBugImprovementSheetData>(url);
   }
+
+  deleteLogTimeInFixBugSheetAsync(): Observable<any> {
+    const url =
+      'https://script.google.com/macros/s/AKfycbyyLLzf1NCVnUBUe9fuNKvTw7un5N6j48LuzWIihqQlXmlWku7oIwP7VkC7Ogr9zPpc/exec';
+
+    return this.http
+      .post(url, null, {
+        headers: { 'Content-Type': 'text/plain' },
+      })
+      .pipe(
+        map((response) => {
+          return response;
+        }),
+      );
+  }
 }

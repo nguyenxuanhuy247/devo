@@ -46,7 +46,8 @@ import {
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import {
-  bugImprovementHeaderColumns,
+  bugImprovementFixHeaderColumns,
+  bugImprovementStatsHeaderColumns,
   COLUMN_FIELD,
   estimateHeaderColumns,
   FORM_GROUP_KEYS,
@@ -86,6 +87,7 @@ import {
 import { message } from '../../contants/api.contant';
 import * as _ from 'lodash';
 import { SafeResourceUrl } from '@angular/platform-browser';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-time-tracking',
@@ -117,12 +119,13 @@ import { SafeResourceUrl } from '@angular/platform-browser';
     InputTextModule,
     RadioButtonModule,
     RoundPipe,
+    ConfirmDialogModule,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.BUG_IMPROVEMENT);
+  activeTab = signal<ETabName>(ETabName.BUG_IMPROVEMENT_STATS);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -135,7 +138,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO>({
     method: EApiMethod.POST,
     isBulk: false,
-    id: null,
+    ids: null,
     data: null,
   });
 
@@ -154,8 +157,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         return logWorkHeaderColumns;
       case ETabName.ISSUE:
         return issuesHeaderColumns;
+      case ETabName.BUG_IMPROVEMENT_FIX:
+        return bugImprovementFixHeaderColumns;
       default:
-        return bugImprovementHeaderColumns;
+        return bugImprovementStatsHeaderColumns;
     }
   });
 
@@ -190,7 +195,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     });
 
     effect(() => {
-      if (this.activeTab() === ETabName.BUG_IMPROVEMENT) {
+      if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
         this.intervalId = setInterval(() => this.checkForUpdates(), 10000);
       } else {
         this.intervalId && clearInterval(this.intervalId);
@@ -257,7 +262,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
             employeeLevel,
           );
 
-          if (this.activeTab() !== ETabName.BUG_IMPROVEMENT) {
+          if (this.activeTab() !== ETabName.BUG_IMPROVEMENT_FIX) {
             this.addCreateRowForm();
           }
         },
@@ -520,7 +525,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   callAPIGetTableData(): void {
-    if (this.activeTab() === ETabName.BUG_IMPROVEMENT) return;
+    if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) return;
 
     this.isLoading.set(true);
 
@@ -570,16 +575,25 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     ];
   }
 
-  onChangeTab(value: unknown) {
-    this.activeTab.set(value as ETabName);
+  onChangeTab(tabName: unknown) {
+    this.activeTab.set(tabName as ETabName);
+
+    let tab: ETabName = tabName as ETabName;
+    if (
+      tabName === ETabName.BUG_IMPROVEMENT_FIX ||
+      tabName === ETabName.BUG_IMPROVEMENT_STATS ||
+      tabName === ETabName.LOG_WORK
+    ) {
+      tab = ETabName.LOG_WORK;
+    }
     this.doGetRequestDTO.update((oldValue) => ({
       ...oldValue,
-      tab: value as ETabName,
+      tab: tab,
     }));
     this.tableData = [];
     this.callAPIGetTableData();
 
-    if (this.activeTab() === ETabName.BUG_IMPROVEMENT) {
+    if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
       this.fixedRowData = [];
       this.checkForUpdates();
     } else {
@@ -647,6 +661,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           summary: 'Thành công',
           detail: res?.message,
         });
+        this.mode.set(EMode.VIEW);
         this.callAPIGetTableData();
       });
   }
@@ -659,15 +674,19 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.createFormGroup.reset();
   }
 
-  onSaveCreate() {
+  getCommonValue() {
     const commonValue = _.cloneDeep(this.formGroup.value);
     delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
     delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
     delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
 
+    return commonValue;
+  }
+
+  onSaveCreate() {
     const data: ITimeTrackingRowData = {
       ...this.createFormGroup.value,
-      ...commonValue,
+      ...this.getCommonValue(),
       createdDate: new Date(),
       tab: this.activeTab(),
     };
@@ -676,7 +695,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
-      data: data,
+      data: [data],
     }));
 
     this.timeTrackingService
@@ -714,7 +733,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.isLoading.set(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
-      id: rowData.id,
+      ids: [rowData.id],
       method: EApiMethod.DELETE,
     }));
 
@@ -787,5 +806,125 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     'https://docs.google.com/spreadsheets/d/111PSYmy5v-KntrtuFdNET9F26B6Kkyr5PPqme047URU/edit?gid=944613379#gid=944613379'; // Thay YOUR_SHEET_ID bằng ID thật
   openGoogleSheets() {
     window.open(this.sheetUrl, '_blank'); // Mở trong tab mới
+  }
+
+  onBulkCreate() {
+    const listData = this.tableData.map((rowData: ITimeTrackingRowData) => {
+      return {
+        ...rowData,
+        ...this.getCommonValue(),
+        createdDate: new Date(),
+        tab: this.activeTab(),
+      };
+    });
+
+    console.log('bulk create', listData);
+
+    this.isLoading.set(true);
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.POST,
+      data: listData,
+    }));
+
+    this.timeTrackingService
+      .createItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: message.serverError,
+          });
+          this.isLoading.set(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+
+        if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+          this.isLoading.set(false);
+          this.onDeleteLogTimeFixBugSheets();
+        }
+
+        this.callAPIGetTableData();
+      });
+  }
+
+  onDeleteLogTimeFixBugSheets() {
+    const url =
+      'https://script.google.com/macros/s/AKfycbyyLLzf1NCVnUBUe9fuNKvTw7un5N6j48LuzWIihqQlXmlWku7oIwP7VkC7Ogr9zPpc/exec';
+    this.timeTrackingService
+      .deleteLogTimeInFixBugSheetAsync()
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+      });
+  }
+
+  onBulkDelete() {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      header: 'Bạn có chắc chắn muốn xóa hết dữ liệu?',
+      message: 'Dữ liệu sẽ không thể khôi phục lại',
+      rejectLabel: 'Cancel',
+      rejectButtonProps: {
+        label: 'Hủy',
+        severity: 'secondary',
+        outlined: true,
+      },
+      acceptButtonProps: {
+        label: 'Xóa',
+        severity: 'danger',
+      },
+      accept: () => {
+        const listIds = this.tableData.map(
+          (rowData: ITimeTrackingRowData) => rowData.id,
+        );
+
+        this.isLoading.set(true);
+        this.doPostRequestDTO.update((oldValue) => ({
+          ...oldValue,
+          method: EApiMethod.DELETE,
+          ids: listIds,
+          data: null,
+        }));
+
+        this.timeTrackingService
+          .createItemAsync(this.doPostRequestDTO())
+          .pipe(
+            catchError(() => {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Thất bại',
+                detail: message.serverError,
+              });
+              this.isLoading.set(false);
+              return EMPTY;
+            }),
+          )
+          .subscribe((res) => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Thành công',
+              detail: res?.message,
+            });
+
+            if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+              this.isLoading.set(false);
+            }
+
+            this.callAPIGetTableData();
+          });
+      },
+    });
   }
 }
