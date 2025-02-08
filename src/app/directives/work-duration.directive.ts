@@ -1,5 +1,5 @@
 import { Directive, Injector, Input, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 import { TimeTrackingCalculateService } from '../features/time-tracking/time-tracking-calculate.service';
 import { FORM_GROUP_KEYS } from '../features/time-tracking/time-tracking.model';
 import { combineLatest, startWith } from 'rxjs';
@@ -28,6 +28,7 @@ export class WorkDurationDirective implements OnInit {
           .get(FORM_GROUP_KEYS.isLunchBreak)
           .valueChanges.pipe(startWith(true)),
       ).subscribe(([startTime, endTime, isLunchBreak]) => {
+        console.log('duration:', startTime, endTime, isLunchBreak);
         const duration = this.timeTrackingCalculateService.calculateWorkHours(
           startTime,
           endTime,

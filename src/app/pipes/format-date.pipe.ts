@@ -23,6 +23,6 @@ export class FormatDatePipe implements PipeTransform {
       date.getUTCMinutes(),
     );
 
-    return format(utcDate, formatType); // Định dạng theo yêu cầu
+    return format(new Date(value), formatType); // Định dạng theo yêu cầu
   }
 }

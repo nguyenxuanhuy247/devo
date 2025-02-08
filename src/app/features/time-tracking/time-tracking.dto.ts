@@ -16,6 +16,13 @@ export enum EGetApiMode {
   DETAIL = 11,
 }
 
+export enum ETabName {
+  ESTIMATE = 'Dự toán',
+  LOG_WORK = 'Log work',
+  ISSUE = 'Vấn đề',
+  BUG_IMPROVEMENT = 'Bug & Improvement',
+}
+
 // 🡫🡫🡫🡫🡫 START REGION : Request DTO 🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫
 export interface ITimeTrackingRequestDTO {
   mode: EGetApiMode;
@@ -26,12 +33,14 @@ export interface ITimeTrackingDoGetRequestDTO {
   mode: EGetApiMode;
   employee: string;
   project: string;
+  tab: ETabName;
   startTime: Date;
   endTime: Date;
 }
 
 export interface ITimeTrackingDoPostRequestDTO {
   method: EApiMethod.POST | EApiMethod.PUT | EApiMethod.DELETE;
+  isBulk: boolean;
   id: ID;
   data: ITimeTrackingRowData;
 }
@@ -65,6 +74,7 @@ export interface ILogWorkTableDataResponseDTO {
   isProgressBlock: boolean;
   notes: string;
   createdDate: string;
+  updatedDate: string;
 }
 
 export interface IEmployeeResponseDTO {
@@ -155,6 +165,12 @@ export interface ICategoriesInIndependentDropdownResponseDTO {
 export interface IDayoffsInIndependentDropdownResponseDTO {
   id: ID;
   dayoff: string;
+}
+
+export interface IBugImprovementSheetData {
+  range: string;
+  majorDimension: string;
+  values: any[][];
 }
 
 // 🡩🡩🡩🡩🡩 END REGION : Response DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩

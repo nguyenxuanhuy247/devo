@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { catchError, EMPTY, map, Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { apiManager, message } from '../../contants/api.contant';
+import { apiManager } from '../../contants/api.contant';
 import { CommonService } from '../../services';
 import {
+  IBugImprovementSheetData,
   IIndependentDropdownResponseDTO,
   ITimeTrackingDoPostRequestDTO,
   ITimeTrackingRequestDTO,
@@ -33,15 +34,6 @@ export class TimeTrackingApiService {
           console.log('service', response);
           return response.data;
         }),
-        catchError((error: any) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Thất bại',
-            detail: message.serverError,
-          });
-
-          return EMPTY;
-        }),
       );
   }
 
@@ -63,9 +55,9 @@ export class TimeTrackingApiService {
       );
   }
 
-  createItemAsync(requestDTO: any): Observable<any> {
+  createItemAsync(requestDTO: ITimeTrackingDoPostRequestDTO) {
     return this.http
-      .post(apiManager.DATABASE, requestDTO, {
+      .post<IHttpResponse>(apiManager.DATABASE, requestDTO, {
         headers: { 'Content-Type': 'text/plain' },
       })
       .pipe(
@@ -75,9 +67,9 @@ export class TimeTrackingApiService {
       );
   }
 
-  updateItemAsync(requestDTO: any): Observable<any> {
+  updateItemAsync(requestDTO: ITimeTrackingDoPostRequestDTO): Observable<any> {
     return this.http
-      .post(apiManager.DATABASE, requestDTO, {
+      .post<IHttpResponse>(apiManager.DATABASE, requestDTO, {
         headers: { 'Content-Type': 'text/plain' },
       })
       .pipe(
@@ -127,5 +119,9 @@ export class TimeTrackingApiService {
           return response.data;
         }),
       );
+  }
+
+  getBugImprovementContinuousUpdate(url: string) {
+    return this.http.get<IBugImprovementSheetData>(url);
   }
 }

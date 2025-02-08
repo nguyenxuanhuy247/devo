@@ -5,7 +5,7 @@ export enum EErrorCode {
   FAILURE = 1,
 }
 
-export interface IHttpResponse<T> {
+export interface IHttpResponse<T = null> {
   errorCode: EErrorCode;
   message: string;
   data: T;
@@ -18,6 +18,6 @@ export interface IOption extends Record<string, unknown> {
 
 export interface IColumnHeaderConfigs extends Record<string, unknown> {
   label: string;
-  value: string;
+  field: string;
   minWidth: number;
 }

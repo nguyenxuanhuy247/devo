@@ -8,7 +8,9 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
-import { DrawerService } from '../../services/drawer.service';
+import { MessageService } from 'primeng/api';
+import { DrawerService } from '../../services';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   template: ``,
@@ -22,6 +24,8 @@ export abstract class FormBaseComponent implements OnDestroy {
   formBuilder = this.injector.get(FormBuilder);
   changeDetectorRef = this.injector.get(ChangeDetectorRef);
   drawerService = this.injector.get(DrawerService);
+  messageService = this.injector.get(MessageService);
+  sanitizer = this.injector.get(DomSanitizer);
   onDestroy$: Subject<any> = new Subject<any>();
 
   constructor(protected injector: Injector) {}
@@ -31,14 +35,14 @@ export abstract class FormBaseComponent implements OnDestroy {
     this.onDestroy$.complete();
   }
 
+  getControlValue(controlName: string, customFormGroup?: FormGroup) {
+    const value = this.getControl(controlName, customFormGroup)?.value;
+    return ![null, undefined, NaN].includes(value) ? value : null;
+  }
+
   getControl(controlName: string, customFormGroup?: FormGroup) {
     const formGroup = customFormGroup ?? this.formGroup;
     return formGroup.get(controlName);
-  }
-
-  getControlValue(controlName: string, customFormGroup?: FormGroup) {
-    const value = this.getControl(controlName, customFormGroup).value;
-    return ![null, undefined, NaN].includes(value) ? value : null;
   }
 
   getControlValueChanges(

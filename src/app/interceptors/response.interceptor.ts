@@ -23,11 +23,11 @@ export const httpResponseInterceptor: HttpInterceptorFn = (req, next) => {
             //   detail: response?.message,
             // });
           } else {
-            messageService.add({
-              severity: 'error',
-              summary: 'Thất bại',
-              detail: response.message,
-            });
+            // messageService.add({
+            //   severity: 'error',
+            //   summary: 'Thất bại',
+            //   detail: response.message,
+            // });
           }
         }
       }

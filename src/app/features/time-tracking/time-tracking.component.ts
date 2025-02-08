@@ -1,4 +1,11 @@
-import { Component, computed, Injector, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  Injector,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormArray,
@@ -17,6 +24,7 @@ import { FormBaseComponent } from '../../shared';
 import { TimeTrackingApiService } from './time-tracking-api.service';
 import {
   EGetApiMode,
+  ETabName,
   ICategoriesInIndependentDropdownResponseDTO,
   IDayoffsInIndependentDropdownResponseDTO,
   IEmployeeResponseDTO,
@@ -38,6 +46,7 @@ import {
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import {
+  bugImprovementHeaderColumns,
   COLUMN_FIELD,
   estimateHeaderColumns,
   FORM_GROUP_KEYS,
@@ -55,7 +64,6 @@ import { FormatDatePipe, RoundPipe } from '../../pipes';
 import { TooltipModule } from 'primeng/tooltip';
 import { EApiMethod, EMode } from '../../contants/common.constant';
 import { SplitButtonModule } from 'primeng/splitbutton';
-import { MenuItem } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { BlockUIModule } from 'primeng/blockui';
 import { TextareaModule } from 'primeng/textarea';
@@ -75,6 +83,9 @@ import {
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
+import { message } from '../../contants/api.contant';
+import * as _ from 'lodash';
+import { SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-time-tracking',
@@ -111,16 +122,19 @@ import {
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
+  activeTab = signal<ETabName>(ETabName.BUG_IMPROVEMENT);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
     employee: null,
     project: null,
+    tab: this.activeTab(),
     startTime: null,
     endTime: null,
   });
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO>({
     method: EApiMethod.POST,
+    isBulk: false,
     id: null,
     data: null,
   });
@@ -131,29 +145,23 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   subscription: Subscription = new Subscription();
 
   SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
-  activeTabIndex = signal<string>('Log work');
+  ETabName = ETabName;
   headerColumns = computed<IColumnHeaderConfigs[]>(() => {
-    switch (this.activeTabIndex()) {
-      case 'Dự toán':
+    switch (this.activeTab()) {
+      case ETabName.ESTIMATE:
         return estimateHeaderColumns;
-      case 'Log work':
+      case ETabName.LOG_WORK:
         return logWorkHeaderColumns;
-      default:
+      case ETabName.ISSUE:
         return issuesHeaderColumns;
+      default:
+        return bugImprovementHeaderColumns;
     }
   });
 
   COLUMN_FIELD = COLUMN_FIELD;
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
   EMode = EMode;
-  createButtonMenu: MenuItem[] = [
-    {
-      label: 'Mở drawer',
-      command: () => {
-        this.openCreateDrawer();
-      },
-    },
-  ];
 
   isLoading = signal(false);
   tableData: ITimeTrackingRowData[] = [];
@@ -162,8 +170,32 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   FORM_GROUP_KEYS = FORM_GROUP_KEYS;
 
+  fixedRowData: ITimeTrackingRowData[] = [];
+
+  createFormGroup!: FormGroup;
+  intervalId: any;
+  googleSheetUrl: SafeResourceUrl;
+
   constructor(override injector: Injector) {
     super(injector);
+
+    this.createFormGroup = this.formBuilder.group({
+      ...nullableObj,
+      mode: EMode.CREATE,
+      tab: this.activeTab(),
+      employee: null,
+      employeeLevel: null,
+      isLunchBreak: true,
+      createdDate: new Date(),
+    });
+
+    effect(() => {
+      if (this.activeTab() === ETabName.BUG_IMPROVEMENT) {
+        this.intervalId = setInterval(() => this.checkForUpdates(), 10000);
+      } else {
+        this.intervalId && clearInterval(this.intervalId);
+      }
+    });
   }
 
   ngOnInit() {
@@ -173,8 +205,9 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       [SELECT_FORM_GROUP_KEY.project]: null,
       [SELECT_FORM_GROUP_KEY.dateRange]: null,
       [SELECT_FORM_GROUP_KEY.quickDate]: 'TODAY',
-      formArray: this.formBuilder.array([]),
+      [SELECT_FORM_GROUP_KEY.formArray]: this.formBuilder.array([]),
     });
+
     this.formArray = this.formGroup.get('formArray') as FormArray;
 
     this.getControl(SELECT_FORM_GROUP_KEY.dateRange).disable();
@@ -183,6 +216,9 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.initSubscriptions();
 
     this.callAPIGetDependentDropdown();
+    this.googleSheetUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      this.sheetUrl,
+    );
   }
 
   initSubscriptions() {
@@ -209,16 +245,21 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         this.callAPIGetTableData();
       }),
     );
+
     this.subscription.add(
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employee).subscribe(
         (employeeName: string) => {
           const employeeLevel = this.employeeList()?.find(
-            (employee) => employee.employeeName === employeeName,
+            (employee) => employee.username === employeeName,
           )?.levelName;
 
           this.getControl(SELECT_FORM_GROUP_KEY.employeeLevel).setValue(
             employeeLevel,
           );
+
+          if (this.activeTab() !== ETabName.BUG_IMPROVEMENT) {
+            this.addCreateRowForm();
+          }
         },
       ),
     );
@@ -284,14 +325,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     categories: null,
   });
   employeeList = signal<IEmployeeResponseDTO[]>([]);
-  employeeLevel = computed(() => {
-    const employeeName: string = this.getControlValue(
-      this.FORM_GROUP_KEYS.employee,
-    );
-    return this.employeeList()?.find(
-      (employee) => employee.employeeName === employeeName,
-    )?.levelName;
-  });
 
   callAPIGetDependentDropdown() {
     this.isLoading.set(true);
@@ -446,13 +479,28 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     return this.employeeProjectDropDown()[key];
   }
 
-  getDependentModuleDropDown(formControlName: string) {
+  getDependentModuleDropDown(formControlName: string, formGroup?: FormGroup) {
     const value = this.getControlValue(formControlName);
     return this.projectModuleDropdown()?.[value] || [];
   }
 
-  getDependentDropDown(index: number, formControlName: string) {
-    const value = this.getFormControl(index, formControlName).value;
+  trackBy(col: IColumnHeaderConfigs) {
+    return Math.random() + col.field;
+  }
+
+  getDependentDropDown(
+    index: number,
+    rowData: ITimeTrackingRowData,
+    formControlName: string,
+  ) {
+    const mode = rowData.mode;
+    let value;
+    if (mode === EMode.CREATE) {
+      value = this.getControlValue(formControlName, this.createFormGroup);
+    } else {
+      value = this.getFormControl(index, formControlName)?.value;
+    }
+
     let dropDownOptions: IDependentDropDown;
     switch (formControlName) {
       case FORM_GROUP_KEYS.module: {
@@ -472,37 +520,71 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   callAPIGetTableData(): void {
+    if (this.activeTab() === ETabName.BUG_IMPROVEMENT) return;
+
     this.isLoading.set(true);
 
     this.timeTrackingService
       .getListAsync(this.doGetRequestDTO())
-      .subscribe((response) => {
-        console.log('response', response);
-        this.clearFormArrayKeepFirst(this.formArray);
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: message.serverError,
+          });
 
-        response.forEach((rowData: ILogWorkTableDataResponseDTO) => {
+          return EMPTY;
+        }),
+      )
+      .subscribe((listData: any[]) => {
+        this.formArray.clear();
+
+        listData.forEach((rowData: ILogWorkTableDataResponseDTO) => {
           const formGroup = this.formBuilder.group({
             ...rowData,
             mode: EMode.VIEW,
+            startTime: rowData.startTime ? new Date(rowData.startTime) : null,
+            endTime: rowData.endTime ? new Date(rowData.endTime) : null,
           });
           this.formArray.push(formGroup);
         });
 
         this.tableData = this.formArray.value;
-
         this.isLoading.set(false);
+        this.createFormGroup.reset();
       });
   }
 
-  clearFormArrayKeepFirst(formArray: FormArray, defaultValue?: any) {
-    const firstControl = formArray.at(0); // Lấy phần tử đầu tiên
-    formArray.clear(); // Xóa toàn bộ FormArray
-    formArray.push(firstControl); // Thêm lại phần tử đầu tiên
-    firstControl.reset(defaultValue ?? {}); // Reset dữ liệu nếu cần
+  addCreateRowForm() {
+    this.fixedRowData = [
+      {
+        ...nullableObj,
+        mode: EMode.CREATE,
+        tab: this.activeTab(),
+        employee: this.getControlValue(this.FORM_GROUP_KEYS.employee),
+        employeeLevel: this.getControlValue(this.FORM_GROUP_KEYS.employeeLevel),
+        isLunchBreak: true,
+        createdDate: new Date(),
+      },
+    ];
   }
 
-  onTabChange(value: unknown) {
-    this.activeTabIndex.set(value as string);
+  onChangeTab(value: unknown) {
+    this.activeTab.set(value as ETabName);
+    this.doGetRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      tab: value as ETabName,
+    }));
+    this.tableData = [];
+    this.callAPIGetTableData();
+
+    if (this.activeTab() === ETabName.BUG_IMPROVEMENT) {
+      this.fixedRowData = [];
+      this.checkForUpdates();
+    } else {
+      this.addCreateRowForm();
+    }
   }
 
   openCreateDrawer() {
@@ -519,26 +601,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     });
   }
 
-  onAddNewRow() {
-    this.mode.set(EMode.CREATE);
-    const formGroup = this.formBuilder.group<ITimeTrackingRowData>({
-      ...nullableObj,
-    });
-    formGroup.setValue({
-      ...nullableObj,
-      mode: EMode.CREATE,
-      tab: this.activeTabIndex(),
-      employee: this.getControlValue(this.FORM_GROUP_KEYS.employee),
-      employeeLevel: this.getControlValue(this.FORM_GROUP_KEYS.employeeLevel),
-      isLunchBreak: true,
-      createdDate: new Date(),
-    });
-    this.formArray.push(formGroup);
-    this.tableData = this.formArray.value;
-  }
-
   getFormControl(index: number, formControlName: string): FormControl {
-    return this.formArray?.at(index).get(formControlName) as FormControl;
+    return this.formArray?.at(index)?.get(formControlName) as FormControl;
   }
 
   getFormGroup(index: number): FormGroup {
@@ -548,52 +612,102 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   onCancelUpdateMode(index: number) {
     this.mode.set(EMode.VIEW);
     this.getFormGroup(index).patchValue({ mode: EMode.VIEW });
+    this.tableData = this.formArray.value;
   }
 
   onSaveUpdate(index: number) {
+    this.isLoading.set(true);
     const value = this.formArray?.at(index)?.value;
     console.log('value ', value);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
-      method: EApiMethod.POST,
-      data: value,
+      method: EApiMethod.PUT,
+      data: {
+        ...value,
+        updatedDate: new Date(),
+      },
     }));
 
     this.timeTrackingService
-      .createItemAsync(this.doPostRequestDTO())
-      .subscribe((response) => {
-        console.log('response 2222', response);
+      .updateItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: message.serverError,
+          });
+          this.isLoading.set(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+        this.callAPIGetTableData();
       });
   }
 
-  onCancelCreateMode() {
-    this.mode.set(EMode.VIEW);
-    const lastIndex = this.formArray.length - 1;
-    if (lastIndex >= 0) {
-      this.formArray.removeAt(lastIndex); // Xóa control cuối cùng
-    }
+  onMarkFinish() {
+    this.createFormGroup.reset();
   }
 
-  onSaveCreate(index: number) {
-    const value = this.formArray?.at(index)?.value;
-    console.log('value ', value);
+  onResetCreateForm() {
+    this.createFormGroup.reset();
+  }
+
+  onSaveCreate() {
+    const commonValue = _.cloneDeep(this.formGroup.value);
+    delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
+    delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
+    delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
+
+    const data: ITimeTrackingRowData = {
+      ...this.createFormGroup.value,
+      ...commonValue,
+      createdDate: new Date(),
+      tab: this.activeTab(),
+    };
+
+    this.isLoading.set(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
-      data: value,
+      data: data,
     }));
 
     this.timeTrackingService
       .createItemAsync(this.doPostRequestDTO())
-      .subscribe((response) => {
-        console.log('response 2222', response);
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: message.serverError,
+          });
+          this.isLoading.set(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+        this.callAPIGetTableData();
       });
   }
 
-  onOpenUpdateMode(index: number, rowData: ITimeTrackingRowData) {
+  onChangeToUpdateMode(index: number) {
     this.mode.set(EMode.UPDATE);
+
     const formGroup = this.getFormGroup(index);
     formGroup.patchValue({ mode: EMode.UPDATE });
+    this.tableData = this.formArray.value;
   }
 
   onDelete(rowData: ITimeTrackingRowData) {
@@ -607,7 +721,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.timeTrackingService
       .deleteItemAsync(this.doPostRequestDTO())
       .pipe(
-        catchError((error: any) => {
+        catchError(() => {
           this.isLoading.set(false);
           return EMPTY;
         }),
@@ -618,11 +732,60 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
-    const control = this.getFormControl(index, formControlName);
+    let control: FormControl;
+    if (this.mode() === EMode.UPDATE) {
+      control = this.getFormControl(index, formControlName);
+    } else {
+      control = this.getControl(
+        formControlName,
+        this.createFormGroup,
+      ) as FormControl;
+    }
     control.setValue(new Date());
   }
 
   onReload() {
     this.callAPIGetTableData();
+  }
+
+  checkForUpdates() {
+    const apiKey = 'AIzaSyC-cEdNbjo5nAw3Tn1QqZQS6iYOCh_O0qU';
+    const sheetId = '111PSYmy5v-KntrtuFdNET9F26B6Kkyr5PPqme047URU';
+    const sheetRange = 'A3:O';
+
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
+
+    this.timeTrackingService
+      .getBugImprovementContinuousUpdate(url)
+      .subscribe((list) => {
+        if (list?.values) {
+          const convertedList = this.commonService.convertSheetToObjects(
+            list?.values,
+          );
+          const filteredList = convertedList?.filter((row) => row.createdDate);
+          this.tableData = filteredList?.map((rowData) => {
+            console.log('rowData', rowData);
+            return {
+              ...nullableObj,
+              ...rowData,
+              startTime: this.commonService.parseGoogleSheetsDate(
+                rowData.startTime,
+              ),
+              endTime: this.commonService.parseGoogleSheetsDate(
+                rowData.endTime,
+              ),
+            };
+          });
+
+          this.fixedRowData = [];
+          console.log('this.tableData', this.tableData);
+        }
+      });
+  }
+
+  sheetUrl =
+    'https://docs.google.com/spreadsheets/d/111PSYmy5v-KntrtuFdNET9F26B6Kkyr5PPqme047URU/edit?gid=944613379#gid=944613379'; // Thay YOUR_SHEET_ID bằng ID thật
+  openGoogleSheets() {
+    window.open(this.sheetUrl, '_blank'); // Mở trong tab mới
   }
 }

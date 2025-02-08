@@ -64,4 +64,50 @@ export class CommonService {
       return acc;
     }, {});
   }
+
+  /*
+   * @usage Chuyển dữ liệu lấy từ Google sheet dạng nested array thành array của object
+   */
+  convertSheetToObjects = (data: any[][]) => {
+    const headers = data[0]; // Lấy hàng đầu tiên làm key
+    return (
+      data?.slice(1)?.map((row) => {
+        const obj: any = {};
+        headers.forEach((key, index) => {
+          obj[key] = row[index] || ''; // Nếu không có giá trị, đặt rỗng
+        });
+        return obj;
+      }) || []
+    );
+  };
+
+  parseGoogleSheetsDate = (dateStr: string): string => {
+    if (!dateStr && !this.isValidGoogleSheetsDate(dateStr)) return '';
+    const [time, date] = dateStr.split(' - '); // Tách thành "08:16" và "07/02"
+    const [day, month] = date.split('/').map(Number); // Lấy ngày và tháng
+    const [hour, minute] = time.split(':').map(Number); // Lấy giờ và phút
+
+    // Lấy năm hiện tại (hoặc có thể thay bằng năm cụ thể)
+    const year = new Date().getFullYear();
+
+    // Tạo đối tượng Date với múi giờ local (không chuyển đổi UTC)
+    const localDate = new Date(year, month - 1, day, hour, minute);
+
+    // Format theo Local Time: YYYY-MM-DD HH:mm
+    return `${localDate.getFullYear()}-${(localDate.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}-${localDate
+      .getDate()
+      .toString()
+      .padStart(2, '0')} ${localDate
+      .getHours()
+      .toString()
+      .padStart(2, '0')}:${localDate.getMinutes().toString().padStart(2, '0')}`;
+  };
+
+  private isValidGoogleSheetsDate = (dateStr: string): boolean => {
+    const regex =
+      /^([01]\d|2[0-3]):([0-5]\d) - ([0-2]\d|3[01])\/(0[1-9]|1[0-2])$/;
+    return regex.test(dateStr);
+  };
 }
