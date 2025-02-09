@@ -224,11 +224,51 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.googleSheetUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
       this.sheetUrl,
     );
+
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  private originalTitle = document.title;
+  private warningTitle = '⚠️ Chưa điền thời gian bắt đầu';
+  private blinkInterval: any;
+  formIncomplete = true; // Giả sử form chưa hoàn thành
+
+  /*
+   * @usage Hiển thị cảnh báo trên thanh tiêu đề trình duyệt
+   */
+  handleVisibilityChange = () => {
+    if (document.hidden && this.formIncomplete) {
+      this.startBlinking();
+    } else {
+      this.clearBlinking();
+    }
+  };
+
+  startBlinking() {
+    this.clearBlinking();
+    this.blinkInterval = setInterval(() => {
+      document.title =
+        document.title === this.originalTitle
+          ? this.warningTitle
+          : this.originalTitle;
+    }, 400);
+  }
+
+  clearBlinking() {
+    if (this.blinkInterval) {
+      clearInterval(this.blinkInterval);
+      document.title = this.originalTitle;
+    }
   }
 
   initSubscriptions() {
     this.onDestroy$.subscribe(() => {
       this.subscription.unsubscribe();
+      document.removeEventListener(
+        'visibilitychange',
+        this.handleVisibilityChange,
+      );
+      clearInterval(this.blinkInterval);
     });
 
     this.subscription.add(
