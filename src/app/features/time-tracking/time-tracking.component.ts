@@ -1,11 +1,4 @@
-import {
-  Component,
-  computed,
-  effect,
-  Injector,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { Component, computed, Injector, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormArray,
@@ -23,6 +16,7 @@ import { TableModule } from 'primeng/table';
 import { FormBaseComponent } from '../../shared';
 import { TimeTrackingApiService } from './time-tracking-api.service';
 import {
+  ECategory,
   EGetApiMode,
   ETabName,
   ICategoriesInIndependentDropdownResponseDTO,
@@ -125,7 +119,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.BUG_IMPROVEMENT_STATS);
+  activeTab = signal<ETabName>(ETabName.BUG_IMPROVEMENT_FIX);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -192,14 +186,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       employeeLevel: null,
       isLunchBreak: true,
       createdDate: new Date(),
-    });
-
-    effect(() => {
-      if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
-        this.intervalId = setInterval(() => this.checkForUpdates(), 5000);
-      } else {
-        this.intervalId && clearInterval(this.intervalId);
-      }
     });
   }
 
@@ -383,6 +369,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       this.getControlValueChanges(
         SELECT_FORM_GROUP_KEY.bugOrImprovement,
       ).subscribe((_: string) => {
+        this.checkForUpdates();
         this.tableData = [];
       }),
     );
@@ -665,29 +652,48 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   onChangeTab(tabName: unknown) {
     this.activeTab.set(tabName as ETabName);
-
-    let tab: ETabName = tabName as ETabName;
-    if (
-      tabName === ETabName.BUG_IMPROVEMENT_FIX ||
-      tabName === ETabName.BUG_IMPROVEMENT_STATS ||
-      tabName === ETabName.LOG_WORK
-    ) {
-      tab = ETabName.LOG_WORK;
-    }
-    this.doGetRequestDTO.update((oldValue) => ({
-      ...oldValue,
-      tab: tab,
-    }));
     this.tableData = [];
-    this.callAPIGetTableData();
 
-    if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
-      this.fixedRowData = [];
-      this.checkForUpdates();
-    } else if (this.activeTab() === ETabName.BUG_IMPROVEMENT_STATS) {
-      this.fixedRowData = [];
-    } else {
-      this.addCreateRowForm();
+    switch (tabName) {
+      case ETabName.ESTIMATE:
+        this.addCreateRowForm();
+        clearInterval(this.intervalId);
+        break;
+      case ETabName.LOG_WORK:
+        this.addCreateRowForm();
+
+        this.doGetRequestDTO.update((oldValue) => ({
+          ...oldValue,
+          tab: ETabName.LOG_WORK,
+        }));
+        this.callAPIGetTableData();
+        clearInterval(this.intervalId);
+        break;
+      case ETabName.ISSUE:
+        this.addCreateRowForm();
+        this.doGetRequestDTO.update((oldValue) => ({
+          ...oldValue,
+          tab: ETabName.ISSUE,
+        }));
+        this.callAPIGetTableData();
+        clearInterval(this.intervalId);
+        break;
+      case ETabName.BUG_IMPROVEMENT_FIX:
+        const tab = ETabName.LOG_WORK;
+        this.fixedRowData = [];
+        this.checkForUpdates();
+        this.intervalId = setInterval(() => this.checkForUpdates(), 10000);
+        break;
+      case ETabName.BUG_IMPROVEMENT_STATS:
+        this.fixedRowData = [];
+        this.doGetRequestDTO.update((oldValue) => ({
+          ...oldValue,
+          tab: ETabName.LOG_WORK,
+          category: ECategory.FIX_BUG,
+        }));
+        this.callAPIGetTableData();
+        clearInterval(this.intervalId);
+        break;
     }
 
     this.handleVisiableWarningWithoutTimeTracking();
@@ -860,6 +866,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   checkForUpdates() {
+    if (!this.currentEmployee()?.bugImprovementApi) return;
+
     const bugOrImprovement = this.getControlValue(
       this.SELECT_FORM_GROUP_KEY.bugOrImprovement,
     );
@@ -870,31 +878,21 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         { tab: bugOrImprovement },
       )
       .subscribe((list) => {
-        console.log('aaaaaaaaa', list);
+        this.tableData = list?.map((rowData) => {
+          return {
+            ...nullableObj,
+            ...rowData,
+            startTime: rowData.startTime ? new Date(rowData.startTime) : null,
+            endTime: rowData.endTime ? new Date(rowData.endTime) : null,
+            createdDate: rowData.createdDate
+              ? new Date(rowData.createdDate)
+              : null,
+          };
+        });
+        this.fixedRowData = [];
+        console.log('this.tableData', this.tableData);
+        this.handleVisiableWarningWithoutTimeTracking();
       });
-    //   if (list?.values) {
-    //     const convertedList = this.commonService.convertSheetToObjects(
-    //       list?.values,
-    //     );
-    //     const filteredList = convertedList?.filter((row) => row.createdDate);
-    //     this.tableData = filteredList?.map((rowData) => {
-    //       return {
-    //         ...nullableObj,
-    //         ...rowData,
-    //         startTime: this.commonService.parseGoogleSheetsDate(
-    //           rowData.startTime,
-    //         ),
-    //         endTime: this.commonService.parseGoogleSheetsDate(
-    //           rowData.endTime,
-    //         ),
-    //       };
-    //     });
-    //
-    //     this.fixedRowData = [];
-    //     console.log('this.tableData', this.tableData);
-    //     this.handleVisiableWarningWithoutTimeTracking();
-    //   }
-    // });
   }
 
   sheetUrl =
@@ -904,12 +902,20 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   onBulkCreate() {
+    let tab: ETabName = this.activeTab();
+    if (
+      this.activeTab() === ETabName.LOG_WORK ||
+      this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX
+    ) {
+      tab = ETabName.LOG_WORK;
+    }
+
     const listData = this.tableData.map((rowData: ITimeTrackingRowData) => {
       return {
         ...rowData,
         ...this.getCommonValue(),
         createdDate: new Date(),
-        tab: this.activeTab(),
+        tab: tab,
       };
     });
 

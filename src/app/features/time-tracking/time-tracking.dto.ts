@@ -21,7 +21,14 @@ export enum ETabName {
   LOG_WORK = 'Log work',
   ISSUE = 'Vấn đề',
   BUG_IMPROVEMENT_FIX = 'Bug & Improvement fix',
-  BUG_IMPROVEMENT_STATS = 'Bug & Improvement',
+  BUG_IMPROVEMENT_STATS = 'Bug & Improvement stats',
+}
+
+export enum ECategory {
+  UI = 'UI',
+  API = 'API',
+  FIX_BUG = 'Fix bug',
+  IMPROVEMENT = 'Improvement',
 }
 
 // 🡫🡫🡫🡫🡫 START REGION : Request DTO 🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫

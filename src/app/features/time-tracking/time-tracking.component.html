@@ -126,7 +126,7 @@
                   inputId="bug"></p-radiobutton>
                 <label for="bug" class="ml-2">Bug</label>
               </div>
-    
+
               <div class="flex items-center">
                 <p-radiobutton
                   value="improvement"
@@ -138,18 +138,6 @@
           }
 
           <ng-container *ngTemplateOutlet="tableDataTemplate"></ng-container>
-
-          @if (activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
-            <!-- Mở Google Sheets ở Tab mới -->
-            <div class="huynx15-google-sheets">
-              <iframe
-                width="100%"
-                height="500px"
-                [src]="googleSheetUrl"
-              >
-              </iframe>
-            </div>
-          }
         </p-tabpanel>
       </p-tabpanels>
     </p-tabs>
@@ -703,4 +691,4 @@
   </div>
 </ng-template>
 
-<p-confirmdialog />
+<p-confirmdialog></p-confirmdialog>

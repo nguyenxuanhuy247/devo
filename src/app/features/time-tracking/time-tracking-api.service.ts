@@ -125,13 +125,11 @@ export class TimeTrackingApiService {
       this.commonService.getParamsNotEmpty(requestDTO),
     );
 
-    return this.http
-      .get<IHttpResponse<IIndependentDropdownResponseDTO>>(url + '?' + params)
-      .pipe(
-        map((response) => {
-          return response.data;
-        }),
-      );
+    return this.http.get<IHttpResponse<any[]>>(url + '?' + params).pipe(
+      map((response) => {
+        return response.data;
+      }),
+    );
   }
 
   deleteLogTimeInFixBugSheetAsync(): Observable<any> {
