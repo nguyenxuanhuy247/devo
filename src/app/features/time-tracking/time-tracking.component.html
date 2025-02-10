@@ -9,7 +9,6 @@
             id="employee"
             [formControlName]="SELECT_FORM_GROUP_KEY.employee"
             [options]="employeeOptions()"
-            placeholder="Chọn tên nhân viên"
           />
         </div>
       </div>
@@ -21,7 +20,6 @@
             id="project"
             [formControlName]="SELECT_FORM_GROUP_KEY.project"
             [options]="getDependentProjectDropDown(SELECT_FORM_GROUP_KEY.employee)"
-            placeholder="Chọn dự án"
           />
         </div>
       </div>
@@ -88,7 +86,6 @@
       </p-tablist>
       <p-tabpanels>
         <p-tabpanel [value]="activeTab()">
-
           <!-- Nút Thêm mới -->
           @if (mode() === EMode.VIEW) {
             <div class="flex justify-content-end">
@@ -119,9 +116,31 @@
             </div>
           }
 
+          @if (activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+            <div class="flex flex-wrap gap-4">
+              <span>Phân loại :</span>
+              <div class="flex items-center">
+                <p-radiobutton
+                  value="bug"
+                  [formControlName]="SELECT_FORM_GROUP_KEY.bugOrImprovement"
+                  inputId="bug"></p-radiobutton>
+                <label for="bug" class="ml-2">Bug</label>
+              </div>
+    
+              <div class="flex items-center">
+                <p-radiobutton
+                  value="improvement"
+                  [formControlName]="SELECT_FORM_GROUP_KEY.bugOrImprovement"
+                  inputId="improvement"></p-radiobutton>
+                <label for="improvement" class="ml-2">Improvement</label>
+              </div>
+            </div>
+          }
+
           <ng-container *ngTemplateOutlet="tableDataTemplate"></ng-container>
 
           @if (activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+            <!-- Mở Google Sheets ở Tab mới -->
             <div class="huynx15-google-sheets">
               <iframe
                 width="100%"
@@ -565,7 +584,6 @@
                     rows="1"
                     cols="30"
                     pTextarea
-                    placeholder="Nhập nội dung công việc"
                   ></textarea>
                 </div>
               </td>

@@ -17,6 +17,7 @@ export interface ISelectFormGroup {
   dateRange: [Date, Date];
   quickDate: 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'CUSTOM';
   formArray: FormArray;
+  bugOrImprovement: 'bug' | 'improvement';
 }
 
 export const TIME_TRACKING_ROW_DATA_KEYS =

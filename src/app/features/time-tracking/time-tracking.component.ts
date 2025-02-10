@@ -210,6 +210,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       [SELECT_FORM_GROUP_KEY.project]: null,
       [SELECT_FORM_GROUP_KEY.dateRange]: null,
       [SELECT_FORM_GROUP_KEY.quickDate]: 'TODAY',
+      [SELECT_FORM_GROUP_KEY.bugOrImprovement]: 'bug',
       [SELECT_FORM_GROUP_KEY.formArray]: this.formBuilder.array([]),
     });
 
@@ -225,7 +226,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       this.sheetUrl,
     );
 
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    document.addEventListener(
+      'visibilitychange',
+      this.handleVisiableWarningWithoutTimeTracking,
+    );
   }
 
   private originalTitle = document.title;
@@ -236,8 +240,23 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   /*
    * @usage Hiển thị cảnh báo trên thanh tiêu đề trình duyệt
    */
-  handleVisibilityChange = () => {
-    if (document.hidden && this.formIncomplete) {
+  handleVisiableWarningWithoutTimeTracking = () => {
+    if (this.activeTab() === ETabName.BUG_IMPROVEMENT_STATS) {
+      this.activeTab.set(ETabName.BUG_IMPROVEMENT_FIX);
+    }
+
+    let isStartTimeTracking: boolean;
+    if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+      isStartTimeTracking = this.tableData?.some(
+        (item) => item.startTime && !item.endTime,
+      );
+    } else {
+      const createFormValue = this.createFormGroup.value;
+      isStartTimeTracking =
+        createFormValue.startTime && !createFormValue.endTime;
+    }
+
+    if (!isStartTimeTracking) {
       this.startBlinking();
     } else {
       this.clearBlinking();
@@ -266,7 +285,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       this.subscription.unsubscribe();
       document.removeEventListener(
         'visibilitychange',
-        this.handleVisibilityChange,
+        this.handleVisiableWarningWithoutTimeTracking,
       );
       clearInterval(this.blinkInterval);
     });
@@ -354,6 +373,31 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           console.log('dateString ', dateString);
         },
       ),
+    );
+
+    this.subscription.add(
+      this.getControlValueChanges(
+        SELECT_FORM_GROUP_KEY.bugOrImprovement,
+      ).subscribe((_: string) => {
+        this.tableData = [];
+      }),
+    );
+
+    this.subscription.add(
+      this.createFormGroup.valueChanges.subscribe((value: any) => {
+        if (
+          this.activeTab() === ETabName.LOG_WORK ||
+          this.activeTab() === ETabName.ISSUE
+        ) {
+          const isStartTimeTracking = value.startTime && !value.endTime;
+
+          if (!isStartTimeTracking) {
+            this.startBlinking();
+          } else {
+            this.clearBlinking();
+          }
+        }
+      }),
     );
   }
 
@@ -636,9 +680,13 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
       this.fixedRowData = [];
       this.checkForUpdates();
+    } else if (this.activeTab() === ETabName.BUG_IMPROVEMENT_STATS) {
+      this.fixedRowData = [];
     } else {
       this.addCreateRowForm();
     }
+
+    this.handleVisiableWarningWithoutTimeTracking();
   }
 
   openCreateDrawer() {
@@ -808,11 +856,18 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   checkForUpdates() {
+    const bugOrImprovement = this.getControlValue(
+      this.SELECT_FORM_GROUP_KEY.bugOrImprovement,
+    );
     const apiKey = 'AIzaSyC-cEdNbjo5nAw3Tn1QqZQS6iYOCh_O0qU';
-    const sheetId = '111PSYmy5v-KntrtuFdNET9F26B6Kkyr5PPqme047URU';
+    const SHEET_NAME =
+      bugOrImprovement === 'bug' ? 'Danh sách Bug' : 'Danh sách Improvement';
+    const bugListSheetId = '111PSYmy5v-KntrtuFdNET9F26B6Kkyr5PPqme047URU';
+    const improvementListSheetId =
+      '111PSYmy5v-KntrtuFdNET9F26B6Kkyr5PPqme047URU';
     const sheetRange = 'A3:O';
 
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${bugListSheetId}/values/${SHEET_NAME}!${sheetRange}?key=${apiKey}`;
 
     this.timeTrackingService
       .getBugImprovementContinuousUpdate(url)
@@ -823,7 +878,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           );
           const filteredList = convertedList?.filter((row) => row.createdDate);
           this.tableData = filteredList?.map((rowData) => {
-            console.log('rowData', rowData);
             return {
               ...nullableObj,
               ...rowData,
@@ -838,6 +892,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
           this.fixedRowData = [];
           console.log('this.tableData', this.tableData);
+          this.handleVisiableWarningWithoutTimeTracking();
         }
       });
   }
@@ -896,6 +951,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       });
   }
 
+  // Xóa thời gian bắt đầu và kết thúc ở Trang tính fix bug
   onDeleteLogTimeFixBugSheets() {
     const url =
       'https://script.google.com/macros/s/AKfycbyyLLzf1NCVnUBUe9fuNKvTw7un5N6j48LuzWIihqQlXmlWku7oIwP7VkC7Ogr9zPpc/exec';
