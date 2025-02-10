@@ -85,6 +85,7 @@ export interface IEmployeeResponseDTO {
   username: string;
   email: string;
   levelName: string;
+  bugImprovementApi: string;
   projects: IProjectInEmployeeResponseDTO[];
 }
 

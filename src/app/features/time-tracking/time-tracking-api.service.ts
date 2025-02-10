@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { apiManager } from '../../contants/api.contant';
 import { CommonService } from '../../services';
 import {
-  IBugImprovementSheetData,
   IIndependentDropdownResponseDTO,
   ITimeTrackingDoPostRequestDTO,
   ITimeTrackingRequestDTO,
@@ -121,8 +120,18 @@ export class TimeTrackingApiService {
       );
   }
 
-  getBugImprovementContinuousUpdate(url: string) {
-    return this.http.get<IBugImprovementSheetData>(url);
+  getBugImprovementContinuousUpdate(url: string, requestDTO: any) {
+    const params = this.commonService.parseObjToParams(
+      this.commonService.getParamsNotEmpty(requestDTO),
+    );
+
+    return this.http
+      .get<IHttpResponse<IIndependentDropdownResponseDTO>>(url + '?' + params)
+      .pipe(
+        map((response) => {
+          return response.data;
+        }),
+      );
   }
 
   deleteLogTimeInFixBugSheetAsync(): Observable<any> {

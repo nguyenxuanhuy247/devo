@@ -196,7 +196,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
     effect(() => {
       if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
-        this.intervalId = setInterval(() => this.checkForUpdates(), 10000);
+        this.intervalId = setInterval(() => this.checkForUpdates(), 5000);
       } else {
         this.intervalId && clearInterval(this.intervalId);
       }
@@ -280,6 +280,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     }
   }
 
+  currentEmployee = signal<IEmployeeResponseDTO>(null);
+
   initSubscriptions() {
     this.onDestroy$.subscribe(() => {
       this.subscription.unsubscribe();
@@ -313,10 +315,12 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.subscription.add(
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employee).subscribe(
         (employeeName: string) => {
-          const employeeLevel = this.employeeList()?.find(
+          const employee = this.employeeList()?.find(
             (employee) => employee.username === employeeName,
-          )?.levelName;
+          );
+          this.currentEmployee.set(employee);
 
+          const employeeLevel = employee.levelName;
           this.getControl(SELECT_FORM_GROUP_KEY.employeeLevel).setValue(
             employeeLevel,
           );
@@ -859,42 +863,38 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     const bugOrImprovement = this.getControlValue(
       this.SELECT_FORM_GROUP_KEY.bugOrImprovement,
     );
-    const apiKey = 'AIzaSyC-cEdNbjo5nAw3Tn1QqZQS6iYOCh_O0qU';
-    const SHEET_NAME =
-      bugOrImprovement === 'bug' ? 'Danh sách Bug' : 'Danh sách Improvement';
-    const bugListSheetId = '111PSYmy5v-KntrtuFdNET9F26B6Kkyr5PPqme047URU';
-    const improvementListSheetId =
-      '111PSYmy5v-KntrtuFdNET9F26B6Kkyr5PPqme047URU';
-    const sheetRange = 'A3:O';
-
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${bugListSheetId}/values/${SHEET_NAME}!${sheetRange}?key=${apiKey}`;
 
     this.timeTrackingService
-      .getBugImprovementContinuousUpdate(url)
+      .getBugImprovementContinuousUpdate(
+        this.currentEmployee().bugImprovementApi,
+        { tab: bugOrImprovement },
+      )
       .subscribe((list) => {
-        if (list?.values) {
-          const convertedList = this.commonService.convertSheetToObjects(
-            list?.values,
-          );
-          const filteredList = convertedList?.filter((row) => row.createdDate);
-          this.tableData = filteredList?.map((rowData) => {
-            return {
-              ...nullableObj,
-              ...rowData,
-              startTime: this.commonService.parseGoogleSheetsDate(
-                rowData.startTime,
-              ),
-              endTime: this.commonService.parseGoogleSheetsDate(
-                rowData.endTime,
-              ),
-            };
-          });
-
-          this.fixedRowData = [];
-          console.log('this.tableData', this.tableData);
-          this.handleVisiableWarningWithoutTimeTracking();
-        }
+        console.log('aaaaaaaaa', list);
       });
+    //   if (list?.values) {
+    //     const convertedList = this.commonService.convertSheetToObjects(
+    //       list?.values,
+    //     );
+    //     const filteredList = convertedList?.filter((row) => row.createdDate);
+    //     this.tableData = filteredList?.map((rowData) => {
+    //       return {
+    //         ...nullableObj,
+    //         ...rowData,
+    //         startTime: this.commonService.parseGoogleSheetsDate(
+    //           rowData.startTime,
+    //         ),
+    //         endTime: this.commonService.parseGoogleSheetsDate(
+    //           rowData.endTime,
+    //         ),
+    //       };
+    //     });
+    //
+    //     this.fixedRowData = [];
+    //     console.log('this.tableData', this.tableData);
+    //     this.handleVisiableWarningWithoutTimeTracking();
+    //   }
+    // });
   }
 
   sheetUrl =
