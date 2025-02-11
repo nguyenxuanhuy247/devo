@@ -17,7 +17,7 @@ export interface ISelectFormGroup {
   dateRange: [Date, Date];
   quickDate: 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'CUSTOM';
   formArray: FormArray;
-  bugOrImprovement: 'bug' | 'improvement';
+  bugOrImprovement: 'Bug' | 'Improvement';
 }
 
 export const TIME_TRACKING_ROW_DATA_KEYS =
@@ -93,15 +93,15 @@ const commonHeaderColumn: IColumnHeaderConfigs[] = [
     field: COLUMN_FIELD.feature,
     minWidth: 120,
   },
+];
+
+export const estimateHeaderColumns: IColumnHeaderConfigs[] = [
+  ...commonHeaderColumn,
   {
     label: 'Phân loại',
     field: COLUMN_FIELD.category,
     minWidth: 120,
   },
-];
-
-export const estimateHeaderColumns: IColumnHeaderConfigs[] = [
-  ...commonHeaderColumn,
   {
     label: 'Thời gian bắt đầu',
     field: COLUMN_FIELD.startTime,
@@ -126,6 +126,11 @@ export const estimateHeaderColumns: IColumnHeaderConfigs[] = [
 
 export const logWorkHeaderColumns: IColumnHeaderConfigs[] = [
   ...commonHeaderColumn,
+  {
+    label: 'Phân loại',
+    field: COLUMN_FIELD.category,
+    minWidth: 120,
+  },
   {
     label: 'Nội dung công việc',
     field: COLUMN_FIELD.workContent,
@@ -170,6 +175,11 @@ export const logWorkHeaderColumns: IColumnHeaderConfigs[] = [
 
 export const issuesHeaderColumns: IColumnHeaderConfigs[] = [
   ...commonHeaderColumn,
+  {
+    label: 'Phân loại',
+    field: COLUMN_FIELD.category,
+    minWidth: 120,
+  },
   {
     label: 'Bộ phận gây gián đoạn',
     field: COLUMN_FIELD.departmentMakeIssue,
@@ -225,6 +235,11 @@ export const issuesHeaderColumns: IColumnHeaderConfigs[] = [
 export const bugImprovementFixHeaderColumns: IColumnHeaderConfigs[] = [
   ...commonHeaderColumn,
   {
+    label: 'Phân loại',
+    field: COLUMN_FIELD.tab,
+    minWidth: 120,
+  },
+  {
     label: 'Mã bug & improvement',
     field: COLUMN_FIELD.workContent,
     minWidth: 120,
@@ -253,6 +268,11 @@ export const bugImprovementFixHeaderColumns: IColumnHeaderConfigs[] = [
 
 export const bugImprovementStatsHeaderColumns: IColumnHeaderConfigs[] = [
   ...commonHeaderColumn,
+  {
+    label: 'Phân loại',
+    field: COLUMN_FIELD.tab,
+    minWidth: 120,
+  },
   {
     label: 'Mã bug & improvement',
     field: COLUMN_FIELD.workContent,

@@ -81,15 +81,16 @@
         <p-tab [value]="ETabName.ESTIMATE">Dự toán</p-tab>
         <p-tab [value]="ETabName.LOG_WORK">Log work</p-tab>
         <p-tab [value]="ETabName.ISSUE">Vấn đề</p-tab>
-        <p-tab [value]="ETabName.BUG_IMPROVEMENT_FIX">Bug & Improvement đã fix</p-tab>
-        <p-tab [value]="ETabName.BUG_IMPROVEMENT_STATS">Thống kê Bug & Improvement</p-tab>
+        <p-tab [value]="ETabName.BUG">Bug</p-tab>
+        <p-tab [value]="ETabName.IMPROVEMENT">Improvement</p-tab>
+        <p-tab [value]="ETabName.FIX_BUG_IMPROVEMENT">Fix Bug & Do Improvement</p-tab>
       </p-tablist>
       <p-tabpanels>
         <p-tabpanel [value]="activeTab()">
           <!-- Nút Thêm mới -->
           @if (mode() === EMode.VIEW) {
             <div class="flex justify-content-end">
-              @if (activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+              @if (activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
                 <p-button
                   [outlined]="true"
                   severity="secondary"
@@ -106,7 +107,7 @@
                 (click)="onBulkDelete()"
               />
 
-              @if (activeTab() === ETabName.ESTIMATE || activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+              @if (activeTab() === ETabName.ESTIMATE || activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
                 <p-button
                   icon="pi pi-plus"
                   label="Thêm hàng loạt"
@@ -116,12 +117,12 @@
             </div>
           }
 
-          @if (activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+          @if (activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
             <div class="flex flex-wrap gap-4">
               <span>Phân loại :</span>
               <div class="flex items-center">
                 <p-radiobutton
-                  value="bug"
+                  value="Bug"
                   [formControlName]="SELECT_FORM_GROUP_KEY.bugOrImprovement"
                   inputId="bug"></p-radiobutton>
                 <label for="bug" class="ml-2">Bug</label>
@@ -129,7 +130,7 @@
 
               <div class="flex items-center">
                 <p-radiobutton
-                  value="improvement"
+                  value="Improvement"
                   [formControlName]="SELECT_FORM_GROUP_KEY.bugOrImprovement"
                   inputId="improvement"></p-radiobutton>
                 <label for="improvement" class="ml-2">Improvement</label>
@@ -340,7 +341,7 @@
               </td>
             }
 
-            @if (activeTab() === ETabName.BUG_IMPROVEMENT_STATS) {
+            @if (activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
               <td>
                 <!-- Mã bug & improvement -->
               </td>
@@ -576,7 +577,7 @@
                 </div>
               </td>
 
-              @if (activeTab() !== ETabName.BUG_IMPROVEMENT_STATS) {
+              @if (activeTab() !== ETabName.BUG || activeTab() !== ETabName.IMPROVEMENT) {
                 <td>
                   <div>
                     <p-select
@@ -648,7 +649,7 @@
                   /></div>
               </td>
 
-              @if (activeTab() !== ETabName.BUG_IMPROVEMENT_STATS) {
+              @if (activeTab() !== ETabName.BUG || activeTab() !== ETabName.IMPROVEMENT) {
                 <td>
                   <div>
                     <p-checkbox

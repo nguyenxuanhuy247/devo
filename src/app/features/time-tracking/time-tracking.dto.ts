@@ -20,8 +20,9 @@ export enum ETabName {
   ESTIMATE = 'Dự toán',
   LOG_WORK = 'Log work',
   ISSUE = 'Vấn đề',
-  BUG_IMPROVEMENT_FIX = 'Bug & Improvement fix',
-  BUG_IMPROVEMENT_STATS = 'Bug & Improvement stats',
+  BUG = 'Bug',
+  IMPROVEMENT = 'Improvement',
+  FIX_BUG_IMPROVEMENT = 'Fix Bug & Do Improvement',
 }
 
 export enum ECategory {
@@ -183,4 +184,3 @@ export interface IBugImprovementSheetData {
 }
 
 // 🡩🡩🡩🡩🡩 END REGION : Response DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩
-

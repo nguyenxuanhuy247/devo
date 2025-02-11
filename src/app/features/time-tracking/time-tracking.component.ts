@@ -1,4 +1,11 @@
-import { Component, computed, Injector, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  Injector,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormArray,
@@ -34,7 +41,9 @@ import {
   combineLatest,
   EMPTY,
   filter,
+  finalize,
   forkJoin,
+  pipe,
   Subscription,
 } from 'rxjs';
 import { SelectModule } from 'primeng/select';
@@ -119,7 +128,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.BUG_IMPROVEMENT_FIX);
+  activeTab = signal<ETabName>(ETabName.BUG);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -151,10 +160,11 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         return logWorkHeaderColumns;
       case ETabName.ISSUE:
         return issuesHeaderColumns;
-      case ETabName.BUG_IMPROVEMENT_FIX:
-        return bugImprovementFixHeaderColumns;
-      default:
+      case ETabName.BUG:
+      case ETabName.IMPROVEMENT:
         return bugImprovementStatsHeaderColumns;
+      default:
+        return bugImprovementFixHeaderColumns;
     }
   });
 
@@ -187,6 +197,19 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       isLunchBreak: true,
       createdDate: new Date(),
     });
+
+    effect(() => {
+      console.log('effect - this.activeTab()', this.activeTab());
+      if (
+        this.activeTab() === ETabName.BUG ||
+        this.activeTab() === ETabName.IMPROVEMENT ||
+        this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT
+      ) {
+        this.fixedRowData = [];
+      } else {
+        this.addCreateRowForm();
+      }
+    });
   }
 
   ngOnInit() {
@@ -196,7 +219,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       [SELECT_FORM_GROUP_KEY.project]: null,
       [SELECT_FORM_GROUP_KEY.dateRange]: null,
       [SELECT_FORM_GROUP_KEY.quickDate]: 'TODAY',
-      [SELECT_FORM_GROUP_KEY.bugOrImprovement]: 'bug',
+      [SELECT_FORM_GROUP_KEY.bugOrImprovement]: 'Bug',
       [SELECT_FORM_GROUP_KEY.formArray]: this.formBuilder.array([]),
     });
 
@@ -214,8 +237,14 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
     document.addEventListener(
       'visibilitychange',
-      this.handleVisiableWarningWithoutTimeTracking,
+      this.warningWhenChangeChromeTab,
     );
+    this.warningWhenChangeChromeTab();
+
+    if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
+      this.checkForUpdates();
+      this.fetchDataFromBugImprovementList();
+    }
   }
 
   private originalTitle = document.title;
@@ -226,21 +255,11 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   /*
    * @usage Hiển thị cảnh báo trên thanh tiêu đề trình duyệt
    */
-  handleVisiableWarningWithoutTimeTracking = () => {
-    if (this.activeTab() === ETabName.BUG_IMPROVEMENT_STATS) {
-      this.activeTab.set(ETabName.BUG_IMPROVEMENT_FIX);
-    }
-
-    let isStartTimeTracking: boolean;
-    if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
-      isStartTimeTracking = this.tableData?.some(
-        (item) => item.startTime && !item.endTime,
-      );
-    } else {
-      const createFormValue = this.createFormGroup.value;
-      isStartTimeTracking =
-        createFormValue.startTime && !createFormValue.endTime;
-    }
+  warningWhenChangeChromeTab = () => {
+    const createFormValue = this.createFormGroup.value;
+    const isStartTimeTracking =
+      this.tableData?.some((item) => item.startTime && !item.endTime) ||
+      (createFormValue.startTime && !createFormValue.endTime);
 
     if (!isStartTimeTracking) {
       this.startBlinking();
@@ -249,6 +268,9 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     }
   };
 
+  /**
+   * @usage Hiển thị nhấp nháy cảnh báo trên Tiêu đề tab trình duyệt
+   */
   startBlinking() {
     this.clearBlinking();
     this.blinkInterval = setInterval(() => {
@@ -256,7 +278,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         document.title === this.originalTitle
           ? this.warningTitle
           : this.originalTitle;
-    }, 400);
+    }, 500);
   }
 
   clearBlinking() {
@@ -266,6 +288,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     }
   }
 
+  fetchDataFromBugImprovementList() {
+    this.intervalId = setInterval(() => this.checkForUpdates(), 36000);
+  }
+
   currentEmployee = signal<IEmployeeResponseDTO>(null);
 
   initSubscriptions() {
@@ -273,7 +299,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       this.subscription.unsubscribe();
       document.removeEventListener(
         'visibilitychange',
-        this.handleVisiableWarningWithoutTimeTracking,
+        this.warningWhenChangeChromeTab,
       );
       clearInterval(this.blinkInterval);
     });
@@ -310,10 +336,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           this.getControl(SELECT_FORM_GROUP_KEY.employeeLevel).setValue(
             employeeLevel,
           );
-
-          if (this.activeTab() !== ETabName.BUG_IMPROVEMENT_FIX) {
-            this.addCreateRowForm();
-          }
         },
       ),
     );
@@ -369,8 +391,9 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       this.getControlValueChanges(
         SELECT_FORM_GROUP_KEY.bugOrImprovement,
       ).subscribe((_: string) => {
-        this.checkForUpdates();
         this.tableData = [];
+        this.checkForUpdates();
+        this.fetchDataFromBugImprovementList();
       }),
     );
 
@@ -600,7 +623,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   callAPIGetTableData(): void {
-    if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) return;
+    if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) return;
+    if (this.isLoading()) return;
 
     this.isLoading.set(true);
 
@@ -678,25 +702,30 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         this.callAPIGetTableData();
         clearInterval(this.intervalId);
         break;
-      case ETabName.BUG_IMPROVEMENT_FIX:
-        const tab = ETabName.LOG_WORK;
-        this.fixedRowData = [];
-        this.checkForUpdates();
-        this.intervalId = setInterval(() => this.checkForUpdates(), 10000);
-        break;
-      case ETabName.BUG_IMPROVEMENT_STATS:
+      case ETabName.BUG:
         this.fixedRowData = [];
         this.doGetRequestDTO.update((oldValue) => ({
           ...oldValue,
-          tab: ETabName.LOG_WORK,
-          category: ECategory.FIX_BUG,
+          tab: ETabName.BUG,
         }));
         this.callAPIGetTableData();
         clearInterval(this.intervalId);
         break;
+      case ETabName.IMPROVEMENT:
+        this.fixedRowData = [];
+        this.doGetRequestDTO.update((oldValue) => ({
+          ...oldValue,
+          tab: ETabName.IMPROVEMENT,
+        }));
+        this.callAPIGetTableData();
+        clearInterval(this.intervalId);
+        break;
+      case ETabName.FIX_BUG_IMPROVEMENT:
+        this.fixedRowData = [];
+        this.checkForUpdates();
+        this.fetchDataFromBugImprovementList();
+        break;
     }
-
-    this.handleVisiableWarningWithoutTimeTracking();
   }
 
   openCreateDrawer() {
@@ -867,15 +896,22 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   checkForUpdates() {
     if (!this.currentEmployee()?.bugImprovementApi) return;
+    if (this.isLoading()) return;
 
     const bugOrImprovement = this.getControlValue(
       this.SELECT_FORM_GROUP_KEY.bugOrImprovement,
-    );
+    ) as string;
 
+    this.isLoading.set(true);
     this.timeTrackingService
       .getBugImprovementContinuousUpdate(
         this.currentEmployee().bugImprovementApi,
-        { tab: bugOrImprovement },
+        { tab: bugOrImprovement?.toLowerCase() },
+      )
+      .pipe(
+        finalize(() => {
+          this.isLoading.set(false);
+        }),
       )
       .subscribe((list) => {
         this.tableData = list?.map((rowData) => {
@@ -891,7 +927,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         });
         this.fixedRowData = [];
         console.log('this.tableData', this.tableData);
-        this.handleVisiableWarningWithoutTimeTracking();
+        this.warningWhenChangeChromeTab();
+        this.isLoading.set(false);
       });
   }
 
@@ -903,11 +940,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   onBulkCreate() {
     let tab: ETabName = this.activeTab();
-    if (
-      this.activeTab() === ETabName.LOG_WORK ||
-      this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX
-    ) {
-      tab = ETabName.LOG_WORK;
+    if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
+      tab = this.getControlValue(this.SELECT_FORM_GROUP_KEY.bugOrImprovement);
     }
 
     const listData = this.tableData.map((rowData: ITimeTrackingRowData) => {
@@ -948,7 +982,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           detail: res?.message,
         });
 
-        if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+        if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
           this.isLoading.set(false);
           this.onDeleteLogTimeFixBugSheets();
         }
@@ -1020,7 +1054,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
               detail: res?.message,
             });
 
-            if (this.activeTab() === ETabName.BUG_IMPROVEMENT_FIX) {
+            if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
               this.isLoading.set(false);
             }
 
