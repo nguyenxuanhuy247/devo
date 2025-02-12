@@ -89,7 +89,7 @@
         <p-tabpanel [value]="activeTab()">
           <!-- Nút Thêm mới -->
           @if (mode() === EMode.VIEW) {
-            <div class="flex justify-content-end">
+            <div class="flex justify-content-end gap-3">
               @if (activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
                 <p-button
                   [outlined]="true"
@@ -101,7 +101,9 @@
                 />
               }
 
+              <!-- TODO - Bổ sung sau -->
               <p-button
+                *ngIf="false"
                 icon="pi pi-plus"
                 label="Xóa hàng loạt"
                 (click)="onBulkDelete()"
@@ -116,28 +118,6 @@
               }
             </div>
           }
-
-          @if (activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
-            <div class="flex flex-wrap gap-4">
-              <span>Phân loại :</span>
-              <div class="flex items-center">
-                <p-radiobutton
-                  value="Bug"
-                  [formControlName]="SELECT_FORM_GROUP_KEY.bugOrImprovement"
-                  inputId="bug"></p-radiobutton>
-                <label for="bug" class="ml-2">Bug</label>
-              </div>
-
-              <div class="flex items-center">
-                <p-radiobutton
-                  value="Improvement"
-                  [formControlName]="SELECT_FORM_GROUP_KEY.bugOrImprovement"
-                  inputId="improvement"></p-radiobutton>
-                <label for="improvement" class="ml-2">Improvement</label>
-              </div>
-            </div>
-          }
-
           <ng-container *ngTemplateOutlet="tableDataTemplate"></ng-container>
         </p-tabpanel>
       </p-tabpanels>

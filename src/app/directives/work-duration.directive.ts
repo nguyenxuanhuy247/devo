@@ -28,13 +28,11 @@ export class WorkDurationDirective implements OnInit {
           .get(FORM_GROUP_KEYS.isLunchBreak)
           .valueChanges.pipe(startWith(true)),
       ).subscribe(([startTime, endTime, isLunchBreak]) => {
-        console.log('duration:', startTime, endTime, isLunchBreak);
         const duration = this.timeTrackingCalculateService.calculateWorkHours(
           startTime,
           endTime,
           isLunchBreak,
         );
-        console.log('duration:', duration);
         this.formGroup.get(this.formControlName).setValue(duration.toFixed(2));
       });
     }

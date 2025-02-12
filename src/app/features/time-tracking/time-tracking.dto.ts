@@ -94,6 +94,7 @@ export interface IEmployeeResponseDTO {
   email: string;
   levelName: string;
   bugImprovementApi: string;
+  bugImprovementSpreedsheet: string;
   projects: IProjectInEmployeeResponseDTO[];
 }
 

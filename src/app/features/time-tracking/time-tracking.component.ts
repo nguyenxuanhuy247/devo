@@ -128,7 +128,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.BUG);
+  activeTab = signal<ETabName>(ETabName.FIX_BUG_IMPROVEMENT);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -183,7 +183,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   createFormGroup!: FormGroup;
   intervalId: any;
-  googleSheetUrl: SafeResourceUrl;
 
   constructor(override injector: Injector) {
     super(injector);
@@ -199,7 +198,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     });
 
     effect(() => {
-      console.log('effect - this.activeTab()', this.activeTab());
       if (
         this.activeTab() === ETabName.BUG ||
         this.activeTab() === ETabName.IMPROVEMENT ||
@@ -219,7 +217,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       [SELECT_FORM_GROUP_KEY.project]: null,
       [SELECT_FORM_GROUP_KEY.dateRange]: null,
       [SELECT_FORM_GROUP_KEY.quickDate]: 'TODAY',
-      [SELECT_FORM_GROUP_KEY.bugOrImprovement]: 'Bug',
       [SELECT_FORM_GROUP_KEY.formArray]: this.formBuilder.array([]),
     });
 
@@ -231,20 +228,12 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.initSubscriptions();
 
     this.callAPIGetDependentDropdown();
-    this.googleSheetUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-      this.sheetUrl,
-    );
 
     document.addEventListener(
       'visibilitychange',
       this.warningWhenChangeChromeTab,
     );
     this.warningWhenChangeChromeTab();
-
-    if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
-      this.checkForUpdates();
-      this.fetchDataFromBugImprovementList();
-    }
   }
 
   private originalTitle = document.title;
@@ -289,7 +278,11 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   fetchDataFromBugImprovementList() {
-    this.intervalId = setInterval(() => this.checkForUpdates(), 36000);
+    this.checkForFixBugAndImprovementUpdates();
+    this.intervalId = setInterval(
+      () => this.checkForFixBugAndImprovementUpdates(),
+      36000,
+    );
   }
 
   currentEmployee = signal<IEmployeeResponseDTO>(null);
@@ -382,19 +375,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
                 emitEvent: false,
               });
           }
-          console.log('dateString ', dateString);
         },
       ),
-    );
-
-    this.subscription.add(
-      this.getControlValueChanges(
-        SELECT_FORM_GROUP_KEY.bugOrImprovement,
-      ).subscribe((_: string) => {
-        this.tableData = [];
-        this.checkForUpdates();
-        this.fetchDataFromBugImprovementList();
-      }),
     );
 
     this.subscription.add(
@@ -531,6 +513,18 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       this.departmentInterruptionReasonDropdown.set(
         departmentInterruptionReasonDropdown,
       );
+
+      if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
+        this.isLoading.set(false);
+        this.fetchDataFromBugImprovementList();
+        return;
+      } else if (
+        this.activeTab() === ETabName.BUG ||
+        this.activeTab() === ETabName.IMPROVEMENT
+      ) {
+        this.isLoading.set(false);
+        return;
+      }
 
       this.callAPIGetAllIndependentDropdown();
     });
@@ -722,7 +716,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         break;
       case ETabName.FIX_BUG_IMPROVEMENT:
         this.fixedRowData = [];
-        this.checkForUpdates();
         this.fetchDataFromBugImprovementList();
         break;
     }
@@ -759,7 +752,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   onSaveUpdate(index: number) {
     this.isLoading.set(true);
     const value = this.formArray?.at(index)?.value;
-    console.log('value ', value);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.PUT,
@@ -894,19 +886,18 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.callAPIGetTableData();
   }
 
-  checkForUpdates() {
+  checkForFixBugAndImprovementUpdates() {
+    console.log(111111111);
     if (!this.currentEmployee()?.bugImprovementApi) return;
+    console.log(2222222);
     if (this.isLoading()) return;
-
-    const bugOrImprovement = this.getControlValue(
-      this.SELECT_FORM_GROUP_KEY.bugOrImprovement,
-    ) as string;
+    console.log(3333333);
 
     this.isLoading.set(true);
     this.timeTrackingService
       .getBugImprovementContinuousUpdate(
         this.currentEmployee().bugImprovementApi,
-        { tab: bugOrImprovement?.toLowerCase() },
+        {},
       )
       .pipe(
         finalize(() => {
@@ -926,34 +917,24 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           };
         });
         this.fixedRowData = [];
-        console.log('this.tableData', this.tableData);
+
         this.warningWhenChangeChromeTab();
         this.isLoading.set(false);
       });
   }
 
-  sheetUrl =
-    'https://docs.google.com/spreadsheets/d/111PSYmy5v-KntrtuFdNET9F26B6Kkyr5PPqme047URU/edit?gid=944613379#gid=944613379'; // Thay YOUR_SHEET_ID bằng ID thật
   openGoogleSheets() {
-    window.open(this.sheetUrl, '_blank'); // Mở trong tab mới
+    window.open(this.currentEmployee().bugImprovementSpreedsheet, '_blank'); // Mở trong tab mới
   }
 
   onBulkCreate() {
-    let tab: ETabName = this.activeTab();
-    if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
-      tab = this.getControlValue(this.SELECT_FORM_GROUP_KEY.bugOrImprovement);
-    }
-
     const listData = this.tableData.map((rowData: ITimeTrackingRowData) => {
       return {
         ...rowData,
         ...this.getCommonValue(),
         createdDate: new Date(),
-        tab: tab,
       };
     });
-
-    console.log('bulk create', listData);
 
     this.isLoading.set(true);
     this.doPostRequestDTO.update((oldValue) => ({
