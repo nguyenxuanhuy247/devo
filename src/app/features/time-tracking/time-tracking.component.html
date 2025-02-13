@@ -172,18 +172,26 @@
         <ng-template pTemplate="frozenbody" let-rowData let-index="rowIndex">
           <tr [formGroup]="createFormGroup">
             <td>
-              <!-- Dòng STT -->
+              <div class="flex align-items-center justify-content-between gap-1">
+                <p-button
+                  variant="outlined"
+                  severity="secondary"
+                  size="small"
+                  icon="pi pi-save"
+                  aria-label="Lưu"
+                  pTooltip="Lưu"
+                  tooltipPosition="bottom"
+                  (click)="onSaveCreate()"
+                />
+              </div>
             </td>
 
             <td>
               <div>
-                <p-select
+                <lib-form-select
                   [formControlName]="FORM_GROUP_KEYS.module"
-                  [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
-                  optionLabel="label"
-                  optionValue="value"
-                  appendTo="body"
-                ></p-select>
+                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.screen)"
+                ></lib-form-select>
               </div>
             </td>
 
@@ -195,7 +203,13 @@
                   optionLabel="label"
                   optionValue="value"
                   appendTo="body"
-                ></p-select>
+                >  
+                  <ng-template pTemplate="selectedItem" let-data>
+                    <div class="flex align-items-center gap-2">
+                        <div class="line-clamp">{{ data.label }}</div>
+                    </div>
+                  </ng-template>
+                </p-select>
               </div>
             </td>
 
@@ -207,7 +221,13 @@
                   optionLabel="label"
                   optionValue="value"
                   appendTo="body"
-                ></p-select>
+                >
+                  <ng-template pTemplate="selectedItem" let-data>
+                    <div class="flex align-items-center gap-2">
+                        <div class="line-clamp">{{ data.label }}</div>
+                    </div>
+                  </ng-template>
+                </p-select>
               </div>
             </td>
 
@@ -219,7 +239,13 @@
                   optionLabel="label"
                   optionValue="value"
                   appendTo="body"
-                ></p-select>
+                >
+                  <ng-template pTemplate="selectedItem" let-data>
+                    <div class="flex align-items-center gap-2">
+                        <div class="line-clamp">{{ data.label }}</div>
+                    </div>
+                  </ng-template>
+                </p-select>
               </div>
             </td>
 

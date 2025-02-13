@@ -1,0 +1,15 @@
+<p-select
+  [(ngModel)]="value"
+  [options]="options"
+  [optionLabel]="optionLabel"
+  [optionValue]="optionValue"
+  [appendTo]="appendTo"
+  (onChange)="handleChange($event)"
+  (onBlur)="onTouched()"
+>
+  <ng-template pTemplate="selectedItem" let-data>
+    <div class="flex align-items-center gap-2">
+      <div class="line-clamp">{{ data.label }}</div>
+    </div>
+  </ng-template>
+</p-select>

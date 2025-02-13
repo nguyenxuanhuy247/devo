@@ -76,22 +76,22 @@ const commonHeaderColumn: IColumnHeaderConfigs[] = [
   {
     label: 'Module',
     field: COLUMN_FIELD.module,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Menu',
     field: COLUMN_FIELD.menu,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Màn hình',
     field: COLUMN_FIELD.screen,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Tính năng',
     field: COLUMN_FIELD.feature,
-    minWidth: 120,
+    minWidth: 200,
   },
 ];
 
@@ -100,7 +100,7 @@ export const estimateHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Phân loại',
     field: COLUMN_FIELD.category,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Thời gian bắt đầu',
@@ -129,7 +129,7 @@ export const logWorkHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Phân loại',
     field: COLUMN_FIELD.category,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Nội dung công việc',
@@ -144,12 +144,12 @@ export const logWorkHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Thời gian bắt đầu',
     field: COLUMN_FIELD.startTime,
-    minWidth: 180,
+    minWidth: 200,
   },
   {
     label: 'Thời gian hoàn thành',
     field: COLUMN_FIELD.endTime,
-    minWidth: 180,
+    minWidth: 200,
   },
   {
     label: 'Thời lượng',
@@ -178,22 +178,22 @@ export const issuesHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Phân loại',
     field: COLUMN_FIELD.category,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Bộ phận gây gián đoạn',
     field: COLUMN_FIELD.departmentMakeIssue,
-    minWidth: 120,
+    minWidth: 140,
   },
   {
     label: 'Lý do gián đoạn',
     field: COLUMN_FIELD.interruptionReason,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Nội dung vấn đề',
     field: COLUMN_FIELD.encounteredIssue,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Người gây gián đoạn',
@@ -208,12 +208,12 @@ export const issuesHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Thời gian bắt đầu',
     field: COLUMN_FIELD.startTime,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Thời gian hoàn thành',
     field: COLUMN_FIELD.endTime,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Thời lượng',
@@ -237,7 +237,7 @@ export const bugImprovementFixHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Phân loại',
     field: COLUMN_FIELD.tab,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Mã bug & improvement',
@@ -252,12 +252,12 @@ export const bugImprovementFixHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Thời gian bắt đầu',
     field: COLUMN_FIELD.startTime,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Thời gian hoàn thành',
     field: COLUMN_FIELD.endTime,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Thời lượng',
@@ -271,7 +271,7 @@ export const bugImprovementStatsHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Phân loại',
     field: COLUMN_FIELD.tab,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Mã bug & improvement',

@@ -92,6 +92,7 @@ import { message } from '../../contants/api.contant';
 import * as _ from 'lodash';
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { LibFormSelectComponent } from 'src/app/components';
 
 @Component({
   selector: 'app-time-tracking',
@@ -124,12 +125,13 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
     RadioButtonModule,
     RoundPipe,
     ConfirmDialogModule,
+    LibFormSelectComponent,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.FIX_BUG_DO_IMPROVEMENT);
+  activeTab = signal<ETabName>(ETabName.ISSUE);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,

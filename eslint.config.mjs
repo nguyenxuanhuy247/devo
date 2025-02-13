@@ -17,7 +17,9 @@ export default [
       '**/*.mjs',
     ],
     // Override or add rules here
-    rules: {},
+    rules:  {
+      "@typescript-eslint/no-inferrable-types": "error"
+    },
   },
   ...nx.configs['flat/angular'],
   ...nx.configs['flat/angular-template'],
