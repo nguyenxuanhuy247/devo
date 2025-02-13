@@ -337,4 +337,5 @@ export interface IIndependentDropDownSignal {
   tabs: IOption[];
   categories: IOption[];
   dayoffs: IOption[];
+  departments: IOption[];
 }

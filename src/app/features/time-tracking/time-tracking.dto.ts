@@ -3,6 +3,11 @@ import { EApiMethod } from '../../contants/common.constant';
 import { ITimeTrackingRowData } from './time-tracking.model';
 
 export enum EGetApiMode {
+  DEPENDENT_DROPDOWN = 'DEPENDENT_DROPDOWN',
+  INDEPENDENT_DROPDOWN = 'INDEPENDENT_DROPDOWN',
+  TABLE_DATA = 'TABLE_DATA',
+  DETAIL = 'DETAIL',
+
   EMPLOYEES = 1,
   PROJECTS = 2,
   MODULES = 3,
@@ -10,10 +15,6 @@ export enum EGetApiMode {
   SCREENS = 5,
   FEATURES = 6,
   DEPARTMENTS = 7,
-  INDEPENDENT_DROPDOWN = 8,
-
-  TABLE_DATA = 10,
-  DETAIL = 11,
 }
 
 export enum ETabName {
@@ -57,10 +58,12 @@ export interface ITimeTrackingDoPostRequestDTO {
 // 🡩🡩🡩🡩🡩 END REGION : Request DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩
 
 // 🡫🡫🡫🡫🡫 START REGION : Response DTO 🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫
+
 export interface ITimeTrackingResponseDTO {
   mode: EGetApiMode;
 }
 
+// Lấy danh sách TableData từ DATABASE
 export interface ILogWorkTableDataResponseDTO {
   id: ID;
   project: string;
@@ -84,6 +87,17 @@ export interface ILogWorkTableDataResponseDTO {
   notes: string;
   createdDate: string;
   updatedDate: string;
+}
+
+// Lấy danh sách dropdown phụ thuộc
+export interface ITimeTrackingSharedDropdownResponseDTO {
+  employees: IEmployeeResponseDTO[];
+  projects: IProjectInEmployeeResponseDTO[];
+  modules: IModulesResponseDTO[];
+  menus: IMenusResponseDTO[];
+  screens: IScreensResponseDTO[];
+  features: IFeaturesResponseDTO[];
+  departments: IDepartmentsResponseDTO[];
 }
 
 export interface IEmployeeResponseDTO {
@@ -157,10 +171,27 @@ export interface IFeaturesInScreenResponseDTO {
   featureName: string;
 }
 
+export interface IFeaturesResponseDTO {
+  id: ID;
+  featureName: string;
+}
+export interface IDepartmentsResponseDTO {
+  id: ID;
+  departmentName: string;
+  interruptionReasons: IInterruptionReasonsInDepartmentResponseDTO[];
+}
+
+export interface IInterruptionReasonsInDepartmentResponseDTO {
+  interruptionReasonName: string;
+}
+
+// 🡩🡩🡩🡩🡩 END REGION : Response DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩
+
 export interface IIndependentDropdownResponseDTO {
   tabs: ITabsInIndependentDropdownResponseDTO[];
   categories: ICategoriesInIndependentDropdownResponseDTO[];
   dayoffs: IDayoffsInIndependentDropdownResponseDTO[];
+  departments: IDepartmentsInIndependentDropdownResponseDTO[];
 }
 
 export interface ITabsInIndependentDropdownResponseDTO {
@@ -178,10 +209,14 @@ export interface IDayoffsInIndependentDropdownResponseDTO {
   dayoff: string;
 }
 
+export interface IDepartmentsInIndependentDropdownResponseDTO {
+  id: ID;
+  departmentName: string;
+  fkn_interruptionReasons: string;
+}
+
 export interface IBugImprovementSheetData {
   range: string;
   majorDimension: string;
   values: any[][];
 }
-
-// 🡩🡩🡩🡩🡩 END REGION : Response DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩

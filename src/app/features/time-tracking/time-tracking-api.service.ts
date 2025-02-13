@@ -7,6 +7,7 @@ import {
   IIndependentDropdownResponseDTO,
   ITimeTrackingDoPostRequestDTO,
   ITimeTrackingRequestDTO,
+  ITimeTrackingSharedDropdownResponseDTO,
 } from './time-tracking.dto';
 import { IHttpResponse } from '../../shared/interface/common.interface';
 import { MessageService } from 'primeng/api';
@@ -90,13 +91,17 @@ export class TimeTrackingApiService {
       );
   }
 
-  getDropdownListAsync(requestDTO: ITimeTrackingRequestDTO): Observable<any[]> {
+  getDropdownListAsync(
+    requestDTO: ITimeTrackingRequestDTO,
+  ): Observable<ITimeTrackingSharedDropdownResponseDTO> {
     const params = this.commonService.parseObjToParams(
       this.commonService.getParamsNotEmpty(requestDTO),
     );
 
     return this.http
-      .get<IHttpResponse<any[]>>(apiManager.DATABASE + '?' + params)
+      .get<IHttpResponse<ITimeTrackingSharedDropdownResponseDTO>>(
+        apiManager.DATABASE + '?' + params,
+      )
       .pipe(
         map((response) => {
           return response.data;
