@@ -129,7 +129,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.ISSUE);
+  activeTab = signal<ETabName>(ETabName.FIX_BUG_DO_IMPROVEMENT);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -202,7 +202,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       if (
         this.activeTab() === ETabName.BUG ||
         this.activeTab() === ETabName.IMPROVEMENT ||
-        this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT
+        this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT
       ) {
         this.fixedRowData = [];
       } else {
@@ -499,7 +499,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           departmentInterruptionReasonDropdown,
         );
 
-        if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
+        if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
           this.isLoading.set(false);
           this.fetchDataFromBugImprovementList();
           return;
@@ -564,7 +564,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         );
 
         this.isLoading.set(false);
-        if (this.activeTab() !== ETabName.FIX_BUG_IMPROVEMENT) {
+        if (this.activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT) {
           this.callAPIGetTableData();
         }
       });
@@ -627,7 +627,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   callAPIGetTableData(): void {
-    if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) return;
+    if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) return;
     if (this.isLoading()) return;
 
     this.isLoading.set(true);
@@ -735,7 +735,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         this.callAPIGetTableData();
         clearInterval(this.intervalId);
         break;
-      case ETabName.FIX_BUG_IMPROVEMENT:
+      case ETabName.FIX_BUG_DO_IMPROVEMENT:
         this.fixedRowData = [];
         this.fetchDataFromBugImprovementList();
         break;
@@ -986,7 +986,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           detail: res?.message,
         });
 
-        if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
+        if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
           this.isLoading.set(false);
           this.onDeleteLogTimeFixBugSheets();
         }
@@ -1058,7 +1058,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
               detail: res?.message,
             });
 
-            if (this.activeTab() === ETabName.FIX_BUG_IMPROVEMENT) {
+            if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
               this.isLoading.set(false);
             }
 

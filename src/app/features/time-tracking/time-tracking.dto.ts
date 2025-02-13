@@ -23,7 +23,7 @@ export enum ETabName {
   ISSUE = 'Vấn đề',
   BUG = 'Bug',
   IMPROVEMENT = 'Improvement',
-  FIX_BUG_IMPROVEMENT = 'Fix Bug & Do Improvement',
+  FIX_BUG_DO_IMPROVEMENT = 'Fix Bug & Do Improvement',
 }
 
 export enum ECategory {
