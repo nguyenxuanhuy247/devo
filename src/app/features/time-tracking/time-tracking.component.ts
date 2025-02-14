@@ -23,7 +23,6 @@ import { TableModule } from 'primeng/table';
 import { FormBaseComponent } from '../../shared';
 import { TimeTrackingApiService } from './time-tracking-api.service';
 import {
-  ECategory,
   EGetApiMode,
   ETabName,
   ICategoriesInIndependentDropdownResponseDTO,
@@ -44,8 +43,6 @@ import {
   EMPTY,
   filter,
   finalize,
-  forkJoin,
-  pipe,
   Subject,
   Subscription,
   switchMap,
@@ -136,7 +133,7 @@ import { TagModule } from 'primeng/tag';
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.REPORT);
+  activeTab = signal<ETabName>(ETabName.ISSUE);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,

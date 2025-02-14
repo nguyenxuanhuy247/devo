@@ -127,17 +127,17 @@
                 />
               }
 
-              @if(activeTab() === ETabName.REPORT) {
-                <iframe 
-                  src="https://docs.google.com/spreadsheets/d/1s8OjQl2kw8eW2gvflwfjl5PbmgGRAL0dGlwvGcyD4bs/edit?usp=sharing&gid=1098996043" 
-                  width="100%" 
+              @if (activeTab() === ETabName.REPORT) {
+                <iframe
+                  src="https://docs.google.com/spreadsheets/d/1s8OjQl2kw8eW2gvflwfjl5PbmgGRAL0dGlwvGcyD4bs/edit?usp=sharing&gid=1098996043"
+                  width="100%"
                   height="600">
                 </iframe>
               }
             </div>
           }
 
-          @if(activeTab() === ETabName.REPORT) {
+          @if (activeTab() === ETabName.REPORT) {
             <ng-container *ngTemplateOutlet="tableDataGeneralTemplate"></ng-container>
           } @else {
             <ng-container *ngTemplateOutlet="tableDataDetailTemplate"></ng-container>
@@ -165,20 +165,39 @@
         [scrollable]="true"
         styleClass="p-datatable-gridlines"
         scrollHeight="800px"
+        [resizableColumns]="true"
+        columnResizeMode="expand"
       >
         <!-- TABLE HEADER -->
         <ng-template pTemplate="header">
           <tr>
             @for (col of headerColumns(); track trackBy(col)) {
               @if (col.field === COLUMN_FIELD.category) {
-                <th pResizableColumn pFrozenColumn [style.min-width.px]="col.minWidth">
-                  <div class="line-clamp line-clamp-2">
-                    {{ col.label }}
+                <th
+                  [pSortableColumn]="col.field"
+                  pResizableColumn
+                  pFrozenColumn
+                  [style.min-width.px]="col.minWidth"
+                >
+                  <div class="flex">
+                    <div class="flex-1 line-clamp line-clamp-2">
+                      {{ col.label }}
+                    </div>
+                    <p-sortIcon [field]="col.field" />
                   </div>
                 </th>
               } @else {
-                <th pResizableColumn [style.min-width.px]="col.minWidth">
-                  <div class="line-clamp line-clamp-2">{{ col.label }}</div>
+                <th
+                  [pSortableColumn]="col.field"
+                  pResizableColumn
+                  [style.min-width.px]="col.minWidth"
+                >
+                  <div class="flex">
+                    <div class="flex-1 line-clamp line-clamp-2" [pTooltip]="col.label">
+                      {{ col.label }}
+                    </div>
+                    <p-sortIcon [field]="col.field" />
+                  </div>
                 </th>
               }
             }
@@ -262,13 +281,10 @@
 
               <td>
                 <div>
-                  <p-select
+                  <lib-form-select
                     [formControlName]="FORM_GROUP_KEYS.encounteredIssue"
                     [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
+                  ></lib-form-select>
                 </div>
               </td>
             }
@@ -276,25 +292,19 @@
             @if (activeTab() === ETabName.ISSUE) {
               <td>
                 <div>
-                  <p-select
+                  <lib-form-select
                     [formControlName]="FORM_GROUP_KEYS.departmentMakeIssue"
                     [options]="independentDropdowns().departments || []"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
+                  ></lib-form-select>
                 </div>
               </td>
 
               <td>
                 <div>
-                  <p-select
+                  <lib-form-select
                     [formControlName]="FORM_GROUP_KEYS.interruptionReason"
                     [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.departmentMakeIssue)"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
+                  ></lib-form-select>
                 </div>
               </td>
 
@@ -311,13 +321,10 @@
 
               <td>
                 <div>
-                  <p-select
+                  <lib-form-select
                     [formControlName]="FORM_GROUP_KEYS.employeeMakeIssue"
                     [options]="employeeOptions()"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
+                  ></lib-form-select>
                 </div>
               </td>
 
@@ -408,15 +415,12 @@
             @if (activeTab() === ETabName.ISSUE) {
               <td>
                 <div>
-                  <p-select
+                  <lib-form-select
                     [formControlName]="FORM_GROUP_KEYS.status"
                     [options]="[{label: 'Trạng thái 1', value: 'Trạng thái 1'}]"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
+                  ></lib-form-select>
                 </div>
-              </td>           
+              </td>
             }
 
             <!-- Danh sách nút hành động của Thêm mới -->
@@ -459,7 +463,10 @@
                 } @else if (col.field === COLUMN_FIELD.startTime || col.field === COLUMN_FIELD.endTime) {
                   <td>{{ rowData[col.field] | formatDate }}</td>
                 } @else if (col.field === COLUMN_FIELD.isProgressBlock) {
-                  <td><p-tag [severity]="rowData[col.field] ? 'danger' : 'success'" [value]="rowData[col.field] ? 'Có' : 'Không'" /> </td>
+                  <td>
+                    <p-tag [severity]="rowData[col.field] ? 'danger' : 'success'"
+                           [value]="rowData[col.field] ? 'Có' : 'Không'" />
+                  </td>
                 } @else if (col.field === COLUMN_FIELD.duration) {
                   <td>{{ rowData[col.field] | roundNumber }}</td>
                 } @else if (col.field === COLUMN_FIELD.actions) {
@@ -515,61 +522,46 @@
               </td>
               <td>
                 <div>
-                  <p-select
+                  <lib-form-select
                     [formControlName]="FORM_GROUP_KEYS.module"
                     [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
+                  ></lib-form-select>
                 </div>
               </td>
 
               <td>
                 <div>
-                  <p-select
+                  <lib-form-select
                     [formControlName]="FORM_GROUP_KEYS.menu"
                     [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.module)"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
+                  ></lib-form-select>
                 </div>
               </td>
 
               <td>
                 <div>
-                  <p-select
+                  <lib-form-select
                     [formControlName]="FORM_GROUP_KEYS.screen"
                     [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.menu)"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
+                  ></lib-form-select>
                 </div>
               </td>
 
               <td>
                 <div>
-                  <p-select
+                  <lib-form-select
                     [formControl]="getFormControl(index, FORM_GROUP_KEYS.feature)"
                     [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.screen)"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
+                  ></lib-form-select>
                 </div>
               </td>
 
               <td>
                 <div>
-                  <p-select
+                  <lib-form-select
                     [formControlName]="FORM_GROUP_KEYS.category"
                     [options]="independentDropdowns().categories"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                  ></p-select>
+                  ></lib-form-select>
                 </div>
               </td>
 
@@ -587,13 +579,10 @@
 
                 <td>
                   <div>
-                    <p-select
+                    <lib-form-select
                       [formControlName]="FORM_GROUP_KEYS.encounteredIssue"
                       [options]="[{label: 'Vấn đề gặp phải 1', value: 'aaaaaa'}]"
-                      optionLabel="label"
-                      optionValue="value"
-                      appendTo="body"
-                    ></p-select>
+                    ></lib-form-select>
                   </div>
                 </td>
               }
@@ -601,28 +590,22 @@
               @if (activeTab() === ETabName.ISSUE) {
                 <td>
                   <div>
-                    <p-select
+                    <lib-form-select
                       [formControlName]="FORM_GROUP_KEYS.departmentMakeIssue"
                       [options]="independentDropdowns().departments || []"
-                      optionLabel="label"
-                      optionValue="value"
-                      appendTo="body"
-                    ></p-select>
+                    ></lib-form-select>
                   </div>
                 </td>
-  
+
                 <td>
                   <div>
-                    <p-select
+                    <lib-form-select
                       [formControlName]="FORM_GROUP_KEYS.interruptionReason"
                       [options]="[{label: 'Tài liệu sai', value: 'aaaaaa'}]"
-                      optionLabel="label"
-                      optionValue="value"
-                      appendTo="body"
-                    ></p-select>
+                    ></lib-form-select>
                   </div>
                 </td>
-  
+
                 <td>
                   <div>
                     <textarea
@@ -633,19 +616,16 @@
                     ></textarea>
                   </div>
                 </td>
-  
+
                 <td>
                   <div>
-                    <p-select
+                    <lib-form-select
                       [formControlName]="FORM_GROUP_KEYS.employeeMakeIssue"
                       [options]="[{label: 'Anh Thư', value: 'aaaaaa'}]"
-                      optionLabel="label"
-                      optionValue="value"
-                      appendTo="body"
-                    ></p-select>
+                    ></lib-form-select>
                   </div>
                 </td>
-  
+
                 <td>
                   <div>
                     <p-checkbox
@@ -655,7 +635,7 @@
                   </div>
                 </td>
               }
-  
+
               <!-- Thời gian bắt đầu -->
               <td>
                 <div class="flex align-items-center justify-content-center gap-1">
@@ -730,17 +710,14 @@
               @if (activeTab() === ETabName.ISSUE) {
                 <td>
                   <div>
-                    <p-select
+                    <lib-form-select
                       [formControlName]="FORM_GROUP_KEYS.status"
                       [options]="[{label: 'Trạng thái 1', value: 'aaaaaa'}]"
-                      optionLabel="label"
-                      optionValue="value"
-                      appendTo="body"
-                    ></p-select>
+                    ></lib-form-select>
                   </div>
-                </td>           
+                </td>
               }
-  
+
               <td>
                 <div class="flex align-items-center justify-content-between gap-1">
                   <p-button
@@ -775,28 +752,40 @@
 
 <!-- TEMPLATE CỦA TABLE TỔNG QUÁT -->
 <ng-template #tableDataGeneralTemplate>
-  <p-table [value]="FAKE_REPORT_DATA" dataKey="id" [tableStyle]="{ 'min-width': '60rem' }" [expandedRowKeys]="{ '1000': true}">
+  <p-table [value]="FAKE_REPORT_DATA" dataKey="id" [tableStyle]="{ 'min-width': '60rem' }"
+           [expandedRowKeys]="{ '1000': true}">
     <ng-template #header>
-        <tr>
-            <th style="width: 5rem">Đóng/Mở</th>
-            <th pSortableColumn="module">Module <p-sortIcon field="module" /></th>
-            <th pSortableColumn="menu">Menu<p-sortIcon field="menu" /></th>
-            <th pSortableColumn="price">Màn hình <p-sortIcon field="price" /></th>
-            <th pSortableColumn="category">Tổng số vấn đề<p-sortIcon field="category" /></th>
-            <th pSortableColumn="rating">Hiện trạng<p-sortIcon field="rating" /></th>
-        </tr>
+      <tr>
+        <th style="width: 5rem">Đóng/Mở</th>
+        <th pSortableColumn="module">Module
+          <p-sortIcon field="module" />
+        </th>
+        <th pSortableColumn="menu">Menu
+          <p-sortIcon field="menu" />
+        </th>
+        <th pSortableColumn="price">Màn hình
+          <p-sortIcon field="price" />
+        </th>
+        <th pSortableColumn="category">Tổng số vấn đề
+          <p-sortIcon field="category" />
+        </th>
+        <th pSortableColumn="rating">Hiện trạng
+          <p-sortIcon field="rating" />
+        </th>
+      </tr>
     </ng-template>
     <ng-template #body let-rowData let-expanded="expanded">
-        <tr>
-            <td>
-                <p-button type="button" pRipple [pRowToggler]="rowData" [text]="true" [rounded]="true" [plain]="true" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
-            </td>
-            <td>{{ rowData.module }}</td>
-            <td>{{ rowData.menu }}</td>
-            <td>{{ rowData.screen }}</td>
-            <td>{{ rowData.issueNumber }}</td>
-            <td>{{ rowData.status }}</td>
-        </tr>
+      <tr>
+        <td>
+          <p-button type="button" pRipple [pRowToggler]="rowData" [text]="true" [rounded]="true" [plain]="true"
+                    [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
+        </td>
+        <td>{{ rowData.module }}</td>
+        <td>{{ rowData.menu }}</td>
+        <td>{{ rowData.screen }}</td>
+        <td>{{ rowData.issueNumber }}</td>
+        <td>{{ rowData.status }}</td>
+      </tr>
     </ng-template>
     <ng-template #expandedrow let-report>
       <tr>
@@ -804,25 +793,35 @@
           <!-- Bảng phụ -->
           <p-table [value]="report.details" dataKey="id">
             <ng-template #header>
-                <tr>
-                  <th pSortableColumn="id">STT<p-sortIcon field="price" /></th>
-                    <th pSortableColumn="id">Tính năng<p-sortIcon field="price" /></th>
-                    <th pSortableColumn="customer">Số vấn đề<p-sortIcon field="customer" /></th>
-                    <th pSortableColumn="date">Hiện trạng<p-sortIcon field="date" /></th>
-                    <th pSortableColumn="amount">Hành động <p-sortIcon field="amount" /></th>
-                </tr>
+              <tr>
+                <th pSortableColumn="id">STT
+                  <p-sortIcon field="price" />
+                </th>
+                <th pSortableColumn="id">Tính năng
+                  <p-sortIcon field="price" />
+                </th>
+                <th pSortableColumn="customer">Số vấn đề
+                  <p-sortIcon field="customer" />
+                </th>
+                <th pSortableColumn="date">Hiện trạng
+                  <p-sortIcon field="date" />
+                </th>
+                <th pSortableColumn="amount">Hành động
+                  <p-sortIcon field="amount" />
+                </th>
+              </tr>
             </ng-template>
             <ng-template #body let-subRowData let-index="rowIndex">
-                <tr>
-                    <td>{{ index + 1 }}</td>
-                    <td>{{ subRowData.screen }}</td>
-                    <td>{{ subRowData.issueNumber }}</td>
-                    <td>{{ subRowData.status }}</td>
-                    <td>
-                      <p-button icon="pi pi-eye" severity="secondary" (click)="onViewDetail($event)"/>
-                      <p-button icon="pi pi-eye" severity="secondary" (click)="onViewDetail($event)"/>
-                    </td>
-                </tr>
+              <tr>
+                <td>{{ index + 1 }}</td>
+                <td>{{ subRowData.screen }}</td>
+                <td>{{ subRowData.issueNumber }}</td>
+                <td>{{ subRowData.status }}</td>
+                <td>
+                  <p-button icon="pi pi-eye" severity="secondary" (click)="onViewDetail($event)" />
+                  <p-button icon="pi pi-eye" severity="secondary" (click)="onViewDetail($event)" />
+                </td>
+              </tr>
             </ng-template>
           </p-table>
         </td>
