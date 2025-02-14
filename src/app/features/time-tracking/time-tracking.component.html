@@ -190,6 +190,33 @@
               <div>
                 <lib-form-select
                   [formControlName]="FORM_GROUP_KEYS.module"
+                  [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
+                ></lib-form-select>
+              </div>
+            </td>
+
+            <td>
+              <div>
+                <lib-form-select
+                  [formControlName]="FORM_GROUP_KEYS.menu"
+                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.module)"
+                ></lib-form-select>
+              </div>
+            </td>
+
+            <td>
+              <div>
+                <lib-form-select
+                  [formControlName]="FORM_GROUP_KEYS.screen"
+                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.menu)"
+                ></lib-form-select>
+              </div>
+            </td>
+
+            <td>
+              <div>
+                <lib-form-select
+                  [formControlName]="FORM_GROUP_KEYS.feature"
                   [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.screen)"
                 ></lib-form-select>
               </div>
@@ -197,67 +224,10 @@
 
             <td>
               <div>
-                <p-select
-                  [formControlName]="FORM_GROUP_KEYS.menu"
-                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.module)"
-                  optionLabel="label"
-                  optionValue="value"
-                  appendTo="body"
-                >  
-                  <ng-template pTemplate="selectedItem" let-data>
-                    <div class="flex align-items-center gap-2">
-                        <div class="line-clamp">{{ data.label }}</div>
-                    </div>
-                  </ng-template>
-                </p-select>
-              </div>
-            </td>
-
-            <td>
-              <div>
-                <p-select
-                  [formControlName]="FORM_GROUP_KEYS.screen"
-                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.menu)"
-                  optionLabel="label"
-                  optionValue="value"
-                  appendTo="body"
-                >
-                  <ng-template pTemplate="selectedItem" let-data>
-                    <div class="flex align-items-center gap-2">
-                        <div class="line-clamp">{{ data.label }}</div>
-                    </div>
-                  </ng-template>
-                </p-select>
-              </div>
-            </td>
-
-            <td>
-              <div>
-                <p-select
-                  [formControlName]="FORM_GROUP_KEYS.feature"
-                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.screen)"
-                  optionLabel="label"
-                  optionValue="value"
-                  appendTo="body"
-                >
-                  <ng-template pTemplate="selectedItem" let-data>
-                    <div class="flex align-items-center gap-2">
-                        <div class="line-clamp">{{ data.label }}</div>
-                    </div>
-                  </ng-template>
-                </p-select>
-              </div>
-            </td>
-
-            <td>
-              <div>
-                <p-select
+                <lib-form-select
                   [formControlName]="FORM_GROUP_KEYS.category"
                   [options]="independentDropdowns().categories || []"
-                  optionLabel="label"
-                  optionValue="value"
-                  appendTo="body"
-                ></p-select>
+                ></lib-form-select>
               </div>
             </td>
 

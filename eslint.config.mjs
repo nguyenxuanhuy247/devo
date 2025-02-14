@@ -18,7 +18,7 @@ export default [
     ],
     // Override or add rules here
     rules:  {
-      "@typescript-eslint/no-inferrable-types": "error"
+      "@typescript-eslint/no-inferrable-types": "off"
     },
   },
   ...nx.configs['flat/angular'],
