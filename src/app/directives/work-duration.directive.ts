@@ -33,7 +33,12 @@ export class WorkDurationDirective implements OnInit {
           endTime,
           isLunchBreak,
         );
-        this.formGroup.get(this.formControlName).setValue(duration.toFixed(2));
+        
+        if (startTime && endTime) {
+          this.formGroup
+            .get(this.formControlName)
+            .setValue(duration.toFixed(2));
+        }
       });
     }
   }

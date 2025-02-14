@@ -40,12 +40,15 @@ import { PaginatorModule } from 'primeng/paginator';
 import {
   catchError,
   combineLatest,
+  debounceTime,
   EMPTY,
   filter,
   finalize,
   forkJoin,
   pipe,
+  Subject,
   Subscription,
+  switchMap,
 } from 'rxjs';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -54,6 +57,7 @@ import {
   bugImprovementStatsHeaderColumns,
   COLUMN_FIELD,
   estimateHeaderColumns,
+  FAKE_REPORT_DATA,
   FORM_GROUP_KEYS,
   IDependentDropDown,
   IIndependentDropDownSignal,
@@ -90,9 +94,9 @@ import {
 } from 'date-fns';
 import { message } from '../../contants/api.contant';
 import * as _ from 'lodash';
-import { SafeResourceUrl } from '@angular/platform-browser';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { LibFormSelectComponent } from 'src/app/components';
+import { TagModule } from 'primeng/tag';
 
 @Component({
   selector: 'app-time-tracking',
@@ -126,12 +130,13 @@ import { LibFormSelectComponent } from 'src/app/components';
     RoundPipe,
     ConfirmDialogModule,
     LibFormSelectComponent,
+    TagModule,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.ISSUE);
+  activeTab = signal<ETabName>(ETabName.REPORT);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -186,6 +191,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   createFormGroup!: FormGroup;
   intervalId: any;
+  FAKE_REPORT_DATA = FAKE_REPORT_DATA;
 
   constructor(override injector: Injector) {
     super(injector);
@@ -397,6 +403,56 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           }
         }
       }),
+    );
+
+    this.subscription.add(
+      this.getTableDataApiRequest$
+        .pipe(
+          debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
+          filter(() => this.activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT),
+          switchMap(() => {
+            this.isLoading.set(true);
+
+            return this.timeTrackingService
+              .getListAsync(this.doGetRequestDTO())
+              .pipe(
+                catchError(() => {
+                  this.messageService.add({
+                    severity: 'error',
+                    summary: 'Thất bại',
+                    detail: message.serverError,
+                  });
+                  return EMPTY;
+                }),
+                finalize(() => this.isLoading.set(false)),
+              );
+          }),
+        )
+        .subscribe((listData: ILogWorkTableDataResponseDTO[]) => {
+          this.mode.set(EMode.VIEW);
+          this.formArray.clear();
+
+          listData.forEach((rowData) => {
+            const formGroup = this.formBuilder.group({
+              ...rowData,
+              mode: EMode.VIEW,
+              startTime: rowData.startTime ? new Date(rowData.startTime) : null,
+              endTime: rowData.endTime ? new Date(rowData.endTime) : null,
+            });
+            this.formArray.push(formGroup);
+          });
+
+          this.tableData = this.formArray.value;
+          this.createFormGroup.reset();
+
+          if (
+            this.activeTab() === ETabName.ESTIMATE ||
+            this.activeTab() === ETabName.LOG_WORK ||
+            this.activeTab() === ETabName.ISSUE
+          ) {
+            this.addCreateRowForm();
+          }
+        }),
     );
   }
 
@@ -628,54 +684,59 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     return dropDownOptions?.[value] || [];
   }
 
+  private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
   callAPIGetTableData(): void {
-    if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) return;
-    if (this.isLoading()) return;
-
-    this.isLoading.set(true);
-
-    this.timeTrackingService
-      .getListAsync(this.doGetRequestDTO())
-      .pipe(
-        catchError(() => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Thất bại',
-            detail: message.serverError,
-          });
-
-          return EMPTY;
-        }),
-        finalize(() => {
-          this.isLoading.set(false);
-        }),
-      )
-      .subscribe((listData: any[]) => {
-        this.mode.set(EMode.VIEW);
-        this.formArray.clear();
-
-        listData.forEach((rowData: ILogWorkTableDataResponseDTO) => {
-          const formGroup = this.formBuilder.group({
-            ...rowData,
-            mode: EMode.VIEW,
-            startTime: rowData.startTime ? new Date(rowData.startTime) : null,
-            endTime: rowData.endTime ? new Date(rowData.endTime) : null,
-          });
-          this.formArray.push(formGroup);
-        });
-
-        this.tableData = this.formArray.value;
-        this.createFormGroup.reset();
-
-        if (
-          this.activeTab() === ETabName.ESTIMATE ||
-          this.activeTab() === ETabName.LOG_WORK ||
-          this.activeTab() === ETabName.ISSUE
-        ) {
-          this.addCreateRowForm();
-        }
-      });
+    this.getTableDataApiRequest$.next();
   }
+
+  // callAPIGetTableData(): void {
+  //   if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) return;
+  //   if (this.isLoading()) return;
+
+  //   this.isLoading.set(true);
+
+  //   this.timeTrackingService
+  //     .getListAsync(this.doGetRequestDTO())
+  //     .pipe(
+  //       catchError(() => {
+  //         this.messageService.add({
+  //           severity: 'error',
+  //           summary: 'Thất bại',
+  //           detail: message.serverError,
+  //         });
+
+  //         return EMPTY;
+  //       }),
+  //       finalize(() => {
+  //         this.isLoading.set(false);
+  //       }),
+  //     )
+  //     .subscribe((listData: any[]) => {
+  //       this.mode.set(EMode.VIEW);
+  //       this.formArray.clear();
+
+  //       listData.forEach((rowData: ILogWorkTableDataResponseDTO) => {
+  //         const formGroup = this.formBuilder.group({
+  //           ...rowData,
+  //           mode: EMode.VIEW,
+  //           startTime: rowData.startTime ? new Date(rowData.startTime) : null,
+  //           endTime: rowData.endTime ? new Date(rowData.endTime) : null,
+  //         });
+  //         this.formArray.push(formGroup);
+  //       });
+
+  //       this.tableData = this.formArray.value;
+  //       this.createFormGroup.reset();
+
+  //       if (
+  //         this.activeTab() === ETabName.ESTIMATE ||
+  //         this.activeTab() === ETabName.LOG_WORK ||
+  //         this.activeTab() === ETabName.ISSUE
+  //       ) {
+  //         this.addCreateRowForm();
+  //       }
+  //     });
+  // }
 
   addCreateRowForm() {
     this.fixedRowData = [
@@ -744,7 +805,9 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     }
   }
 
-  openCreateDrawer() {
+  onViewDetail(event: Event) {
+    event.stopPropagation();
+
     const drawerRef = this.drawerService.create({
       component: CreateFormComponent,
       data: {},
@@ -999,8 +1062,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   // Xóa thời gian bắt đầu và kết thúc ở Trang tính fix bug
   onDeleteLogTimeFixBugSheets() {
-    const url =
-      'https://script.google.com/macros/s/AKfycbyyLLzf1NCVnUBUe9fuNKvTw7un5N6j48LuzWIihqQlXmlWku7oIwP7VkC7Ogr9zPpc/exec';
     this.timeTrackingService
       .deleteLogTimeInFixBugSheetAsync()
       .subscribe((res) => {

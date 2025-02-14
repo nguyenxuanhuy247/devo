@@ -1,11 +1,4 @@
-import {
-  Component,
-  forwardRef,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, forwardRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ControlValueAccessor,
@@ -28,9 +21,7 @@ import { IOption } from 'src/app/shared/interface/common.interface';
     },
   ],
 })
-export class LibFormSelectComponent
-  implements ControlValueAccessor, OnInit, OnChanges
-{
+export class LibFormSelectComponent implements ControlValueAccessor {
   @Input() options: IOption[] = [];
   @Input() optionLabel = 'label';
   @Input() optionValue = 'value';
@@ -39,16 +30,6 @@ export class LibFormSelectComponent
   value: any;
   onChange: (value: any) => void = () => {};
   onTouched: () => void = () => {};
-
-  ngOnInit() {
-    console.log('aaaaaaaa 1111111', this.options);
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['options']) {
-      console.log('aaaaaaaa 22222222', changes);
-    }
-  }
 
   writeValue(value: any): void {
     this.value = value;

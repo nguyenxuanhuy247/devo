@@ -24,6 +24,7 @@ export enum ETabName {
   BUG = 'Bug',
   IMPROVEMENT = 'Improvement',
   FIX_BUG_DO_IMPROVEMENT = 'Fix Bug & Do Improvement',
+  REPORT = 'Report',
 }
 
 export enum ECategory {

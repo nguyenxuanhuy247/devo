@@ -84,6 +84,7 @@
         <p-tab [value]="ETabName.BUG">Bug</p-tab>
         <p-tab [value]="ETabName.IMPROVEMENT">Improvement</p-tab>
         <p-tab [value]="ETabName.FIX_BUG_DO_IMPROVEMENT">Fix Bug & Do Improvement</p-tab>
+        <p-tab [value]="ETabName.REPORT">Báo cáo</p-tab>
       </p-tablist>
       <p-tabpanels>
         <p-tabpanel [value]="activeTab()">
@@ -125,9 +126,23 @@
                   (click)="onBulkCreate()"
                 />
               }
+
+              @if(activeTab() === ETabName.REPORT) {
+                <iframe 
+                  src="https://docs.google.com/spreadsheets/d/1s8OjQl2kw8eW2gvflwfjl5PbmgGRAL0dGlwvGcyD4bs/edit?usp=sharing&gid=1098996043" 
+                  width="100%" 
+                  height="600">
+                </iframe>
+              }
             </div>
           }
-          <ng-container *ngTemplateOutlet="tableDataTemplate"></ng-container>
+
+          @if(activeTab() === ETabName.REPORT) {
+            <ng-container *ngTemplateOutlet="tableDataGeneralTemplate"></ng-container>
+          } @else {
+            <ng-container *ngTemplateOutlet="tableDataDetailTemplate"></ng-container>
+          }
+
         </p-tabpanel>
       </p-tabpanels>
     </p-tabs>
@@ -138,8 +153,10 @@
   <p-progress-spinner ariaLabel="loading" />
 </p-blockui>
 
-<!-- TEMPLATE CỦA TABLE -->
-<ng-template #tableDataTemplate>
+<p-confirmdialog></p-confirmdialog>
+
+<!-- TEMPLATE CỦA TABLE CHI TIẾT -->
+<ng-template #tableDataDetailTemplate>
   <div>
     <div class="huynx15-table">
       <p-table
@@ -393,7 +410,7 @@
                 <div>
                   <p-select
                     [formControlName]="FORM_GROUP_KEYS.status"
-                    [options]="[{label: 'Trạng thái 1', value: 'aaaaaa'}]"
+                    [options]="[{label: 'Trạng thái 1', value: 'Trạng thái 1'}]"
                     optionLabel="label"
                     optionValue="value"
                     appendTo="body"
@@ -441,6 +458,8 @@
                   <td>{{ index + 1 }}</td>
                 } @else if (col.field === COLUMN_FIELD.startTime || col.field === COLUMN_FIELD.endTime) {
                   <td>{{ rowData[col.field] | formatDate }}</td>
+                } @else if (col.field === COLUMN_FIELD.isProgressBlock) {
+                  <td><p-tag [severity]="rowData[col.field] ? 'danger' : 'success'" [value]="rowData[col.field] ? 'Có' : 'Không'" /> </td>
                 } @else if (col.field === COLUMN_FIELD.duration) {
                   <td>{{ rowData[col.field] | roundNumber }}</td>
                 } @else if (col.field === COLUMN_FIELD.actions) {
@@ -754,4 +773,60 @@
   </div>
 </ng-template>
 
-<p-confirmdialog></p-confirmdialog>
+<!-- TEMPLATE CỦA TABLE TỔNG QUÁT -->
+<ng-template #tableDataGeneralTemplate>
+  <p-table [value]="FAKE_REPORT_DATA" dataKey="id" [tableStyle]="{ 'min-width': '60rem' }" [expandedRowKeys]="{ '1000': true}">
+    <ng-template #header>
+        <tr>
+            <th style="width: 5rem">Đóng/Mở</th>
+            <th pSortableColumn="module">Module <p-sortIcon field="module" /></th>
+            <th pSortableColumn="menu">Menu<p-sortIcon field="menu" /></th>
+            <th pSortableColumn="price">Màn hình <p-sortIcon field="price" /></th>
+            <th pSortableColumn="category">Tổng số vấn đề<p-sortIcon field="category" /></th>
+            <th pSortableColumn="rating">Hiện trạng<p-sortIcon field="rating" /></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-rowData let-expanded="expanded">
+        <tr>
+            <td>
+                <p-button type="button" pRipple [pRowToggler]="rowData" [text]="true" [rounded]="true" [plain]="true" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
+            </td>
+            <td>{{ rowData.module }}</td>
+            <td>{{ rowData.menu }}</td>
+            <td>{{ rowData.screen }}</td>
+            <td>{{ rowData.issueNumber }}</td>
+            <td>{{ rowData.status }}</td>
+        </tr>
+    </ng-template>
+    <ng-template #expandedrow let-report>
+      <tr>
+        <td colspan="7">
+          <!-- Bảng phụ -->
+          <p-table [value]="report.details" dataKey="id">
+            <ng-template #header>
+                <tr>
+                  <th pSortableColumn="id">STT<p-sortIcon field="price" /></th>
+                    <th pSortableColumn="id">Tính năng<p-sortIcon field="price" /></th>
+                    <th pSortableColumn="customer">Số vấn đề<p-sortIcon field="customer" /></th>
+                    <th pSortableColumn="date">Hiện trạng<p-sortIcon field="date" /></th>
+                    <th pSortableColumn="amount">Hành động <p-sortIcon field="amount" /></th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-subRowData let-index="rowIndex">
+                <tr>
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ subRowData.screen }}</td>
+                    <td>{{ subRowData.issueNumber }}</td>
+                    <td>{{ subRowData.status }}</td>
+                    <td>
+                      <p-button icon="pi pi-eye" severity="secondary" (click)="onViewDetail($event)"/>
+                      <p-button icon="pi pi-eye" severity="secondary" (click)="onViewDetail($event)"/>
+                    </td>
+                </tr>
+            </ng-template>
+          </p-table>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</ng-template>

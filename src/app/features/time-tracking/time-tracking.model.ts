@@ -218,12 +218,12 @@ export const issuesHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Thời lượng',
     field: COLUMN_FIELD.duration,
-    minWidth: 120,
+    minWidth: 80,
   },
   {
     label: 'Trạng thái',
-    field: COLUMN_FIELD.duration,
-    minWidth: 120,
+    field: COLUMN_FIELD.status,
+    minWidth: 180,
   },
   {
     label: 'Hành động',
@@ -300,6 +300,41 @@ export const bugImprovementStatsHeaderColumns: IColumnHeaderConfigs[] = [
   },
 ];
 
+// Bảng tiến độ
+export const reportHeaderColumns: IColumnHeaderConfigs[] = [
+  ...commonHeaderColumn,
+  {
+    label: 'Phân loại',
+    field: COLUMN_FIELD.tab,
+    minWidth: 200,
+  },
+  {
+    label: 'Mã bug & improvement',
+    field: COLUMN_FIELD.workContent,
+    minWidth: 120,
+  },
+  {
+    label: 'Thời gian bắt đầu',
+    field: COLUMN_FIELD.startTime,
+    minWidth: 120,
+  },
+  {
+    label: 'Thời gian hoàn thành',
+    field: COLUMN_FIELD.endTime,
+    minWidth: 120,
+  },
+  {
+    label: 'Thời lượng',
+    field: COLUMN_FIELD.duration,
+    minWidth: 120,
+  },
+  {
+    label: 'Hành động',
+    field: COLUMN_FIELD.actions,
+    minWidth: 120,
+  },
+];
+
 export const nullableObj: ITimeTrackingRowData = {
   mode: EMode.VIEW,
   id: null,
@@ -339,3 +374,38 @@ export interface IIndependentDropDownSignal {
   dayoffs: IOption[];
   departments: IOption[];
 }
+
+export const FAKE_REPORT_DATA = [
+  {
+    id: '1000',
+    module: 'Lịch họp',
+    menu: 'Danh sách lịch họp',
+    screen: 'Danh sách lịch họp',
+    issueNumber: '3',
+    status: 'Đang làm',
+    details: [
+      {
+        id: '1000-0',
+        screen: 'f230fh0g3',
+        issueNumber: '3',
+        status: 'Đang làm',
+      },
+    ],
+  },
+  {
+    id: '1001',
+    module: 'Lịch họp 22',
+    menu: 'Danh sách lịch họp22',
+    screen: 'Danh sách lịch họp22',
+    issueNumber: '3',
+    status: 'Đang làm',
+    details: [
+      {
+        id: '1000-0',
+        screen: 'f230fh0g3',
+        issueNumber: '3',
+        status: 'Đang làm',
+      },
+    ],
+  },
+];
