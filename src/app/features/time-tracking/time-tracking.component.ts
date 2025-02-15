@@ -77,6 +77,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { CommonService } from '../../services';
 import {
   IColumnHeaderConfigs,
+  ID,
   IOption,
 } from '../../shared/interface/common.interface';
 import { WorkDurationDirective } from '../../directives';
@@ -133,7 +134,7 @@ import { TagModule } from 'primeng/tag';
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.ISSUE);
+  activeTab = signal<ETabName>(ETabName.FIX_BUG_DO_IMPROVEMENT);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -460,6 +461,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   menuScreenDropdown = signal<IDependentDropDown>(null);
   screenFeatureDropdown = signal<IDependentDropDown>(null);
   departmentInterruptionReasonDropdown = signal<IDependentDropDown>(null);
+
   independentDropdowns = signal<IIndependentDropDownSignal>({
     tabs: null,
     dayoffs: null,
@@ -467,92 +469,121 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     departments: null,
   });
   employeeList = signal<IEmployeeResponseDTO[]>([]);
+  allDropdownData = signal({
+    employees: null,
+    projects: null,
+    modules: null,
+    menus: null,
+    screens: null,
+    features: null,
+  });
 
   callAPIGetDependentDropdown() {
     this.isLoading.set(true);
     this.timeTrackingService
       .getDropdownListAsync({
-        mode: EGetApiMode.DEPENDENT_DROPDOWN,
+        mode: EGetApiMode.DROPDOWN,
       })
       .subscribe((result) => {
+        this.allDropdownData.update((oldValue) => ({ ...oldValue, ...result }));
+        console.log('allDropdownData', this.allDropdownData());
         // Nhân viên
-        this.employeeList.set(result.employees);
-        const options = this.employeeList()?.map((item: any) => ({
-          label: item['username'],
-          value: item['username'],
-        }));
-        this.employeeOptions.set(options);
-        const userProjectDropdown =
-          this.commonService.convertToDependentDropdown(
-            this.employeeList(),
-            'username',
-            'projects',
-            'projectName',
+        const employees = result.employees;
+        if (employees && employees.length > 0) {
+          this.employeeList.set(result.employees);
+          const options = this.employeeList()?.map((item: any) => ({
+            label: item['username'],
+            value: item['username'],
+          }));
+          this.employeeOptions.set(options);
+          const userProjectDropdown =
+            this.commonService.convertToDependentDropdown(
+              this.employeeList(),
+              'username',
+              'projects',
+              'projectName',
+            );
+          this.employeeProjectDropDown.set(userProjectDropdown);
+          this.getControl(SELECT_FORM_GROUP_KEY.employee).setValue(
+            this.employeeOptions()[0].value,
           );
-        this.employeeProjectDropDown.set(userProjectDropdown);
-        this.getControl(SELECT_FORM_GROUP_KEY.employee).setValue(
-          this.employeeOptions()[0].value,
-        );
+        }
 
         //  Dự án
         const projects = result.projects;
-        const projectModuleDropdown =
-          this.commonService.convertToDependentDropdown(
+        if (projects && projects.length > 0) {
+          this.allDropdownData.update((oldValue) => ({
+            ...oldValue,
             projects,
-            'projectName',
-            'modules',
-            'moduleName',
+          }));
+          const projectModuleDropdown =
+            this.commonService.convertToDependentDropdown(
+              projects,
+              'projectName',
+              'modules',
+              'moduleName',
+            );
+          this.projectModuleDropdown.set(projectModuleDropdown);
+          this.getControl(SELECT_FORM_GROUP_KEY.project).setValue(
+            projects[0]['projectName'],
           );
-        this.projectModuleDropdown.set(projectModuleDropdown);
-        this.getControl(SELECT_FORM_GROUP_KEY.project).setValue(
-          projects[0]['projectName'],
-        );
+        }
 
         // Module
         const modules = result.modules;
-        const moduleMenuDropdown =
-          this.commonService.convertToDependentDropdown(
-            modules,
-            'moduleName',
-            'menus',
-            'menuName',
-          );
-        this.moduleMenuDropdown.set(moduleMenuDropdown);
+        if (modules && modules.length > 0) {
+          this.allDropdownData.update((oldValue) => ({ ...oldValue, modules }));
+          const moduleMenuDropdown =
+            this.commonService.convertToDependentDropdown(
+              modules,
+              'moduleName',
+              'menus',
+              'menuName',
+            );
+          this.moduleMenuDropdown.set(moduleMenuDropdown);
+        }
 
         // Menu
         const menus = result.menus;
-        const menuScreenDropdown =
-          this.commonService.convertToDependentDropdown(
-            menus,
-            'menuName',
-            'screens',
-            'screenName',
-          );
-        this.menuScreenDropdown.set(menuScreenDropdown);
+        if (menus && menus.length > 0) {
+          this.allDropdownData.update((oldValue) => ({ ...oldValue, menus }));
+          const menuScreenDropdown =
+            this.commonService.convertToDependentDropdown(
+              menus,
+              'menuName',
+              'screens',
+              'screenName',
+            );
+          this.menuScreenDropdown.set(menuScreenDropdown);
+        }
 
-        // Menu
+        // Màn hình
         const screens = result.screens;
-        const screenFeatureDropdown =
-          this.commonService.convertToDependentDropdown(
-            screens,
-            'screenName',
-            'features',
-            'featureName',
-          );
-        this.screenFeatureDropdown.set(screenFeatureDropdown);
+        if (screens && screens.length > 0) {
+          const screenFeatureDropdown =
+            this.commonService.convertToDependentDropdown(
+              screens,
+              'screenName',
+              'features',
+              'featureName',
+            );
+          this.screenFeatureDropdown.set(screenFeatureDropdown);
+        }
 
         // Bộ phận làm việc
         const departments = result.departments;
-        const departmentInterruptionReasonDropdown =
-          this.commonService.convertToDependentDropdown(
-            departments,
-            'departmentName',
-            'interruptionReasons',
-            'interruptionReasonName',
+        if (departments && departments.length > 0) {
+          const departmentInterruptionReasonDropdown =
+            this.commonService.convertToDependentDropdown(
+              departments,
+              'departmentName',
+              'interruptionReasons',
+              'interruptionReasonName',
+            );
+          this.departmentInterruptionReasonDropdown.set(
+            departmentInterruptionReasonDropdown,
           );
-        this.departmentInterruptionReasonDropdown.set(
-          departmentInterruptionReasonDropdown,
-        );
+        }
 
         if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
           this.isLoading.set(false);
@@ -565,6 +596,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           this.isLoading.set(false);
           return;
         }
+
+        console.log('3333333333333');
 
         this.callAPIGetAllIndependentDropdown();
       });
@@ -685,55 +718,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   callAPIGetTableData(): void {
     this.getTableDataApiRequest$.next();
   }
-
-  // callAPIGetTableData(): void {
-  //   if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) return;
-  //   if (this.isLoading()) return;
-
-  //   this.isLoading.set(true);
-
-  //   this.timeTrackingService
-  //     .getListAsync(this.doGetRequestDTO())
-  //     .pipe(
-  //       catchError(() => {
-  //         this.messageService.add({
-  //           severity: 'error',
-  //           summary: 'Thất bại',
-  //           detail: message.serverError,
-  //         });
-
-  //         return EMPTY;
-  //       }),
-  //       finalize(() => {
-  //         this.isLoading.set(false);
-  //       }),
-  //     )
-  //     .subscribe((listData: any[]) => {
-  //       this.mode.set(EMode.VIEW);
-  //       this.formArray.clear();
-
-  //       listData.forEach((rowData: ILogWorkTableDataResponseDTO) => {
-  //         const formGroup = this.formBuilder.group({
-  //           ...rowData,
-  //           mode: EMode.VIEW,
-  //           startTime: rowData.startTime ? new Date(rowData.startTime) : null,
-  //           endTime: rowData.endTime ? new Date(rowData.endTime) : null,
-  //         });
-  //         this.formArray.push(formGroup);
-  //       });
-
-  //       this.tableData = this.formArray.value;
-  //       this.createFormGroup.reset();
-
-  //       if (
-  //         this.activeTab() === ETabName.ESTIMATE ||
-  //         this.activeTab() === ETabName.LOG_WORK ||
-  //         this.activeTab() === ETabName.ISSUE
-  //       ) {
-  //         this.addCreateRowForm();
-  //       }
-  //     });
-  // }
 
   addCreateRowForm() {
     this.fixedRowData = [
@@ -1012,14 +996,56 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     window.open(this.currentEmployee().bugImprovementSpreedsheet, '_blank'); // Mở trong tab mới
   }
 
-  onBulkCreate() {
-    const listData = this.tableData.map((rowData: ITimeTrackingRowData) => {
+  convertListBugOrImprovementBeforeSave() {
+    return this.tableData.map((rowData: ITimeTrackingRowData) => {
+      let moduleId: ID;
+      let menuId: ID;
+      let screenId: ID;
+      let featureId: ID;
+      if (rowData.module) {
+        moduleId = this.allDropdownData().modules?.find(
+          (item: any) => item.moduleName === rowData.module,
+        )?.id;
+      }
+      if (rowData.menu) {
+        menuId = this.allDropdownData().menus?.find(
+          (item: any) => item.menuName === rowData.menu,
+        )?.id;
+      }
+      if (rowData.module) {
+        screenId = this.allDropdownData().screens?.find(
+          (item: any) => item.screenName === rowData.screen,
+          (item: any) => item.screenName === rowData.screen,
+        )?.id;
+      }
+      if (rowData.module) {
+        featureId = this.allDropdownData().features?.find(
+          (item: any) => item.featureName === rowData.feature,
+        )?.id;
+      }
+
       return {
         ...rowData,
         ...this.getCommonValue(),
+        moduleId,
+        menuId,
+        screenId,
+        featureId,
+        employeeLevelId: this.getControlValue(
+          this.SELECT_FORM_GROUP_KEY.employee,
+        ),
+        projectId: this.getControlValue(this.SELECT_FORM_GROUP_KEY.project),
         createdDate: new Date(),
       };
     });
+  }
+
+  onBulkCreate() {
+    let listData: any;
+    if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
+      console.log('this.fixList', this.allDropdownData());
+      listData = this.convertListBugOrImprovementBeforeSave();
+    }
 
     this.isLoading.set(true);
     this.doPostRequestDTO.update((oldValue) => ({

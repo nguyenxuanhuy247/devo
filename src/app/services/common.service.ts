@@ -59,7 +59,7 @@ export class CommonService {
         .filter((subItem: any) => subItem[optionValue]) // Lọc những project có tên
         .map((subItem: any) => ({
           label: subItem[optionValue],
-          value: subItem[optionValue],
+          value: subItem['id'],
         }));
       return acc;
     }, {});

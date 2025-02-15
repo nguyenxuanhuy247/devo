@@ -3,7 +3,7 @@ import { EApiMethod } from '../../contants/common.constant';
 import { ITimeTrackingRowData } from './time-tracking.model';
 
 export enum EGetApiMode {
-  DEPENDENT_DROPDOWN = 'DEPENDENT_DROPDOWN',
+  DROPDOWN = 'DROPDOWN',
   INDEPENDENT_DROPDOWN = 'INDEPENDENT_DROPDOWN',
   TABLE_DATA = 'TABLE_DATA',
   DETAIL = 'DETAIL',
@@ -176,6 +176,7 @@ export interface IFeaturesResponseDTO {
   id: ID;
   featureName: string;
 }
+
 export interface IDepartmentsResponseDTO {
   id: ID;
   departmentName: string;
