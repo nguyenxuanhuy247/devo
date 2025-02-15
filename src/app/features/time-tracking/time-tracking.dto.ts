@@ -60,10 +60,6 @@ export interface ITimeTrackingDoPostRequestDTO {
 
 // 🡫🡫🡫🡫🡫 START REGION : Response DTO 🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫
 
-export interface ITimeTrackingResponseDTO {
-  mode: EGetApiMode;
-}
-
 // Lấy danh sách TableData từ DATABASE
 export interface ILogWorkTableDataResponseDTO {
   id: ID;
@@ -91,14 +87,26 @@ export interface ILogWorkTableDataResponseDTO {
 }
 
 // Lấy danh sách dropdown phụ thuộc
-export interface ITimeTrackingSharedDropdownResponseDTO {
-  employees: IEmployeeResponseDTO[];
-  projects: IProjectInEmployeeResponseDTO[];
-  modules: IModulesResponseDTO[];
-  menus: IMenusResponseDTO[];
-  screens: IScreensResponseDTO[];
-  features: IFeaturesResponseDTO[];
-  departments: IDepartmentsResponseDTO[];
+
+export interface IEmployeeLevelResponseDTO {
+  id: ID;
+  levelName: string;
+  createdDate: string;
+  updatedDate: string;
+  employees: IEmployeeChildListResponseDTO[];
+}
+
+export interface IEmployeeChildListResponseDTO {
+  id: ID;
+  employeeName: string;
+  employeeCode: number;
+  username: string;
+  email: string;
+  bugImprovementApi: string;
+  bugImprovementSpreadsheet: string;
+  employeeLevelId: ID;
+  createdDate: string;
+  updatedDate: string;
 }
 
 export interface IEmployeeResponseDTO {
@@ -107,118 +115,118 @@ export interface IEmployeeResponseDTO {
   employeeCode: number;
   username: string;
   email: string;
-  levelName: string;
   bugImprovementApi: string;
-  bugImprovementSpreedsheet: string;
-  projects: IProjectInEmployeeResponseDTO[];
+  bugImprovementSpreadsheet: string;
+  employeeLevelId: ID;
+  createdDate: string;
+  updatedDate: string;
+  projects: IProjectChildListResponseDTO[];
 }
 
-export interface IProjectInEmployeeResponseDTO {
+export interface IProjectChildListResponseDTO {
+  id: ID;
   projectName: string;
-  fk_modules: string;
+  createdDate: string;
+  updatedDate: string;
 }
 
 export interface IProjectResponseDTO {
   id: ID;
   projectName: string;
-  modules: IModulesInProjectResponseDTO[];
+  createdDate: string;
+  updatedDate: string;
+  modules: IModuleChildListResponseDTO[];
 }
 
-export interface IModulesInProjectResponseDTO {
+export interface IModuleChildListResponseDTO {
+  id: ID;
   moduleName: string;
-  fk_menus: string;
+  projectId: ID;
+  createdDate: string;
+  updatedDate: string;
 }
 
-export interface IModulesResponseDTO {
+export interface IModuleResponseDTO {
   id: ID;
-  moduleName: 'Danh mục';
-  menus: IMenusInModuleResponseDTO[];
+  moduleName: string;
+  projectId: ID;
+  createdDate: string;
+  updatedDate: string;
+  menus: IMenuChildListResponseDTO[];
 }
 
-export interface IMenusInModuleResponseDTO {
-  menuName: string;
-  fk_screens: string;
-}
-
-export interface IMenusResponseDTO {
-  id: ID;
-  menuName: string;
-  screens: IScreensInMenuResponseDTO[];
-}
-
-export interface IScreensInMenuResponseDTO {
-  menuName: string;
-  fk_screens: string;
-}
-
-export interface IMenusResponseDTO {
+export interface IMenuChildListResponseDTO {
   id: ID;
   menuName: string;
-  screens: IScreensInMenuResponseDTO[];
+  moduleId: ID;
+  createdDate: string;
+  updatedDate: string;
 }
 
-export interface IScreensInMenuResponseDTO {
+export interface IMenuResponseDTO {
+  id: ID;
   menuName: string;
-  fk_screens: string;
+  moduleId: ID;
+  createdDate: string;
+  updatedDate: string;
+  screens: IScreenChildListResponseDTO[];
 }
 
-export interface IScreensResponseDTO {
+export interface IScreenChildListResponseDTO {
   id: ID;
   screenName: string;
-  features: IFeaturesInScreenResponseDTO[];
+  status: string;
+  menuId: ID;
+  createdDate: string;
+  updatedDate: string;
 }
 
-export interface IFeaturesInScreenResponseDTO {
-  featureName: string;
+export interface IScreenResponseDTO {
+  id: ID;
+  screenName: string;
+  status: string;
+  menuId: ID;
+  createdDate: string;
+  updatedDate: string;
+  features: IFeatureResponseDTO[];
 }
 
-export interface IFeaturesResponseDTO {
+export interface IFeatureResponseDTO {
   id: ID;
   featureName: string;
+  screenId: ID;
+  createdDate: string;
+  updatedDate: string;
 }
 
-export interface IDepartmentsResponseDTO {
+export interface IDepartmentResponseDTO {
   id: ID;
   departmentName: string;
-  interruptionReasons: IInterruptionReasonsInDepartmentResponseDTO[];
+  createdDate: string;
+  updatedDate: string;
+  interruptionReasons: IInterruptionReasonChildListResponseDTO[];
 }
 
-export interface IInterruptionReasonsInDepartmentResponseDTO {
+export interface IInterruptionReasonChildListResponseDTO {
+  id: ID;
   interruptionReasonName: string;
+  departmentId: string;
+  createdDate: string;
+  updatedDate: string;
+}
+
+export interface ICategoryResponseDTO {
+  id: ID;
+  categoryName: string;
+  createdDate: string;
+  updatedDate: string;
+}
+
+export interface IDayOffResponseDTO {
+  id: ID;
+  dayOff: string;
+  createdDate: string;
+  updatedDate: string;
 }
 
 // 🡩🡩🡩🡩🡩 END REGION : Response DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩
-
-export interface IIndependentDropdownResponseDTO {
-  tabs: ITabsInIndependentDropdownResponseDTO[];
-  categories: ICategoriesInIndependentDropdownResponseDTO[];
-  dayoffs: IDayoffsInIndependentDropdownResponseDTO[];
-  departments: IDepartmentsInIndependentDropdownResponseDTO[];
-}
-
-export interface ITabsInIndependentDropdownResponseDTO {
-  id: ID;
-  tabName: string;
-}
-
-export interface ICategoriesInIndependentDropdownResponseDTO {
-  id: ID;
-  categoryName: string;
-}
-
-export interface IDayoffsInIndependentDropdownResponseDTO {
-  id: ID;
-  dayoff: string;
-}
-
-export interface IDepartmentsInIndependentDropdownResponseDTO {
-  id: ID;
-  departmentName: string;
-  fkn_interruptionReasons: string;
-}
-
-export interface IBugImprovementSheetData {
-  range: string;
-  majorDimension: string;
-  values: any[][];
-}

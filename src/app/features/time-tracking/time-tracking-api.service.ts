@@ -4,13 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { apiManager } from '../../contants/api.contant';
 import { CommonService } from '../../services';
 import {
-  IIndependentDropdownResponseDTO,
   ITimeTrackingDoPostRequestDTO,
   ITimeTrackingRequestDTO,
-  ITimeTrackingSharedDropdownResponseDTO,
 } from './time-tracking.dto';
 import { IHttpResponse } from '../../shared/interface/common.interface';
 import { MessageService } from 'primeng/api';
+import { IAllDropDownResponseDTO } from './time-tracking.model';
 
 @Injectable({
   providedIn: 'root',
@@ -93,13 +92,13 @@ export class TimeTrackingApiService {
 
   getDropdownListAsync(
     requestDTO: ITimeTrackingRequestDTO,
-  ): Observable<ITimeTrackingSharedDropdownResponseDTO> {
+  ): Observable<IAllDropDownResponseDTO> {
     const params = this.commonService.parseObjToParams(
       this.commonService.getParamsNotEmpty(requestDTO),
     );
 
     return this.http
-      .get<IHttpResponse<ITimeTrackingSharedDropdownResponseDTO>>(
+      .get<IHttpResponse<IAllDropDownResponseDTO>>(
         apiManager.DATABASE + '?' + params,
       )
       .pipe(
@@ -109,13 +108,14 @@ export class TimeTrackingApiService {
       );
   }
 
+  // TODO -Xóa
   getAllIndependentDropdownAsync(requestDTO: ITimeTrackingRequestDTO) {
     const params = this.commonService.parseObjToParams(
       this.commonService.getParamsNotEmpty(requestDTO),
     );
 
     return this.http
-      .get<IHttpResponse<IIndependentDropdownResponseDTO>>(
+      .get<IHttpResponse<IAllDropDownResponseDTO>>(
         apiManager.DATABASE + '?' + params,
       )
       .pipe(

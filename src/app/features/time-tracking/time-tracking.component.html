@@ -3,24 +3,32 @@
     <!-- BÊN TRÁI -->
     <div class="flex flex-1 gap-3">
       <div class="flex-1">
+        <label for="employeeLevel" class="">Level</label>
+        <div class="">
+          <lib-form-select
+            [formControlName]="SELECT_FORM_GROUP_KEY.employeeLevelId"
+            [options]="employeeLevelOptions()"
+          ></lib-form-select>
+        </div>
+      </div>
+
+      <div class="flex-1">
         <label for="employee" class="">Nhân viên</label>
         <div class="">
-          <p-select
-            id="employee"
-            [formControlName]="SELECT_FORM_GROUP_KEY.employee"
-            [options]="employeeOptions()"
-          />
+          <lib-form-select
+            [formControlName]="SELECT_FORM_GROUP_KEY.employeeId"
+            [options]="getCommonDependentDropDown(SELECT_FORM_GROUP_KEY.employeeLevelId)"
+          ></lib-form-select>
         </div>
       </div>
 
       <div class="flex-1">
         <label for="project" class="">Dự án</label>
         <div class="">
-          <p-select
-            id="project"
-            [formControlName]="SELECT_FORM_GROUP_KEY.project"
-            [options]="getDependentProjectDropDown(SELECT_FORM_GROUP_KEY.employee)"
-          />
+          <lib-form-select
+            [formControlName]="SELECT_FORM_GROUP_KEY.projectId"
+            [options]="getCommonDependentDropDown(SELECT_FORM_GROUP_KEY.employeeId)"
+          ></lib-form-select>
         </div>
       </div>
     </div>

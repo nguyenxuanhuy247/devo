@@ -25,13 +25,8 @@ import { TimeTrackingApiService } from './time-tracking-api.service';
 import {
   EGetApiMode,
   ETabName,
-  ICategoriesInIndependentDropdownResponseDTO,
-  IDayoffsInIndependentDropdownResponseDTO,
-  IDepartmentsInIndependentDropdownResponseDTO,
   IEmployeeResponseDTO,
-  IIndependentDropdownResponseDTO,
   ILogWorkTableDataResponseDTO,
-  ITabsInIndependentDropdownResponseDTO,
   ITimeTrackingDoGetRequestDTO,
   ITimeTrackingDoPostRequestDTO,
 } from './time-tracking.dto';
@@ -56,7 +51,8 @@ import {
   estimateHeaderColumns,
   FAKE_REPORT_DATA,
   FORM_GROUP_KEYS,
-  IDependentDropDown,
+  IAllDependentDropDown,
+  IAllDropDownResponseDTO,
   IIndependentDropDownSignal,
   issuesHeaderColumns,
   ITimeTrackingRowData,
@@ -219,9 +215,9 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   ngOnInit() {
     this.formGroup = this.formBuilder.group({
-      [SELECT_FORM_GROUP_KEY.employee]: null,
-      [SELECT_FORM_GROUP_KEY.employeeLevel]: null,
-      [SELECT_FORM_GROUP_KEY.project]: null,
+      [SELECT_FORM_GROUP_KEY.employeeId]: null,
+      [SELECT_FORM_GROUP_KEY.employeeLevelId]: null,
+      [SELECT_FORM_GROUP_KEY.projectId]: null,
       [SELECT_FORM_GROUP_KEY.dateRange]: null,
       [SELECT_FORM_GROUP_KEY.quickDate]: 'TODAY',
       [SELECT_FORM_GROUP_KEY.formArray]: this.formBuilder.array([]),
@@ -306,8 +302,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
     this.subscription.add(
       combineLatest(
-        this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employee),
-        this.getControlValueChanges(SELECT_FORM_GROUP_KEY.project),
+        this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employeeId),
+        this.getControlValueChanges(SELECT_FORM_GROUP_KEY.projectId),
         this.getControlValueChanges(SELECT_FORM_GROUP_KEY.dateRange).pipe(
           filter((range) => range.every((date: Date) => !!date)),
         ),
@@ -325,23 +321,18 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     );
 
     this.subscription.add(
-      this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employee).subscribe(
-        (employeeName: string) => {
-          const employee = this.employeeList()?.find(
-            (employee) => employee.username === employeeName,
+      this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employeeId).subscribe(
+        (employeeId: ID) => {
+          const employee = this.allDropdownData()?.employees.find(
+            (employee) => employee.id === employeeId,
           );
           this.currentEmployee.set(employee);
-
-          const employeeLevel = employee.levelName;
-          this.getControl(SELECT_FORM_GROUP_KEY.employeeLevel).setValue(
-            employeeLevel,
-          );
         },
       ),
     );
 
     this.subscription.add(
-      this.getControlValueChanges(SELECT_FORM_GROUP_KEY.project).subscribe(
+      this.getControlValueChanges(SELECT_FORM_GROUP_KEY.projectId).subscribe(
         (_: string) => {
           this.getControl(FORM_GROUP_KEYS.dateRange).setValue([
             startOfDay(new Date()),
@@ -454,13 +445,15 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     );
   }
 
+  employeeLevelOptions = signal<IOption[]>([]);
+  dependentDropDown = signal<IAllDependentDropDown>({});
+
   employeeOptions = signal<IOption[]>([]);
-  employeeProjectDropDown = signal<IDependentDropDown>({});
-  projectModuleDropdown = signal<IDependentDropDown>(null);
-  moduleMenuDropdown = signal<IDependentDropDown>(null);
-  menuScreenDropdown = signal<IDependentDropDown>(null);
-  screenFeatureDropdown = signal<IDependentDropDown>(null);
-  departmentInterruptionReasonDropdown = signal<IDependentDropDown>(null);
+  projectModuleDropdown = signal<IAllDependentDropDown>(null);
+  moduleMenuDropdown = signal<IAllDependentDropDown>(null);
+  menuScreenDropdown = signal<IAllDependentDropDown>(null);
+  screenFeatureDropdown = signal<IAllDependentDropDown>(null);
+  departmentInterruptionReasonDropdown = signal<IAllDependentDropDown>(null);
 
   independentDropdowns = signal<IIndependentDropDownSignal>({
     tabs: null,
@@ -469,13 +462,18 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     departments: null,
   });
   employeeList = signal<IEmployeeResponseDTO[]>([]);
-  allDropdownData = signal({
-    employees: null,
-    projects: null,
-    modules: null,
-    menus: null,
-    screens: null,
-    features: null,
+
+  allDropdownData = signal<IAllDropDownResponseDTO>({
+    categories: [],
+    dayOffs: [],
+    departments: [],
+    employeeLevels: [],
+    employees: [],
+    projects: [],
+    modules: [],
+    menus: [],
+    screens: [],
+    features: [],
   });
 
   callAPIGetDependentDropdown() {
@@ -486,93 +484,124 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       })
       .subscribe((result) => {
         this.allDropdownData.update((oldValue) => ({ ...oldValue, ...result }));
-        console.log('allDropdownData', this.allDropdownData());
-        // Nhân viên
-        const employees = result.employees;
-        if (employees && employees.length > 0) {
-          this.employeeList.set(result.employees);
-          const options = this.employeeList()?.map((item: any) => ({
-            label: item['username'],
-            value: item['username'],
-          }));
-          this.employeeOptions.set(options);
-          const userProjectDropdown =
-            this.commonService.convertToDependentDropdown(
-              this.employeeList(),
-              'username',
-              'projects',
-              'projectName',
-            );
-          this.employeeProjectDropDown.set(userProjectDropdown);
-          this.getControl(SELECT_FORM_GROUP_KEY.employee).setValue(
-            this.employeeOptions()[0].value,
-          );
-        }
 
-        //  Dự án
-        const projects = result.projects;
-        if (projects && projects.length > 0) {
-          this.allDropdownData.update((oldValue) => ({
+        // Level nhân viên
+        const employeeLevelList = result.employeeLevels;
+        if (employeeLevelList && employeeLevelList.length > 0) {
+          const employeeLevelOptions: IOption[] = employeeLevelList.map(
+            (employeeLevel) => ({
+              label: employeeLevel.levelName,
+              value: employeeLevel.id,
+            }),
+          );
+
+          this.employeeLevelOptions.set(employeeLevelOptions);
+          this.getControl(SELECT_FORM_GROUP_KEY.employeeLevelId).setValue(
+            employeeLevelOptions[0].value,
+          );
+
+          // Nhân viên Options
+          const employeeOptions = this.commonService.convertToDependentDropdown(
+            employeeLevelList,
+            'id',
+            'employees',
+            'employeeName',
+          );
+
+          this.dependentDropDown.update((oldValue) => ({
             ...oldValue,
-            projects,
+            [SELECT_FORM_GROUP_KEY.employeeLevelId]: employeeOptions,
           }));
-          const projectModuleDropdown =
-            this.commonService.convertToDependentDropdown(
-              projects,
-              'projectName',
-              'modules',
-              'moduleName',
-            );
-          this.projectModuleDropdown.set(projectModuleDropdown);
-          this.getControl(SELECT_FORM_GROUP_KEY.project).setValue(
-            projects[0]['projectName'],
+        }
+
+        //  Dự án Options
+        const employeeList = result.employees;
+        if (employeeList && employeeList.length > 0) {
+          const projectOptions = this.commonService.convertToDependentDropdown(
+            employeeList,
+            'id',
+            'projects',
+            'projectName',
           );
+
+          this.dependentDropDown.update((oldValue) => ({
+            ...oldValue,
+            [SELECT_FORM_GROUP_KEY.employeeId]: projectOptions,
+          }));
         }
 
-        // Module
-        const modules = result.modules;
-        if (modules && modules.length > 0) {
-          this.allDropdownData.update((oldValue) => ({ ...oldValue, modules }));
-          const moduleMenuDropdown =
-            this.commonService.convertToDependentDropdown(
-              modules,
-              'moduleName',
-              'menus',
-              'menuName',
-            );
-          this.moduleMenuDropdown.set(moduleMenuDropdown);
+        // Module Options
+        const projectList = result.projects;
+        if (projectList && projectList.length > 0) {
+          const moduleOptions = this.commonService.convertToDependentDropdown(
+            projectList,
+            'id',
+            'modules',
+            'moduleName',
+          );
+          this.dependentDropDown.update((oldValue) => ({
+            ...oldValue,
+            [SELECT_FORM_GROUP_KEY.projectId]: moduleOptions,
+          }));
+
+          console.log('employeeLevelOptions', this.dependentDropDown());
         }
 
-        // Menu
-        const menus = result.menus;
-        if (menus && menus.length > 0) {
-          this.allDropdownData.update((oldValue) => ({ ...oldValue, menus }));
-          const menuScreenDropdown =
-            this.commonService.convertToDependentDropdown(
-              menus,
-              'menuName',
-              'screens',
-              'screenName',
-            );
-          this.menuScreenDropdown.set(menuScreenDropdown);
+        // Menu Options
+        const moduleList = result.modules;
+        if (moduleList && moduleList.length > 0) {
+          const menuOptions = this.commonService.convertToDependentDropdown(
+            moduleList,
+            'id',
+            'menus',
+            'menuName',
+          );
+          this.dependentDropDown.update((oldValue) => ({
+            ...oldValue,
+            [FORM_GROUP_KEYS.menu]: menuOptions,
+          }));
         }
 
-        // Màn hình
-        const screens = result.screens;
-        if (screens && screens.length > 0) {
-          const screenFeatureDropdown =
-            this.commonService.convertToDependentDropdown(
-              screens,
-              'screenName',
-              'features',
-              'featureName',
-            );
-          this.screenFeatureDropdown.set(screenFeatureDropdown);
+        // Màn hình Options
+        const menuList = result.menus;
+        if (menuList && menuList.length > 0) {
+          const screenOptions = this.commonService.convertToDependentDropdown(
+            menuList,
+            'id',
+            'screens',
+            'screenName',
+          );
+          this.dependentDropDown.update((oldValue) => ({
+            ...oldValue,
+            [FORM_GROUP_KEYS.screen]: screenOptions,
+          }));
         }
 
-        // Bộ phận làm việc
+        // Tính năng Options
+        const screenList = result.screens;
+        if (screenList && screenList.length > 0) {
+          const featureOptions = this.commonService.convertToDependentDropdown(
+            screenList,
+            'id',
+            'features',
+            'featureName',
+          );
+          this.dependentDropDown.update((oldValue) => ({
+            ...oldValue,
+            [FORM_GROUP_KEYS.feature]: featureOptions,
+          }));
+        }
+
+        // Bộ phận làm việc Options
         const departments = result.departments;
         if (departments && departments.length > 0) {
+          const departmentOptions: IOption[] = departments.map(
+            (department) => ({
+              label: department.departmentName,
+              value: department.id,
+            }),
+          );
+
           const departmentInterruptionReasonDropdown =
             this.commonService.convertToDependentDropdown(
               departments,
@@ -596,74 +625,18 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           this.isLoading.set(false);
           return;
         }
-
-        console.log('3333333333333');
-
-        this.callAPIGetAllIndependentDropdown();
       });
   }
 
-  /**
-   * @usage Gọi API lấy option của menu độc lập
-   */
-  callAPIGetAllIndependentDropdown() {
-    this.timeTrackingService
-      .getAllIndependentDropdownAsync({
-        mode: EGetApiMode.INDEPENDENT_DROPDOWN,
-      })
-      .pipe(
-        filter(
-          (obj: IIndependentDropdownResponseDTO) => Object.keys(obj).length > 0,
-        ),
-      )
-      .subscribe((obj: IIndependentDropdownResponseDTO) => {
-        const tabOptions = obj.tabs?.map(
-          (item: ITabsInIndependentDropdownResponseDTO) => ({
-            label: item.tabName,
-            value: item.tabName,
-          }),
-        );
-        const categoryOptions = obj.categories?.map(
-          (item: ICategoriesInIndependentDropdownResponseDTO) => ({
-            label: item.categoryName,
-            value: item.categoryName,
-          }),
-        );
-        const dayoffOptions = obj.dayoffs?.map(
-          (item: IDayoffsInIndependentDropdownResponseDTO) => ({
-            label: item.dayoff,
-            value: item.dayoff,
-          }),
-        );
-        const departmentOptions = obj.departments?.map(
-          (item: IDepartmentsInIndependentDropdownResponseDTO) => ({
-            label: item.departmentName,
-            value: item.departmentName,
-          }),
-        );
-        this.independentDropdowns.update(
-          (oldValue: IIndependentDropDownSignal) => ({
-            ...oldValue,
-            tabs: tabOptions,
-            categories: categoryOptions,
-            dayoffs: dayoffOptions,
-            departments: departmentOptions,
-          }),
-        );
-
-        this.isLoading.set(false);
-        if (this.activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT) {
-          this.callAPIGetTableData();
-        }
-      });
-  }
-
-  getDependentProjectDropDown(formControlName: string) {
+  getCommonDependentDropDown(formControlName: string) {
     const key = this.getControlValue(formControlName);
-    return this.employeeProjectDropDown()[key];
+    return this.dependentDropDown()?.[formControlName]?.[key];
   }
 
-  getDependentModuleDropDown(formControlName: string, formGroup?: FormGroup) {
+  getDependentModuleDropDown(
+    formControlName: string,
+    formGroup?: FormGroup,
+  ): any {
     const value = this.getControlValue(formControlName);
     return this.projectModuleDropdown()?.[value] || [];
   }
@@ -679,7 +652,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     index: number,
     rowData: ITimeTrackingRowData,
     dependentFormControlName: string,
-  ) {
+  ): any {
     const mode = rowData.mode;
     let value;
     if (mode === EMode.CREATE) {
@@ -691,7 +664,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       value = this.getFormControl(index, dependentFormControlName)?.value;
     }
 
-    let dropDownOptions: IDependentDropDown;
+    let dropDownOptions: IAllDependentDropDown;
     switch (dependentFormControlName) {
       case FORM_GROUP_KEYS.module: {
         dropDownOptions = this.moduleMenuDropdown();
@@ -993,7 +966,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   openGoogleSheets() {
-    window.open(this.currentEmployee().bugImprovementSpreedsheet, '_blank'); // Mở trong tab mới
+    window.open(this.currentEmployee().bugImprovementSpreadsheet, '_blank'); // Mở trong tab mới
   }
 
   convertListBugOrImprovementBeforeSave() {
@@ -1032,9 +1005,9 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         screenId,
         featureId,
         employeeLevelId: this.getControlValue(
-          this.SELECT_FORM_GROUP_KEY.employee,
+          this.SELECT_FORM_GROUP_KEY.employeeId,
         ),
-        projectId: this.getControlValue(this.SELECT_FORM_GROUP_KEY.project),
+        projectId: this.getControlValue(this.SELECT_FORM_GROUP_KEY.projectId),
         createdDate: new Date(),
       };
     });

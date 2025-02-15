@@ -6,14 +6,26 @@ import {
 } from '../../shared/interface/common.interface';
 import { EMode } from '../../contants/common.constant';
 import { FormArray } from '@angular/forms';
+import {
+  ICategoryResponseDTO,
+  IDayOffResponseDTO,
+  IDepartmentResponseDTO,
+  IEmployeeLevelResponseDTO,
+  IEmployeeResponseDTO,
+  IFeatureResponseDTO,
+  IMenuResponseDTO,
+  IModuleResponseDTO,
+  IProjectResponseDTO,
+  IScreenResponseDTO,
+} from './time-tracking.dto';
 
 export const SELECT_FORM_GROUP_KEY =
   CommonService.generateEnumFromInterface<ISelectFormGroup>();
 
 export interface ISelectFormGroup {
-  employee: string;
-  employeeLevel: string;
-  project: string;
+  employeeLevelId: string;
+  employeeId: string;
+  projectId: string;
   dateRange: [Date, Date];
   quickDate: 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'CUSTOM';
   formArray: FormArray;
@@ -67,7 +79,7 @@ export interface IFormGroup extends ITimeTrackingRowData {
 export const FORM_GROUP_KEYS =
   CommonService.generateEnumFromInterface<IFormGroup>();
 
-const commonHeaderColumn: IColumnHeaderConfigs[] = [
+export const commonHeaderColumn: IColumnHeaderConfigs[] = [
   {
     label: 'STT',
     field: COLUMN_FIELD.no,
@@ -364,8 +376,8 @@ export const nullableObj: ITimeTrackingRowData = {
   updatedDate: null,
 };
 
-export interface IDependentDropDown {
-  [s: string]: IOption[];
+export interface IAllDependentDropDown {
+  [s: string]: Record<ID, IOption[]>;
 }
 
 export interface IIndependentDropDownSignal {
@@ -409,3 +421,16 @@ export const FAKE_REPORT_DATA = [
     ],
   },
 ];
+
+export interface IAllDropDownResponseDTO {
+  employees: IEmployeeResponseDTO[];
+  projects: IProjectResponseDTO[];
+  modules: IModuleResponseDTO[];
+  menus: IMenuResponseDTO[];
+  screens: IScreenResponseDTO[];
+  features: IFeatureResponseDTO[];
+  employeeLevels: IEmployeeLevelResponseDTO[];
+  departments: IDepartmentResponseDTO[];
+  categories: ICategoryResponseDTO[];
+  dayOffs: IDayOffResponseDTO[];
+}

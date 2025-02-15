@@ -50,16 +50,17 @@ export class CommonService {
 
   convertToDependentDropdown(
     list: any[],
-    key: string,
-    subListName: string,
-    optionValue: string,
+    key: string, // Giá trị của Dropdown
+    subListName: string, // Tên danh sách con trong API
+    optionLabel: string,
+    optionValue: string = 'id',
   ) {
     return list.reduce((acc, item) => {
       acc[item[key]] = item[subListName]
         .filter((subItem: any) => subItem[optionValue]) // Lọc những project có tên
         .map((subItem: any) => ({
-          label: subItem[optionValue],
-          value: subItem['id'],
+          label: subItem[optionLabel],
+          value: subItem[optionValue],
         }));
       return acc;
     }, {});

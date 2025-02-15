@@ -1,0 +1,70 @@
+<div>
+  <p-table
+    [value]="tableData"
+    [scrollable]="true"
+    styleClass="p-datatable-gridlines"
+    scrollHeight="800px"
+    [resizableColumns]="true"
+    columnResizeMode="expand"
+  >
+    <!-- TABLE HEADER -->
+    <ng-template pTemplate="header">
+      <tr>
+        @for (col of headerColumnConfigs; track col.field) {
+          @if (col.field === COLUMN_FIELD.category) {
+            <th
+              [pSortableColumn]="col.field"
+              pResizableColumn
+              pFrozenColumn
+              [style.min-width.px]="col.minWidth"
+            >
+              <div class="flex">
+                <div class="flex-1 line-clamp line-clamp-2">
+                  {{ col.label }}
+                </div>
+                <p-sortIcon [field]="col.field" />
+              </div>
+            </th>
+          } @else {
+            <th
+              [pSortableColumn]="col.field"
+              pResizableColumn
+              [style.min-width.px]="col.minWidth"
+            >
+              <div class="flex">
+                <div class="flex-1 line-clamp line-clamp-2" [pTooltip]="col.label">
+                  {{ col.label }}
+                </div>
+                <p-sortIcon [field]="col.field" />
+              </div>
+            </th>
+          }
+        }
+      </tr>
+    </ng-template>
+
+    <!--  TABLE ROW DATA -->
+    <ng-template pTemplate="body" let-rowData let-index="rowIndex">
+      <tr>
+        @for (col of headerColumnConfigs; track col.field) {
+          @if (col.field === COLUMN_FIELD.no) {
+            <td>{{ index + 1 }}</td>
+          } @else if (col.field === COLUMN_FIELD.startTime || col.field === COLUMN_FIELD.endTime) {
+            <td>{{ rowData[col.field] | formatDate }}</td>
+          } @else if (col.field === COLUMN_FIELD.isProgressBlock) {
+            <td>
+              <p-tag [severity]="rowData[col.field] ? 'danger' : 'success'"
+                     [value]="rowData[col.field] ? 'Có' : 'Không'" />
+            </td>
+          } @else if (col.field === COLUMN_FIELD.duration) {
+            <td>{{ rowData[col.field] | roundNumber }}</td>
+          } @else {
+            <td>
+              <div class="line-clamp line-clamp-1" [pTooltip]="rowData[col.field]">{{ rowData[col.field] }}</div>
+            </td>
+          }
+        }
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
