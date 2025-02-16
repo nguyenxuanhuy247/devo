@@ -94,8 +94,19 @@
         <p-tab [value]="ETabName.FIX_BUG_DO_IMPROVEMENT">Fix Bug & Do Improvement</p-tab>
         <p-tab [value]="ETabName.REPORT">Báo cáo</p-tab>
       </p-tablist>
+
       <p-tabpanels>
-        <p-tabpanel [value]="activeTab()">
+        <p-tabpanel [value]="ETabName.FIX_BUG_DO_IMPROVEMENT">
+          <app-fix-bug-do-improvement
+            [formGroupControl]="formGroup"
+            [commonFormGroupKey]="SELECT_FORM_GROUP_KEY"
+            [currentEmployee]="currentEmployee()"
+            [allDropdownData]="allDropdownData()"
+            (updateList)="handleActionAfterBugImprovementListUpdated()"></app-fix-bug-do-improvement>
+        </p-tabpanel>
+
+        <p-tabpanel [value]="activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT ? activeTab()  : null">
+          <!--        <p-tabpanel>-->
           <!-- Nút Thêm mới -->
           @if (mode() === EMode.VIEW) {
             <div class="flex justify-content-end gap-3">
@@ -180,7 +191,7 @@
         <ng-template pTemplate="header">
           <tr>
             @for (col of headerColumns(); track trackBy(col)) {
-              @if (col.field === COLUMN_FIELD.category) {
+              @if (col.field === COLUMN_FIELD.categoryId) {
                 <th
                   [pSortableColumn]="col.field"
                   pResizableColumn
@@ -233,7 +244,7 @@
             <td>
               <div>
                 <lib-form-select
-                  [formControlName]="FORM_GROUP_KEYS.module"
+                  [formControlName]="FORM_GROUP_KEYS.moduleId"
                   [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
                 ></lib-form-select>
               </div>
@@ -242,8 +253,8 @@
             <td>
               <div>
                 <lib-form-select
-                  [formControlName]="FORM_GROUP_KEYS.menu"
-                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.module)"
+                  [formControlName]="FORM_GROUP_KEYS.menuId"
+                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)"
                 ></lib-form-select>
               </div>
             </td>
@@ -251,8 +262,8 @@
             <td>
               <div>
                 <lib-form-select
-                  [formControlName]="FORM_GROUP_KEYS.screen"
-                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.menu)"
+                  [formControlName]="FORM_GROUP_KEYS.screenId"
+                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)"
                 ></lib-form-select>
               </div>
             </td>
@@ -260,8 +271,8 @@
             <td>
               <div>
                 <lib-form-select
-                  [formControlName]="FORM_GROUP_KEYS.feature"
-                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.screen)"
+                  [formControlName]="FORM_GROUP_KEYS.featureId"
+                  [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)"
                 ></lib-form-select>
               </div>
             </td>
@@ -269,7 +280,7 @@
             <td>
               <div>
                 <lib-form-select
-                  [formControlName]="FORM_GROUP_KEYS.category"
+                  [formControlName]="FORM_GROUP_KEYS.categoryId"
                   [options]="independentDropdowns().categories || []"
                 ></lib-form-select>
               </div>
@@ -290,7 +301,7 @@
               <td>
                 <div>
                   <lib-form-select
-                    [formControlName]="FORM_GROUP_KEYS.encounteredIssue"
+                    [formControlName]="FORM_GROUP_KEYS.issueId"
                     [options]="[{label: 'aaaaaa', value: 'aaaaaa'}]"
                   ></lib-form-select>
                 </div>
@@ -301,7 +312,7 @@
               <td>
                 <div>
                   <lib-form-select
-                    [formControlName]="FORM_GROUP_KEYS.departmentMakeIssue"
+                    [formControlName]="FORM_GROUP_KEYS.categoryId"
                     [options]="independentDropdowns().departments || []"
                   ></lib-form-select>
                 </div>
@@ -310,8 +321,8 @@
               <td>
                 <div>
                   <lib-form-select
-                    [formControlName]="FORM_GROUP_KEYS.interruptionReason"
-                    [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.departmentMakeIssue)"
+                    [formControlName]="FORM_GROUP_KEYS.categoryId"
+                    [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)"
                   ></lib-form-select>
                 </div>
               </td>
@@ -319,7 +330,7 @@
               <td>
                 <div>
                   <textarea
-                    [formControlName]="FORM_GROUP_KEYS.encounteredIssue"
+                    [formControlName]="FORM_GROUP_KEYS.categoryId"
                     rows="1"
                     cols="30"
                     pTextarea
@@ -330,7 +341,7 @@
               <td>
                 <div>
                   <lib-form-select
-                    [formControlName]="FORM_GROUP_KEYS.employeeMakeIssue"
+                    [formControlName]="FORM_GROUP_KEYS.categoryId"
                     [options]="employeeOptions()"
                   ></lib-form-select>
                 </div>
@@ -339,7 +350,7 @@
               <td>
                 <div>
                   <p-checkbox
-                    [formControlName]="FORM_GROUP_KEYS.isProgressBlock"
+                    [formControlName]="FORM_GROUP_KEYS.categoryId"
                     [binary]="true"
                   />
                 </div>
@@ -424,7 +435,7 @@
               <td>
                 <div>
                   <lib-form-select
-                    [formControlName]="FORM_GROUP_KEYS.status"
+                    [formControlName]="FORM_GROUP_KEYS.categoryId"
                     [options]="[{label: 'Trạng thái 1', value: 'Trạng thái 1'}]"
                   ></lib-form-select>
                 </div>
@@ -468,9 +479,19 @@
               @for (col of headerColumns(); track col.field) {
                 @if (col.field === COLUMN_FIELD.no) {
                   <td>{{ index + 1 }}</td>
+                } @else if (col.field === COLUMN_FIELD.moduleId) {
+                  <td>{{ rowData[col.field]  | convertIdToName: this.allDropdownData().modules: 'moduleName' }}</td>
+                } @else if (col.field === COLUMN_FIELD.menuId) {
+                  <td>{{ rowData[col.field]  | convertIdToName: this.allDropdownData().menus: 'menuName' }}</td>
+                } @else if (col.field === COLUMN_FIELD.screenId) {
+                  <td>{{ rowData[col.field]  | convertIdToName: this.allDropdownData().screens: 'screenName' }}</td>
+                } @else if (col.field === COLUMN_FIELD.featureId) {
+                  <td>{{ rowData[col.field]  | convertIdToName: this.allDropdownData().features: 'featureName' }}</td>
+                } @else if (col.field === COLUMN_FIELD.categoryId) {
+                  <td>{{ rowData[col.field]  | convertIdToName: this.allDropdownData().categories: 'categoryName' }}</td>
                 } @else if (col.field === COLUMN_FIELD.startTime || col.field === COLUMN_FIELD.endTime) {
                   <td>{{ rowData[col.field] | formatDate }}</td>
-                } @else if (col.field === COLUMN_FIELD.isProgressBlock) {
+                } @else if (col.field === COLUMN_FIELD.categoryId) {
                   <td>
                     <p-tag [severity]="rowData[col.field] ? 'danger' : 'success'"
                            [value]="rowData[col.field] ? 'Có' : 'Không'" />
@@ -531,7 +552,7 @@
               <td>
                 <div>
                   <lib-form-select
-                    [formControlName]="FORM_GROUP_KEYS.module"
+                    [formControlName]="FORM_GROUP_KEYS.categoryId"
                     [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
                   ></lib-form-select>
                 </div>
@@ -540,8 +561,8 @@
               <td>
                 <div>
                   <lib-form-select
-                    [formControlName]="FORM_GROUP_KEYS.menu"
-                    [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.module)"
+                    [formControlName]="FORM_GROUP_KEYS.categoryId"
+                    [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)"
                   ></lib-form-select>
                 </div>
               </td>
@@ -549,8 +570,8 @@
               <td>
                 <div>
                   <lib-form-select
-                    [formControlName]="FORM_GROUP_KEYS.screen"
-                    [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.menu)"
+                    [formControlName]="FORM_GROUP_KEYS.categoryId"
+                    [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)"
                   ></lib-form-select>
                 </div>
               </td>
@@ -558,8 +579,8 @@
               <td>
                 <div>
                   <lib-form-select
-                    [formControl]="getFormControl(index, FORM_GROUP_KEYS.feature)"
-                    [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.screen)"
+                    [formControl]="getFormControl(index, FORM_GROUP_KEYS.categoryId)"
+                    [options]="getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)"
                   ></lib-form-select>
                 </div>
               </td>
@@ -567,7 +588,7 @@
               <td>
                 <div>
                   <lib-form-select
-                    [formControlName]="FORM_GROUP_KEYS.category"
+                    [formControlName]="FORM_GROUP_KEYS.categoryId"
                     [options]="independentDropdowns().categories"
                   ></lib-form-select>
                 </div>
@@ -588,7 +609,7 @@
                 <td>
                   <div>
                     <lib-form-select
-                      [formControlName]="FORM_GROUP_KEYS.encounteredIssue"
+                      [formControlName]="FORM_GROUP_KEYS.categoryId"
                       [options]="[{label: 'Vấn đề gặp phải 1', value: 'aaaaaa'}]"
                     ></lib-form-select>
                   </div>
@@ -599,7 +620,7 @@
                 <td>
                   <div>
                     <lib-form-select
-                      [formControlName]="FORM_GROUP_KEYS.departmentMakeIssue"
+                      [formControlName]="FORM_GROUP_KEYS.categoryId"
                       [options]="independentDropdowns().departments || []"
                     ></lib-form-select>
                   </div>
@@ -608,7 +629,7 @@
                 <td>
                   <div>
                     <lib-form-select
-                      [formControlName]="FORM_GROUP_KEYS.interruptionReason"
+                      [formControlName]="FORM_GROUP_KEYS.categoryId"
                       [options]="[{label: 'Tài liệu sai', value: 'aaaaaa'}]"
                     ></lib-form-select>
                   </div>
@@ -617,7 +638,7 @@
                 <td>
                   <div>
                     <textarea
-                      [formControlName]="FORM_GROUP_KEYS.encounteredIssue"
+                      [formControlName]="FORM_GROUP_KEYS.categoryId"
                       rows="1"
                       cols="30"
                       pTextarea
@@ -628,7 +649,7 @@
                 <td>
                   <div>
                     <lib-form-select
-                      [formControlName]="FORM_GROUP_KEYS.employeeMakeIssue"
+                      [formControlName]="FORM_GROUP_KEYS.categoryId"
                       [options]="[{label: 'Anh Thư', value: 'aaaaaa'}]"
                     ></lib-form-select>
                   </div>
@@ -637,7 +658,7 @@
                 <td>
                   <div>
                     <p-checkbox
-                      [formControlName]="FORM_GROUP_KEYS.isProgressBlock"
+                      [formControlName]="FORM_GROUP_KEYS.categoryId"
                       [binary]="true"
                     />
                   </div>
@@ -719,7 +740,7 @@
                 <td>
                   <div>
                     <lib-form-select
-                      [formControlName]="FORM_GROUP_KEYS.status"
+                      [formControlName]="FORM_GROUP_KEYS.categoryId"
                       [options]="[{label: 'Trạng thái 1', value: 'aaaaaa'}]"
                     ></lib-form-select>
                   </div>

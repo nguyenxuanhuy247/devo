@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { DrawerService } from '../../services';
+import { DrawerService, LocalStorageService } from '../../services';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
@@ -27,6 +27,7 @@ export abstract class FormBaseComponent implements OnDestroy {
   messageService = this.injector.get(MessageService);
   sanitizer = this.injector.get(DomSanitizer);
   confirmationService = this.injector.get(ConfirmationService);
+  localStorageService = this.injector.get(LocalStorageService);
 
   onDestroy$: Subject<any> = new Subject<any>();
 

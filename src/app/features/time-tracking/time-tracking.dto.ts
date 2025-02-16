@@ -1,6 +1,5 @@
 import { ID } from '../../shared/interface/common.interface';
 import { EApiMethod } from '../../contants/common.constant';
-import { ITimeTrackingRowData } from './time-tracking.model';
 
 export enum EGetApiMode {
   DROPDOWN = 'DROPDOWN',
@@ -42,18 +41,18 @@ export interface ITimeTrackingRequestDTO {
 export interface ITimeTrackingDoGetRequestDTO {
   method: EApiMethod.GET;
   mode: EGetApiMode;
-  employee: string;
-  project: string;
-  tab: ETabName;
+  employeeLevelId: ID;
+  employeeId: ID;
+  projectId: ID;
+  tabId: ID;
   startTime: Date;
   endTime: Date;
 }
 
-export interface ITimeTrackingDoPostRequestDTO {
+export interface ITimeTrackingDoPostRequestDTO<T> {
   method: EApiMethod.POST | EApiMethod.PUT | EApiMethod.DELETE;
-  isBulk: boolean;
   ids: ID[];
-  data: ITimeTrackingRowData[];
+  data: T[];
 }
 
 // 🡩🡩🡩🡩🡩 END REGION : Request DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩
@@ -218,6 +217,13 @@ export interface IInterruptionReasonChildListResponseDTO {
 export interface ICategoryResponseDTO {
   id: ID;
   categoryName: string;
+  createdDate: string;
+  updatedDate: string;
+}
+
+export interface ITabResponseDTO {
+  id: ID;
+  tabName: string;
   createdDate: string;
   updatedDate: string;
 }

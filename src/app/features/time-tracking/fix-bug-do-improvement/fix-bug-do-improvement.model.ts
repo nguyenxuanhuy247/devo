@@ -1,79 +1,69 @@
 import { IColumnHeaderConfigs } from '../../../shared/interface/common.interface';
-import { COLUMN_FIELD } from '../time-tracking.model';
+import { CommonService } from '../../../services';
+import { IFixBugDoImprovementResponseDTO } from './fix-bug-do-improvement.dto.model';
+
+export const FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD =
+  CommonService.generateEnumFromInterface<IFixBugDoImprovementRowData>();
+
+export interface IFixBugDoImprovementRowData
+  extends IFixBugDoImprovementResponseDTO {
+  no: number;
+}
 
 export const fixBugDoImprovementHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   {
     label: 'STT',
-    field: COLUMN_FIELD.no,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.no,
     minWidth: 70,
   },
   {
     label: 'Module',
-    field: COLUMN_FIELD.module,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.moduleName,
     minWidth: 200,
   },
   {
     label: 'Menu',
-    field: COLUMN_FIELD.menu,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.menuName,
     minWidth: 200,
   },
   {
     label: 'Màn hình',
-    field: COLUMN_FIELD.screen,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.screenName,
     minWidth: 200,
   },
   {
     label: 'Tính năng',
-    field: COLUMN_FIELD.feature,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.featureName,
     minWidth: 200,
   },
-  ,
   {
     label: 'Phân loại',
-    field: COLUMN_FIELD.tab,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.tabName,
     minWidth: 200,
   },
   {
     label: 'Mã bug & improvement',
-    field: COLUMN_FIELD.workContent,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.workContent,
     minWidth: 120,
   },
   {
     label: 'Tên bug & improvement',
-    field: COLUMN_FIELD.bugName,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.bugName,
     minWidth: 120,
   },
   {
     label: 'Thời gian bắt đầu',
-    field: COLUMN_FIELD.startTime,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.startTime,
     minWidth: 200,
   },
   {
     label: 'Thời gian hoàn thành',
-    field: COLUMN_FIELD.endTime,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.endTime,
     minWidth: 200,
   },
   {
     label: 'Thời lượng',
-    field: COLUMN_FIELD.duration,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.duration,
     minWidth: 120,
   },
 ];
-
-export interface IFixBugDoImprovementRowData {
-  moduleId: string;
-  menuId: string;
-  screenId: string;
-  featureId: string;
-  categoryId: string;
-  workContent: string;
-  isSolveIssue: string;
-  encounteredIssue: string;
-  interruptionReason: string;
-  departmentMakeIssue: string;
-  employeeMakeIssue: string;
-  startTime: string;
-  endTime: string;
-  duration: number;
-  isLunchBreak: boolean;
-}

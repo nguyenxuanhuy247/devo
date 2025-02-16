@@ -1,4 +1,33 @@
-<div>
+<div class="fix-bug-do-improvement">
+  <!-- Danh sách nút bấm -->
+  <div class="flex justify-content-end gap-3">
+    <p-button
+      [outlined]="true"
+      severity="secondary"
+      icon="pi pi-external-link"
+      pTooltip="Mở rộng trang tính"
+      label="Mở trang tính"
+      (click)="openGoogleSheets()"
+    />
+
+    <p-button
+      [outlined]="true"
+      severity="secondary"
+      icon="pi pi-sync"
+      pTooltip="Tải lại danh sách"
+      label="Tải lại danh sách"
+      (click)="checkForFixBugAndImprovementUpdates()"
+    />
+
+    <p-button
+      icon="pi pi-plus"
+      label="Thêm hàng loạt"
+      (click)="onBulkCreate()"
+    />
+
+  </div>
+
+  <!-- Bảng danh sách Bug và Improvement đang fix -->
   <p-table
     [value]="tableData"
     [scrollable]="true"
@@ -6,12 +35,13 @@
     scrollHeight="800px"
     [resizableColumns]="true"
     columnResizeMode="expand"
+    [loading]="isLoading()"
   >
     <!-- TABLE HEADER -->
     <ng-template pTemplate="header">
       <tr>
         @for (col of headerColumnConfigs; track col.field) {
-          @if (col.field === COLUMN_FIELD.category) {
+          @if (col.field === COLUMN_FIELD.categoryId) {
             <th
               [pSortableColumn]="col.field"
               pResizableColumn
@@ -51,11 +81,6 @@
             <td>{{ index + 1 }}</td>
           } @else if (col.field === COLUMN_FIELD.startTime || col.field === COLUMN_FIELD.endTime) {
             <td>{{ rowData[col.field] | formatDate }}</td>
-          } @else if (col.field === COLUMN_FIELD.isProgressBlock) {
-            <td>
-              <p-tag [severity]="rowData[col.field] ? 'danger' : 'success'"
-                     [value]="rowData[col.field] ? 'Có' : 'Không'" />
-            </td>
           } @else if (col.field === COLUMN_FIELD.duration) {
             <td>{{ rowData[col.field] | roundNumber }}</td>
           } @else {

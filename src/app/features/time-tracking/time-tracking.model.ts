@@ -17,7 +17,16 @@ import {
   IModuleResponseDTO,
   IProjectResponseDTO,
   IScreenResponseDTO,
+  ITabResponseDTO,
 } from './time-tracking.dto';
+
+export const LOCAL_STORAGE_KEY = 'defaultValue';
+
+export interface IDefaultValueInLocalStorage {
+  employeeLevelId: string;
+  employeeId: string;
+  projectId: string;
+}
 
 export const SELECT_FORM_GROUP_KEY =
   CommonService.generateEnumFromInterface<ISelectFormGroup>();
@@ -29,47 +38,41 @@ export interface ISelectFormGroup {
   dateRange: [Date, Date];
   quickDate: 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'CUSTOM';
   formArray: FormArray;
-  bugOrImprovement: 'Bug' | 'Improvement';
 }
 
 export const TIME_TRACKING_ROW_DATA_KEYS =
-  CommonService.generateEnumFromInterface<ITimeTrackingRowData>();
-export const COLUMN_FIELD = Object.assign(TIME_TRACKING_ROW_DATA_KEYS, {
-  actions: 'actions',
-  bugName: 'bugName',
-  no: 'no',
-});
+  CommonService.generateEnumFromInterface<ILogWorkRowData>();
+export const LOG_WORK_COLUMN_FIELD = Object.assign(
+  TIME_TRACKING_ROW_DATA_KEYS,
+  {
+    no: 'no',
+    actions: 'actions',
+  },
+);
 
-export interface ITimeTrackingRowData {
+export interface ILogWorkRowData {
   mode: EMode;
   id: ID;
-  project: string;
-  employee: string;
-  employeeLevel: string;
-  tab: string;
-  module: string;
-  menu: string;
-  screen: string;
-  feature: string;
-  category: string;
+  employeeLevelId: string;
+  employeeId: string;
+  projectId: string;
+  moduleId: string;
+  menuId: string;
+  screenId: string;
+  featureId: string;
+  tabId: string;
+  categoryId: string;
   workContent: string;
-  isSolveIssue: string;
-  encounteredIssue: string;
-  interruptionReason: string;
-  departmentMakeIssue: string;
-  employeeMakeIssue: string;
+  issueId: string;
   startTime: string;
   endTime: string;
   duration: number;
-  isLunchBreak: boolean;
-  isProgressBlock: boolean;
-  status: 'Đang xử lý' | 'Đã giải quyết';
-  // notes: string;
   createdDate: Date;
   updatedDate: Date;
+  isLunchBreak: boolean;
 }
 
-export interface IFormGroup extends ITimeTrackingRowData {
+export interface IFormGroup extends ILogWorkRowData {
   pic: string;
   dateRange: [Date, Date];
   project: string;
@@ -82,27 +85,27 @@ export const FORM_GROUP_KEYS =
 export const commonHeaderColumn: IColumnHeaderConfigs[] = [
   {
     label: 'STT',
-    field: COLUMN_FIELD.no,
+    field: LOG_WORK_COLUMN_FIELD.no,
     minWidth: 70,
   },
   {
     label: 'Module',
-    field: COLUMN_FIELD.module,
+    field: LOG_WORK_COLUMN_FIELD.moduleId,
     minWidth: 200,
   },
   {
     label: 'Menu',
-    field: COLUMN_FIELD.menu,
+    field: LOG_WORK_COLUMN_FIELD.menuId,
     minWidth: 200,
   },
   {
     label: 'Màn hình',
-    field: COLUMN_FIELD.screen,
+    field: LOG_WORK_COLUMN_FIELD.screenId,
     minWidth: 200,
   },
   {
     label: 'Tính năng',
-    field: COLUMN_FIELD.feature,
+    field: LOG_WORK_COLUMN_FIELD.featureId,
     minWidth: 200,
   },
 ];
@@ -111,27 +114,27 @@ export const estimateHeaderColumns: IColumnHeaderConfigs[] = [
   ...commonHeaderColumn,
   {
     label: 'Phân loại',
-    field: COLUMN_FIELD.category,
+    field: LOG_WORK_COLUMN_FIELD.categoryId,
     minWidth: 200,
   },
   {
     label: 'Thời gian bắt đầu',
-    field: COLUMN_FIELD.startTime,
+    field: LOG_WORK_COLUMN_FIELD.startTime,
     minWidth: 120,
   },
   {
     label: 'Thời lượng',
-    field: COLUMN_FIELD.duration,
+    field: LOG_WORK_COLUMN_FIELD.duration,
     minWidth: 120,
   },
   {
     label: 'Thời gian hoàn thành',
-    field: COLUMN_FIELD.endTime,
+    field: LOG_WORK_COLUMN_FIELD.endTime,
     minWidth: 120,
   },
   {
     label: 'Hành động',
-    field: COLUMN_FIELD.actions,
+    field: LOG_WORK_COLUMN_FIELD.actions,
     minWidth: 120,
   },
 ];
@@ -140,37 +143,37 @@ export const logWorkHeaderColumns: IColumnHeaderConfigs[] = [
   ...commonHeaderColumn,
   {
     label: 'Phân loại',
-    field: COLUMN_FIELD.category,
+    field: LOG_WORK_COLUMN_FIELD.categoryId,
     minWidth: 200,
   },
   {
     label: 'Nội dung công việc',
-    field: COLUMN_FIELD.workContent,
+    field: LOG_WORK_COLUMN_FIELD.workContent,
     minWidth: 120,
   },
   {
     label: 'Vấn đề gặp phải',
-    field: COLUMN_FIELD.encounteredIssue,
+    field: LOG_WORK_COLUMN_FIELD.issueId,
     minWidth: 200,
   },
   {
     label: 'Thời gian bắt đầu',
-    field: COLUMN_FIELD.startTime,
+    field: LOG_WORK_COLUMN_FIELD.startTime,
     minWidth: 200,
   },
   {
     label: 'Thời gian hoàn thành',
-    field: COLUMN_FIELD.endTime,
+    field: LOG_WORK_COLUMN_FIELD.endTime,
     minWidth: 200,
   },
   {
     label: 'Thời lượng',
-    field: COLUMN_FIELD.duration,
+    field: LOG_WORK_COLUMN_FIELD.duration,
     minWidth: 60,
   },
   {
     label: 'Nghỉ trưa',
-    field: COLUMN_FIELD.isLunchBreak,
+    field: LOG_WORK_COLUMN_FIELD.isLunchBreak,
     minWidth: 60,
   },
   // {
@@ -180,7 +183,7 @@ export const logWorkHeaderColumns: IColumnHeaderConfigs[] = [
   // },
   {
     label: 'Hành động',
-    field: COLUMN_FIELD.actions,
+    field: LOG_WORK_COLUMN_FIELD.actions,
     minWidth: 120,
   },
 ];
@@ -189,125 +192,91 @@ export const issuesHeaderColumns: IColumnHeaderConfigs[] = [
   ...commonHeaderColumn,
   {
     label: 'Phân loại',
-    field: COLUMN_FIELD.category,
+    field: LOG_WORK_COLUMN_FIELD.categoryId,
     minWidth: 200,
   },
   {
     label: 'Bộ phận gây gián đoạn',
-    field: COLUMN_FIELD.departmentMakeIssue,
+    field: LOG_WORK_COLUMN_FIELD.categoryId,
     minWidth: 140,
   },
   {
     label: 'Lý do gián đoạn',
-    field: COLUMN_FIELD.interruptionReason,
+    field: LOG_WORK_COLUMN_FIELD.categoryId,
     minWidth: 200,
   },
   {
     label: 'Nội dung vấn đề',
-    field: COLUMN_FIELD.encounteredIssue,
+    field: LOG_WORK_COLUMN_FIELD.issueId,
     minWidth: 200,
   },
   {
     label: 'Người gây gián đoạn',
-    field: COLUMN_FIELD.employeeMakeIssue,
+    field: LOG_WORK_COLUMN_FIELD.employeeId,
     minWidth: 120,
   },
-  {
-    label: 'Block tiến độ',
-    field: COLUMN_FIELD.isProgressBlock,
-    minWidth: 120,
-  },
+  // {
+  //   label: 'Block tiến độ',
+  //   field: COLUMN_FIELD.isProgressBlock,
+  //   minWidth: 120,
+  // },
   {
     label: 'Thời gian bắt đầu',
-    field: COLUMN_FIELD.startTime,
+    field: LOG_WORK_COLUMN_FIELD.startTime,
     minWidth: 200,
   },
   {
     label: 'Thời gian hoàn thành',
-    field: COLUMN_FIELD.endTime,
+    field: LOG_WORK_COLUMN_FIELD.endTime,
     minWidth: 200,
   },
   {
     label: 'Thời lượng',
-    field: COLUMN_FIELD.duration,
+    field: LOG_WORK_COLUMN_FIELD.duration,
     minWidth: 80,
   },
-  {
-    label: 'Trạng thái',
-    field: COLUMN_FIELD.status,
-    minWidth: 180,
-  },
+  // {
+  //   label: 'Trạng thái',
+  //   field: COLUMN_FIELD.status,
+  //   minWidth: 180,
+  // },
   {
     label: 'Hành động',
-    field: COLUMN_FIELD.actions,
+    field: LOG_WORK_COLUMN_FIELD.actions,
     minWidth: 120,
   },
 ];
 
-export const bugImprovementFixHeaderColumns: IColumnHeaderConfigs[] = [
+export const bugImprovementListHeaderColumns: IColumnHeaderConfigs[] = [
   ...commonHeaderColumn,
   {
     label: 'Phân loại',
-    field: COLUMN_FIELD.tab,
+    field: LOG_WORK_COLUMN_FIELD.categoryId,
     minWidth: 200,
   },
   {
     label: 'Mã bug & improvement',
-    field: COLUMN_FIELD.workContent,
-    minWidth: 120,
-  },
-  {
-    label: 'Tên bug & improvement',
-    field: COLUMN_FIELD.bugName,
+    field: LOG_WORK_COLUMN_FIELD.workContent,
     minWidth: 120,
   },
   {
     label: 'Thời gian bắt đầu',
-    field: COLUMN_FIELD.startTime,
-    minWidth: 200,
-  },
-  {
-    label: 'Thời gian hoàn thành',
-    field: COLUMN_FIELD.endTime,
-    minWidth: 200,
-  },
-  {
-    label: 'Thời lượng',
-    field: COLUMN_FIELD.duration,
-    minWidth: 120,
-  },
-];
-
-export const bugImprovementStatsHeaderColumns: IColumnHeaderConfigs[] = [
-  ...commonHeaderColumn,
-  {
-    label: 'Phân loại',
-    field: COLUMN_FIELD.tab,
-    minWidth: 200,
-  },
-  {
-    label: 'Mã bug & improvement',
-    field: COLUMN_FIELD.workContent,
-    minWidth: 120,
-  },
-  {
-    label: 'Thời gian bắt đầu',
-    field: COLUMN_FIELD.startTime,
+    field: LOG_WORK_COLUMN_FIELD.startTime,
     minWidth: 120,
   },
   {
     label: 'Thời gian hoàn thành',
-    field: COLUMN_FIELD.endTime,
+    field: LOG_WORK_COLUMN_FIELD.endTime,
     minWidth: 120,
   },
   {
     label: 'Thời lượng',
-    field: COLUMN_FIELD.duration,
+    field: LOG_WORK_COLUMN_FIELD.duration,
     minWidth: 120,
   },
   {
     label: 'Hành động',
-    field: COLUMN_FIELD.actions,
+    field: LOG_WORK_COLUMN_FIELD.actions,
     minWidth: 120,
   },
 ];
@@ -317,37 +286,37 @@ export const reportHeaderColumns: IColumnHeaderConfigs[] = [
   ...commonHeaderColumn,
   {
     label: 'Phân loại',
-    field: COLUMN_FIELD.tab,
+    field: LOG_WORK_COLUMN_FIELD.tabId,
     minWidth: 200,
   },
   {
     label: 'Mã bug & improvement',
-    field: COLUMN_FIELD.workContent,
+    field: LOG_WORK_COLUMN_FIELD.workContent,
     minWidth: 120,
   },
   {
     label: 'Thời gian bắt đầu',
-    field: COLUMN_FIELD.startTime,
+    field: LOG_WORK_COLUMN_FIELD.startTime,
     minWidth: 120,
   },
   {
     label: 'Thời gian hoàn thành',
-    field: COLUMN_FIELD.endTime,
+    field: LOG_WORK_COLUMN_FIELD.endTime,
     minWidth: 120,
   },
   {
     label: 'Thời lượng',
-    field: COLUMN_FIELD.duration,
+    field: LOG_WORK_COLUMN_FIELD.duration,
     minWidth: 120,
   },
   {
     label: 'Hành động',
-    field: COLUMN_FIELD.actions,
+    field: LOG_WORK_COLUMN_FIELD.actions,
     minWidth: 120,
   },
 ];
 
-export const nullableObj: ITimeTrackingRowData = {
+export const nullableObj: any = {
   mode: EMode.VIEW,
   id: null,
   project: null,
@@ -432,5 +401,6 @@ export interface IAllDropDownResponseDTO {
   employeeLevels: IEmployeeLevelResponseDTO[];
   departments: IDepartmentResponseDTO[];
   categories: ICategoryResponseDTO[];
+  tabs: ITabResponseDTO[];
   dayOffs: IDayOffResponseDTO[];
 }

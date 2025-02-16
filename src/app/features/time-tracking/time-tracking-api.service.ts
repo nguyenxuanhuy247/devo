@@ -10,6 +10,7 @@ import {
 import { IHttpResponse } from '../../shared/interface/common.interface';
 import { MessageService } from 'primeng/api';
 import { IAllDropDownResponseDTO } from './time-tracking.model';
+import { IFixBugDoImprovementResponseDTO } from './fix-bug-do-improvement/fix-bug-do-improvement.dto.model';
 
 @Injectable({
   providedIn: 'root',
@@ -30,7 +31,6 @@ export class TimeTrackingApiService {
       .get<IHttpResponse<any>>(apiManager.DATABASE + '?' + params)
       .pipe(
         map((response) => {
-          console.log('service', response);
           return response.data;
         }),
       );
@@ -54,7 +54,7 @@ export class TimeTrackingApiService {
       );
   }
 
-  createItemAsync(requestDTO: ITimeTrackingDoPostRequestDTO) {
+  createItemAsync(requestDTO: ITimeTrackingDoPostRequestDTO<any>) {
     return this.http
       .post<IHttpResponse>(apiManager.DATABASE, requestDTO, {
         headers: { 'Content-Type': 'text/plain' },
@@ -66,7 +66,9 @@ export class TimeTrackingApiService {
       );
   }
 
-  updateItemAsync(requestDTO: ITimeTrackingDoPostRequestDTO): Observable<any> {
+  updateItemAsync(
+    requestDTO: ITimeTrackingDoPostRequestDTO<any>,
+  ): Observable<any> {
     return this.http
       .post<IHttpResponse>(apiManager.DATABASE, requestDTO, {
         headers: { 'Content-Type': 'text/plain' },
@@ -78,7 +80,9 @@ export class TimeTrackingApiService {
       );
   }
 
-  deleteItemAsync(requestDTO: ITimeTrackingDoPostRequestDTO): Observable<any> {
+  deleteItemAsync(
+    requestDTO: ITimeTrackingDoPostRequestDTO<any>,
+  ): Observable<any> {
     return this.http
       .post(apiManager.DATABASE, requestDTO, {
         headers: { 'Content-Type': 'text/plain' },
@@ -130,11 +134,13 @@ export class TimeTrackingApiService {
       this.commonService.getParamsNotEmpty(requestDTO),
     );
 
-    return this.http.get<IHttpResponse<any[]>>(url + '?' + params).pipe(
-      map((response) => {
-        return response.data;
-      }),
-    );
+    return this.http
+      .get<IHttpResponse<IFixBugDoImprovementResponseDTO[]>>(url + '?' + params)
+      .pipe(
+        map((response) => {
+          return response.data;
+        }),
+      );
   }
 
   deleteLogTimeInFixBugSheetAsync(): Observable<any> {
