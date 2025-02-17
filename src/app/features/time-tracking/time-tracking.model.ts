@@ -51,7 +51,7 @@ export interface IFormGroup extends ILogWorkRowData {
   quickDateRange: string;
 }
 
-export const FORM_GROUP_KEYS =
+export const CHILD_FORM_GROUP_KEYS =
   CommonService.generateEnumFromInterface<IFormGroup>();
 
 export const commonHeaderColumn: IColumnHeaderConfigs[] = [
@@ -242,15 +242,15 @@ export const reportHeaderColumns: IColumnHeaderConfigs[] = [
 export const nullableObj: any = {
   mode: EMode.VIEW,
   id: null,
-  project: null,
-  employee: null,
-  employeeLevel: null,
-  tab: null,
-  module: null,
-  menu: null,
-  screen: null,
-  feature: null,
-  category: null,
+  employeeLevelId: null,
+  projectId: null,
+  employeeId: null,
+  moduleId: null,
+  menuId: null,
+  screenId: null,
+  featureId: null,
+  tabId: null,
+  categoryId: null,
   workContent: null,
   isSolveIssue: null,
   departmentMakeIssue: null,
@@ -268,7 +268,7 @@ export const nullableObj: any = {
   updatedDate: null,
 };
 
-export interface IAllDependentDropDown {
+export interface IDependentDropDown {
   [s: string]: Record<ID, IOption[]>;
 }
 

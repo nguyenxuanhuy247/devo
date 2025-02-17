@@ -3,7 +3,6 @@ import {
   IColumnHeaderConfigs,
   ID,
 } from 'src/app/shared/interface/common.interface';
-import { commonHeaderColumn } from '../time-tracking.model';
 import { CommonService } from 'src/app/services';
 
 export const LOG_WORK_COLUMN_FIELD = Object.assign(
@@ -36,8 +35,54 @@ export interface ILogWorkRowData {
   isLunchBreak: boolean;
 }
 
+export const nullableLogWorkObj: ILogWorkRowData = {
+  mode: EMode.VIEW,
+  id: null,
+  employeeLevelId: null,
+  projectId: null,
+  employeeId: null,
+  moduleId: null,
+  menuId: null,
+  screenId: null,
+  featureId: null,
+  tabId: null,
+  categoryId: null,
+  workContent: null,
+  issueId: null,
+  startTime: null,
+  endTime: null,
+  duration: null,
+  isLunchBreak: true,
+  createdDate: null,
+  updatedDate: null,
+};
+
 export const logWorkHeaderColumnConfigs: IColumnHeaderConfigs[] = [
-  ...commonHeaderColumn,
+  {
+    label: 'STT',
+    field: LOG_WORK_COLUMN_FIELD.no,
+    minWidth: 70,
+  },
+  {
+    label: 'Module',
+    field: LOG_WORK_COLUMN_FIELD.moduleId,
+    minWidth: 200,
+  },
+  {
+    label: 'Menu',
+    field: LOG_WORK_COLUMN_FIELD.menuId,
+    minWidth: 200,
+  },
+  {
+    label: 'Màn hình',
+    field: LOG_WORK_COLUMN_FIELD.screenId,
+    minWidth: 200,
+  },
+  {
+    label: 'Tính năng',
+    field: LOG_WORK_COLUMN_FIELD.featureId,
+    minWidth: 200,
+  },
   {
     label: 'Phân loại',
     field: LOG_WORK_COLUMN_FIELD.categoryId,

@@ -6,8 +6,9 @@
         <label for="employeeLevel" class="">Level</label>
         <div class="">
           <lib-form-select
+            #employeeLevelId
             [formControlName]="SELECT_FORM_GROUP_KEY.employeeLevelId"
-            [options]="employeeLevelOptions()"
+            [options]="employeeLevelOptions$ | async"
           ></lib-form-select>
         </div>
       </div>
@@ -16,8 +17,9 @@
         <label for="employee" class="">Nhân viên</label>
         <div class="">
           <lib-form-select
+            #employeeId
             [formControlName]="SELECT_FORM_GROUP_KEY.employeeId"
-            [options]="getCommonDependentDropDown(SELECT_FORM_GROUP_KEY.employeeLevelId)"
+            [options]="(employeeDependentOptions$ | async)?.[employeeLevelId.value]"
           ></lib-form-select>
         </div>
       </div>
@@ -26,8 +28,9 @@
         <label for="project" class="">Dự án</label>
         <div class="">
           <lib-form-select
+            #projectId
             [formControlName]="SELECT_FORM_GROUP_KEY.projectId"
-            [options]="getCommonDependentDropDown(SELECT_FORM_GROUP_KEY.employeeId)"
+            [options]="(projectDependentOptions$ | async)?.[employeeId.value]"
           ></lib-form-select>
         </div>
       </div>
@@ -98,7 +101,7 @@
       <p-tabpanels>
         <!-- Tab Log work -->
         <p-tabpanel [value]="ETabName.LOG_WORK">
-          <app-log-work>
+          <app-log-work [projectFormControl]="projectId">
           </app-log-work>
         </p-tabpanel>
 
@@ -112,64 +115,64 @@
             (updateList)="handleActionAfterBugImprovementListUpdated($event)"></app-fix-bug-do-improvement>
         </p-tabpanel>
 
-        <p-tabpanel [value]="activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT ? activeTab()  : null">
-          <!--        <p-tabpanel>-->
-          <!-- Nút Thêm mới -->
-          @if (mode() === EMode.VIEW) {
-            <div class="flex justify-content-end gap-3">
-              @if (activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
-                <p-button
-                  [outlined]="true"
-                  severity="secondary"
-                  icon="pi pi-external-link"
-                  pTooltip="Mở rộng trang tính"
-                  label="Mở trang tính"
-                  (click)="openGoogleSheets()"
-                />
+        <!--        <p-tabpanel [value]="activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT ? activeTab()  : null">-->
+        <!--          &lt;!&ndash;        <p-tabpanel>&ndash;&gt;-->
+        <!--          &lt;!&ndash; Nút Thêm mới &ndash;&gt;-->
+        <!--          @if (mode() === EMode.VIEW) {-->
+        <!--            <div class="flex justify-content-end gap-3">-->
+        <!--              @if (activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {-->
+        <!--                <p-button-->
+        <!--                  [outlined]="true"-->
+        <!--                  severity="secondary"-->
+        <!--                  icon="pi pi-external-link"-->
+        <!--                  pTooltip="Mở rộng trang tính"-->
+        <!--                  label="Mở trang tính"-->
+        <!--                  (click)="openGoogleSheets()"-->
+        <!--                />-->
 
-                <p-button
-                  [outlined]="true"
-                  severity="secondary"
-                  icon="pi pi-sync"
-                  pTooltip="Tải lại danh sách"
-                  label="Tải lại danh sách"
-                  (click)="checkForFixBugAndImprovementUpdates()"
-                />
-              }
+        <!--                <p-button-->
+        <!--                  [outlined]="true"-->
+        <!--                  severity="secondary"-->
+        <!--                  icon="pi pi-sync"-->
+        <!--                  pTooltip="Tải lại danh sách"-->
+        <!--                  label="Tải lại danh sách"-->
+        <!--                  (click)="checkForFixBugAndImprovementUpdates()"-->
+        <!--                />-->
+        <!--              }-->
 
-              <!-- TODO - Bổ sung sau -->
-              <p-button
-                *ngIf="false"
-                icon="pi pi-plus"
-                label="Xóa hàng loạt"
-                (click)="onBulkDelete()"
-              />
+        <!--              &lt;!&ndash; TODO - Bổ sung sau &ndash;&gt;-->
+        <!--              <p-button-->
+        <!--                *ngIf="false"-->
+        <!--                icon="pi pi-plus"-->
+        <!--                label="Xóa hàng loạt"-->
+        <!--                (click)="onBulkDelete()"-->
+        <!--              />-->
 
-              @if (activeTab() === ETabName.ESTIMATE || activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
-                <p-button
-                  icon="pi pi-plus"
-                  label="Thêm hàng loạt"
-                  (click)="onBulkCreate()"
-                />
-              }
+        <!--              @if (activeTab() === ETabName.ESTIMATE || activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {-->
+        <!--                <p-button-->
+        <!--                  icon="pi pi-plus"-->
+        <!--                  label="Thêm hàng loạt"-->
+        <!--                  (click)="onBulkCreate()"-->
+        <!--                />-->
+        <!--              }-->
 
-              @if (activeTab() === ETabName.REPORT) {
-                <iframe
-                  src="https://docs.google.com/spreadsheets/d/1s8OjQl2kw8eW2gvflwfjl5PbmgGRAL0dGlwvGcyD4bs/edit?usp=sharing&gid=1098996043"
-                  width="100%"
-                  height="600">
-                </iframe>
-              }
-            </div>
-          }
+        <!--              @if (activeTab() === ETabName.REPORT) {-->
+        <!--                <iframe-->
+        <!--                  src="https://docs.google.com/spreadsheets/d/1s8OjQl2kw8eW2gvflwfjl5PbmgGRAL0dGlwvGcyD4bs/edit?usp=sharing&gid=1098996043"-->
+        <!--                  width="100%"-->
+        <!--                  height="600">-->
+        <!--                </iframe>-->
+        <!--              }-->
+        <!--            </div>-->
+        <!--          }-->
 
-          @if (activeTab() === ETabName.REPORT) {
-            <ng-container *ngTemplateOutlet="tableDataGeneralTemplate"></ng-container>
-          } @else {
-            <ng-container *ngTemplateOutlet="tableDataDetailTemplate"></ng-container>
-          }
+        <!--          @if (activeTab() === ETabName.REPORT) {-->
+        <!--            <ng-container *ngTemplateOutlet="tableDataGeneralTemplate"></ng-container>-->
+        <!--          } @else {-->
+        <!--            <ng-container *ngTemplateOutlet="tableDataDetailTemplate"></ng-container>-->
+        <!--          }-->
 
-        </p-tabpanel>
+        <!--        </p-tabpanel>-->
       </p-tabpanels>
     </p-tabs>
   </div>
@@ -349,7 +352,7 @@
                 <div>
                   <lib-form-select
                     [formControlName]="FORM_GROUP_KEYS.categoryId"
-                    [options]="employeeOptions()"
+                    [options]="employeeLevelOptions$ | async"
                   ></lib-form-select>
                 </div>
               </td>

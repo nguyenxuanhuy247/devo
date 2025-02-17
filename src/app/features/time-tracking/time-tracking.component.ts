@@ -48,12 +48,12 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import {
   bugImprovementListHeaderColumns,
+  CHILD_FORM_GROUP_KEYS,
   estimateHeaderColumns,
   FAKE_REPORT_DATA,
-  FORM_GROUP_KEYS,
-  IAllDependentDropDown,
   IAllDropDownResponseDTO,
   IDefaultValueInLocalStorage,
+  IDependentDropDown,
   IIndependentDropDownSignal,
   issuesHeaderColumns,
   LOCAL_STORAGE_KEY,
@@ -141,7 +141,7 @@ import { TimeTrackingStore } from './time-tracking.store';
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.FIX_BUG_DO_IMPROVEMENT);
+  activeTab = signal<ETabName>(ETabName.LOG_WORK);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -196,7 +196,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   formArray!: FormArray;
 
-  FORM_GROUP_KEYS = FORM_GROUP_KEYS;
+  FORM_GROUP_KEYS = CHILD_FORM_GROUP_KEYS;
 
   fixedRowData: ILogWorkRowData[] = [];
 
@@ -204,6 +204,9 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   intervalId: any;
   FAKE_REPORT_DATA = FAKE_REPORT_DATA;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
+  employeeLevelOptions$ = this.timeTrackingStore.employeeLevelOptions$;
+  employeeDependentOptions$ = this.timeTrackingStore.employeeDependentOptions$;
+  projectDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
 
   constructor(override injector: Injector) {
     super(injector);
@@ -248,7 +251,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     // Phải gọi trước khi khởi tạo giá trị cho dateRange
     this.initSubscriptions();
 
-    this.callAPIGetDependentDropdown();
+    this.timeTrackingStore.getAllDropdownData();
+    // this.callAPIGetDependentDropdown();
 
     document.addEventListener(
       'visibilitychange',
@@ -360,17 +364,17 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.subscription.add(
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.projectId).subscribe(
         (_: string) => {
-          this.getControl(FORM_GROUP_KEYS.dateRange).setValue([
+          this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).setValue([
             startOfDay(new Date()),
             endOfDay(new Date()),
           ]);
 
           const defaultValue = {
             employeeLevelId: this.getControlValue(
-              FORM_GROUP_KEYS.employeeLevelId,
+              CHILD_FORM_GROUP_KEYS.employeeLevelId,
             ),
-            employeeId: this.getControlValue(FORM_GROUP_KEYS.employeeId),
-            projectId: this.getControlValue(FORM_GROUP_KEYS.projectId),
+            employeeId: this.getControlValue(CHILD_FORM_GROUP_KEYS.employeeId),
+            projectId: this.getControlValue(CHILD_FORM_GROUP_KEYS.projectId),
           };
 
           this.localStorageService.setItem(LOCAL_STORAGE_KEY, defaultValue);
@@ -381,31 +385,31 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.subscription.add(
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.quickDate).subscribe(
         (dateString: string) => {
-          this.getControl(FORM_GROUP_KEYS.dateRange).disable({
+          this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).disable({
             emitEvent: false,
           });
 
           switch (dateString) {
             case 'TODAY':
-              this.getControl(FORM_GROUP_KEYS.dateRange).setValue([
+              this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).setValue([
                 startOfDay(new Date()),
                 endOfDay(new Date()),
               ]);
               break;
             case 'WEEK':
-              this.getControl(FORM_GROUP_KEYS.dateRange).setValue([
+              this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).setValue([
                 startOfWeek(new Date(), { weekStartsOn: 1 }),
                 endOfWeek(new Date(), { weekStartsOn: 1 }),
               ]);
               break;
             case 'MONTH':
-              this.getControl(FORM_GROUP_KEYS.dateRange).setValue([
+              this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).setValue([
                 startOfMonth(new Date()),
                 endOfMonth(new Date()),
               ]);
               break;
             default:
-              this.getControl(FORM_GROUP_KEYS.dateRange).enable({
+              this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).enable({
                 emitEvent: false,
               });
           }
@@ -482,14 +486,14 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   employeeLevelOptions = signal<IOption[]>([]);
-  dependentDropDown = signal<IAllDependentDropDown>({});
+  dependentDropDown = signal<IDependentDropDown>({});
 
-  employeeOptions = signal<IOption[]>([]);
-  projectModuleDropdown = signal<IAllDependentDropDown>(null);
-  moduleMenuDropdown = signal<IAllDependentDropDown>(null);
-  menuScreenDropdown = signal<IAllDependentDropDown>(null);
-  screenFeatureDropdown = signal<IAllDependentDropDown>(null);
-  departmentInterruptionReasonDropdown = signal<IAllDependentDropDown>(null);
+  // employeeOptions = signal<IOption[]>([]);
+  projectModuleDropdown = signal<IDependentDropDown>(null);
+  moduleMenuDropdown = signal<IDependentDropDown>(null);
+  menuScreenDropdown = signal<IDependentDropDown>(null);
+  screenFeatureDropdown = signal<IDependentDropDown>(null);
+  departmentInterruptionReasonDropdown = signal<IDependentDropDown>(null);
 
   independentDropdowns = signal<IIndependentDropDownSignal>({
     tabs: null,
@@ -520,111 +524,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         mode: EGetApiMode.DROPDOWN,
       })
       .subscribe((result) => {
-        this.timeTrackingStore.setAllDropdownData({ allDropdownData: result });
-        
-        // Level nhân viên
-        const employeeLevelList = result.employeeLevels;
-        if (employeeLevelList && employeeLevelList.length > 0) {
-          const employeeLevelOptions: IOption[] = employeeLevelList.map(
-            (employeeLevel) => ({
-              label: employeeLevel.levelName,
-              value: employeeLevel.id,
-            }),
-          );
-          this.employeeLevelOptions.set(employeeLevelOptions);
-
-          // Nhân viên Options
-          const employeeOptions = this.commonService.convertToDependentDropdown(
-            employeeLevelList,
-            'id',
-            'employees',
-            'employeeName',
-          );
-
-          this.dependentDropDown.update((oldValue) => ({
-            ...oldValue,
-            [SELECT_FORM_GROUP_KEY.employeeLevelId]: employeeOptions,
-          }));
-        }
-
-        //  Dự án Options
-        const employeeList = result.employees;
-        if (employeeList && employeeList.length > 0) {
-          const projectOptions = this.commonService.convertToDependentDropdown(
-            employeeList,
-            'id',
-            'projects',
-            'projectName',
-          );
-
-          this.dependentDropDown.update((oldValue) => ({
-            ...oldValue,
-            [SELECT_FORM_GROUP_KEY.employeeId]: projectOptions,
-          }));
-        }
-
-        // Module Options
-        const projectList = result.projects;
-        if (projectList && projectList.length > 0) {
-          const moduleOptions = this.commonService.convertToDependentDropdown(
-            projectList,
-            'id',
-            'modules',
-            'moduleName',
-          );
-          this.dependentDropDown.update((oldValue) => ({
-            ...oldValue,
-            [SELECT_FORM_GROUP_KEY.projectId]: moduleOptions,
-          }));
-
-          console.log('employeeLevelOptions', this.dependentDropDown());
-        }
-
-        // Menu Options
-        const moduleList = result.modules;
-        if (moduleList && moduleList.length > 0) {
-          const menuOptions = this.commonService.convertToDependentDropdown(
-            moduleList,
-            'id',
-            'menus',
-            'menuName',
-          );
-          this.dependentDropDown.update((oldValue) => ({
-            ...oldValue,
-            [FORM_GROUP_KEYS.menuId]: menuOptions,
-          }));
-        }
-
-        // Màn hình Options
-        const menuList = result.menus;
-        if (menuList && menuList.length > 0) {
-          const screenOptions = this.commonService.convertToDependentDropdown(
-            menuList,
-            'id',
-            'screens',
-            'screenName',
-          );
-          this.dependentDropDown.update((oldValue) => ({
-            ...oldValue,
-            [FORM_GROUP_KEYS.screenId]: screenOptions,
-          }));
-        }
-
-        // Tính năng Options
-        const screenList = result.screens;
-        if (screenList && screenList.length > 0) {
-          const featureOptions = this.commonService.convertToDependentDropdown(
-            screenList,
-            'id',
-            'features',
-            'featureName',
-          );
-          this.dependentDropDown.update((oldValue) => ({
-            ...oldValue,
-            [FORM_GROUP_KEYS.featureId]: featureOptions,
-          }));
-        }
-
         // Bộ phận làm việc Options
         const departments = result.departments;
         if (departments && departments.length > 0) {
@@ -707,13 +606,13 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       value = this.getFormControl(index, dependentFormControlName)?.value;
     }
 
-    let dropDownOptions: IAllDependentDropDown;
+    let dropDownOptions: IDependentDropDown;
     switch (dependentFormControlName) {
-      case FORM_GROUP_KEYS.moduleId: {
+      case CHILD_FORM_GROUP_KEYS.moduleId: {
         dropDownOptions = this.moduleMenuDropdown();
         break;
       }
-      case FORM_GROUP_KEYS.menuId: {
+      case CHILD_FORM_GROUP_KEYS.menuId: {
         dropDownOptions = this.menuScreenDropdown();
         break;
       }

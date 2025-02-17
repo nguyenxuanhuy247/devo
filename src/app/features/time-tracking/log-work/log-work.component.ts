@@ -7,10 +7,11 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import {
-  FORM_GROUP_KEYS,
-  IAllDependentDropDown,
+  CHILD_FORM_GROUP_KEYS,
+  IDependentDropDown,
   IIndependentDropDownSignal,
   nullableObj,
+  SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
 import {
   EGetApiMode,
@@ -28,6 +29,7 @@ import {
   ILogWorkRowData,
   LOG_WORK_COLUMN_FIELD,
   logWorkHeaderColumnConfigs,
+  nullableLogWorkObj,
 } from './log-work.model';
 import { FormBaseComponent } from 'src/app/shared';
 import { TimeTrackingApiService } from '../time-tracking-api.service';
@@ -41,11 +43,17 @@ import {
   switchMap,
 } from 'rxjs';
 import { message } from 'src/app/contants/api.contant';
-import { filter } from 'lodash';
 import { LibFormSelectComponent } from 'src/app/components';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DatePickerModule } from 'primeng/datepicker';
+import { ConvertIdToNamePipe, FormatDatePipe, RoundPipe } from '../../../pipes';
+import { TagModule } from 'primeng/tag';
+import { TimeTrackingStore } from '../time-tracking.store';
+import * as _ from 'lodash';
+import { WorkDurationDirective } from '../../../directives';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
   selector: 'app-log-work',
@@ -59,13 +67,21 @@ import { DatePickerModule } from 'primeng/datepicker';
     ButtonModule,
     CheckboxModule,
     DatePickerModule,
+    RoundPipe,
+    TagModule,
+    FormatDatePipe,
+    ConvertIdToNamePipe,
+    WorkDurationDirective,
+    InputTextModule,
+    TextareaModule,
   ],
   templateUrl: './log-work.component.html',
   styleUrl: './log-work.component.scss',
 })
 export class LogWorkComponent extends FormBaseComponent implements OnInit {
+  projectFormControl = input<LibFormSelectComponent>();
   independentDropdowns = input<IIndependentDropDownSignal>();
-  protected readonly FORM_GROUP_KEYS = FORM_GROUP_KEYS;
+  protected readonly FORM_GROUP_KEYS = CHILD_FORM_GROUP_KEYS;
   protected readonly ETabName = ETabName;
   protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
@@ -97,29 +113,34 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   tableData: ILogWorkRowData[] = [];
 
   createFormGroup!: FormGroup;
+  private timeTrackingStore = this.injector.get(TimeTrackingStore);
+  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
+  moduleDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
+  menuDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
+  screenDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
+  featureDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
 
   constructor(override injector: Injector) {
     super(injector);
-
-    this.createFormGroup = this.formBuilder.group({
-      ...nullableObj,
-      mode: EMode.CREATE,
-      // tab: this.activeTab(),
-      employee: null,
-      employeeLevel: null,
-      isLunchBreak: true,
-      createdDate: new Date(),
-    });
   }
 
   ngOnInit() {
+    this.createFormGroup = this.formBuilder.group({
+      ...nullableLogWorkObj,
+      mode: EMode.CREATE,
+      createdDate: new Date(),
+    });
+
     this.formArray = this.formGroup.get('formArray') as FormArray;
+    this.addCreateRowForm();
 
     this.initSubscriptions();
   }
 
   initSubscriptions() {
-    this.onDestroy$.subscribe(() => {});
+    this.onDestroy$.subscribe(() => {
+      console.log('aaaa');
+    });
 
     this.subscription.add(
       this.getTableDataApiRequest$
@@ -166,6 +187,7 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   }
 
   fixedRowData: ILogWorkRowData[] = [];
+
   addCreateRowForm() {
     this.fixedRowData = [
       {
@@ -276,26 +298,114 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
       value = this.getFormControl(index, dependentFormControlName)?.value;
     }
 
-    let dropDownOptions: IAllDependentDropDown;
-    switch (dependentFormControlName) {
-      case FORM_GROUP_KEYS.moduleId: {
-        dropDownOptions = this.moduleMenuDropdown();
-        break;
-      }
-      case FORM_GROUP_KEYS.menuId: {
-        dropDownOptions = this.menuScreenDropdown();
-        break;
-      }
-      case FORM_GROUP_KEYS.menuId: {
-        dropDownOptions = this.departmentInterruptionReasonDropdown();
-        break;
-      }
-      default: {
-        dropDownOptions = this.screenFeatureDropdown();
-        break;
-      }
-    }
+    let dropDownOptions: IDependentDropDown;
+    // switch (dependentFormControlName) {
+    //   case FORM_GROUP_KEYS.moduleId: {
+    //     dropDownOptions = this.moduleMenuDropdown();
+    //     break;
+    //   }
+    //   case FORM_GROUP_KEYS.menuId: {
+    //     dropDownOptions = this.menuScreenDropdown();
+    //     break;
+    //   }
+    //   case FORM_GROUP_KEYS.menuId: {
+    //     dropDownOptions = this.departmentInterruptionReasonDropdown();
+    //     break;
+    //   }
+    //   default: {
+    //     dropDownOptions = this.screenFeatureDropdown();
+    //     break;
+    //   }
+    // }
 
     return dropDownOptions?.[value] || [];
+  }
+
+  getDependentModuleDropDown(
+    formControlName: string,
+    formGroup?: FormGroup,
+  ): any {
+    const value = this.getControlValue(formControlName);
+    // return this.projectModuleDropdown()?.[value] || [];
+  }
+
+  onDelete(rowData: ILogWorkRowData) {
+    this.isLoading.set(true);
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      ids: [rowData.id],
+      method: EApiMethod.DELETE,
+    }));
+
+    this.timeTrackingService
+      .deleteItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.isLoading.set(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((_) => {
+        this.callAPIGetTableData();
+      });
+  }
+
+  onChangeToUpdateMode(index: number) {
+    this.mode.set(EMode.UPDATE);
+
+    const formGroup = this.getFormGroup(index);
+    formGroup.patchValue({ mode: EMode.UPDATE });
+    this.tableData = this.formArray.value;
+  }
+
+  getCommonValue() {
+    const commonValue = _.cloneDeep(this.formGroup.value);
+    delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
+    delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
+    delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
+
+    return commonValue;
+  }
+
+  onSaveCreate() {
+    const data: ILogWorkRowData = {
+      ...this.createFormGroup.value,
+      ...this.getCommonValue(),
+      createdDate: new Date(),
+      // tab: this.activeTab(),
+    };
+
+    this.isLoading.set(true);
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.POST,
+      data: [data],
+    }));
+
+    this.timeTrackingService
+      .createItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: message.serverError,
+          });
+          this.isLoading.set(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+        this.callAPIGetTableData();
+      });
+  }
+
+  onResetCreateForm() {
+    this.createFormGroup.reset();
   }
 }
