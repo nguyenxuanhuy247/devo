@@ -96,13 +96,20 @@
       </p-tablist>
 
       <p-tabpanels>
+        <!-- Tab Log work -->
+        <p-tabpanel [value]="ETabName.LOG_WORK">
+          <app-log-work>
+          </app-log-work>
+        </p-tabpanel>
+
+        <!-- Tab Fix Bug & Do Improvement -->
         <p-tabpanel [value]="ETabName.FIX_BUG_DO_IMPROVEMENT">
           <app-fix-bug-do-improvement
             [formGroupControl]="formGroup"
             [commonFormGroupKey]="SELECT_FORM_GROUP_KEY"
             [currentEmployee]="currentEmployee()"
             [allDropdownData]="allDropdownData()"
-            (updateList)="handleActionAfterBugImprovementListUpdated()"></app-fix-bug-do-improvement>
+            (updateList)="handleActionAfterBugImprovementListUpdated($event)"></app-fix-bug-do-improvement>
         </p-tabpanel>
 
         <p-tabpanel [value]="activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT ? activeTab()  : null">

@@ -19,6 +19,10 @@ import {
   IScreenResponseDTO,
   ITabResponseDTO,
 } from './time-tracking.dto';
+import {
+  ILogWorkRowData,
+  LOG_WORK_COLUMN_FIELD,
+} from './log-work/log-work.model';
 
 export const LOCAL_STORAGE_KEY = 'defaultValue';
 
@@ -38,38 +42,6 @@ export interface ISelectFormGroup {
   dateRange: [Date, Date];
   quickDate: 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'CUSTOM';
   formArray: FormArray;
-}
-
-export const TIME_TRACKING_ROW_DATA_KEYS =
-  CommonService.generateEnumFromInterface<ILogWorkRowData>();
-export const LOG_WORK_COLUMN_FIELD = Object.assign(
-  TIME_TRACKING_ROW_DATA_KEYS,
-  {
-    no: 'no',
-    actions: 'actions',
-  },
-);
-
-export interface ILogWorkRowData {
-  mode: EMode;
-  id: ID;
-  employeeLevelId: string;
-  employeeId: string;
-  projectId: string;
-  moduleId: string;
-  menuId: string;
-  screenId: string;
-  featureId: string;
-  tabId: string;
-  categoryId: string;
-  workContent: string;
-  issueId: string;
-  startTime: string;
-  endTime: string;
-  duration: number;
-  createdDate: Date;
-  updatedDate: Date;
-  isLunchBreak: boolean;
 }
 
 export interface IFormGroup extends ILogWorkRowData {
@@ -132,55 +104,6 @@ export const estimateHeaderColumns: IColumnHeaderConfigs[] = [
     field: LOG_WORK_COLUMN_FIELD.endTime,
     minWidth: 120,
   },
-  {
-    label: 'Hành động',
-    field: LOG_WORK_COLUMN_FIELD.actions,
-    minWidth: 120,
-  },
-];
-
-export const logWorkHeaderColumns: IColumnHeaderConfigs[] = [
-  ...commonHeaderColumn,
-  {
-    label: 'Phân loại',
-    field: LOG_WORK_COLUMN_FIELD.categoryId,
-    minWidth: 200,
-  },
-  {
-    label: 'Nội dung công việc',
-    field: LOG_WORK_COLUMN_FIELD.workContent,
-    minWidth: 120,
-  },
-  {
-    label: 'Vấn đề gặp phải',
-    field: LOG_WORK_COLUMN_FIELD.issueId,
-    minWidth: 200,
-  },
-  {
-    label: 'Thời gian bắt đầu',
-    field: LOG_WORK_COLUMN_FIELD.startTime,
-    minWidth: 200,
-  },
-  {
-    label: 'Thời gian hoàn thành',
-    field: LOG_WORK_COLUMN_FIELD.endTime,
-    minWidth: 200,
-  },
-  {
-    label: 'Thời lượng',
-    field: LOG_WORK_COLUMN_FIELD.duration,
-    minWidth: 60,
-  },
-  {
-    label: 'Nghỉ trưa',
-    field: LOG_WORK_COLUMN_FIELD.isLunchBreak,
-    minWidth: 60,
-  },
-  // {
-  //   label: 'Giải quyết vấn đề',
-  //   field: COLUMN_FIELD.isSolveIssue,
-  //   minWidth: 120,
-  // },
   {
     label: 'Hành động',
     field: LOG_WORK_COLUMN_FIELD.actions,

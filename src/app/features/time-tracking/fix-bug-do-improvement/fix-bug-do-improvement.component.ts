@@ -19,7 +19,6 @@ import {
 import {
   IAllDropDownResponseDTO,
   ISelectFormGroup,
-  LOG_WORK_COLUMN_FIELD,
   nullableObj,
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
@@ -45,6 +44,7 @@ import { message } from '../../../contants/api.contant';
 import * as _ from 'lodash';
 import { IFixBugDoImprovementResponseDTO } from './fix-bug-do-improvement.dto.model';
 import { ILogWorkRequestDTO } from '../log-work/log-work.dto.model';
+import { LOG_WORK_COLUMN_FIELD } from '../log-work/log-work.model';
 
 @Component({
   standalone: true,
@@ -70,7 +70,7 @@ export class FixBugDoImprovementComponent
   commonFormGroupKey = input.required<any>();
   currentEmployee = input.required<IEmployeeResponseDTO>();
   allDropdownData = input.required<IAllDropDownResponseDTO>();
-  updateList = output<void>();
+  updateList = output<boolean>();
   protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
 
   headerColumnConfigs: IColumnHeaderConfigs[] =
@@ -138,8 +138,10 @@ export class FixBugDoImprovementComponent
         });
 
         console.log('this.tableData = ', this.tableData);
-
-        this.updateList.emit();
+        const isStartTimeTracking = this.tableData?.some(
+          (item) => item.startTime && !item.endTime,
+        );
+        this.updateList.emit(isStartTimeTracking);
       });
   }
 

@@ -19,3 +19,4 @@ export interface ILogWorkRequestDTO {
   createdDate: Date;
   updatedDate: Date;
 }
+

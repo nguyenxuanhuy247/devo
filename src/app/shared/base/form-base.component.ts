@@ -6,7 +6,7 @@ import {
   Renderer2,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DrawerService, LocalStorageService } from '../../services';
@@ -54,5 +54,9 @@ export abstract class FormBaseComponent implements OnDestroy {
   ): Observable<any> {
     const control = this.getControl(controlName, customFormGroup);
     return control ? control.valueChanges : new Observable(); // Tránh lỗi nếu control không tồn tại
+  }
+
+  getFormGroupInFormArray(formArray: FormArray, index: number): FormGroup {
+    return formArray?.at(index) as FormGroup;
   }
 }

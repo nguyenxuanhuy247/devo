@@ -55,11 +55,8 @@ import {
   IAllDropDownResponseDTO,
   IDefaultValueInLocalStorage,
   IIndependentDropDownSignal,
-  ILogWorkRowData,
   issuesHeaderColumns,
   LOCAL_STORAGE_KEY,
-  LOG_WORK_COLUMN_FIELD,
-  logWorkHeaderColumns,
   nullableObj,
   SELECT_FORM_GROUP_KEY,
 } from './time-tracking.model';
@@ -95,6 +92,13 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { LibFormSelectComponent } from 'src/app/components';
 import { TagModule } from 'primeng/tag';
 import { FixBugDoImprovementComponent } from './fix-bug-do-improvement/fix-bug-do-improvement.component';
+import {
+  ILogWorkRowData,
+  LOG_WORK_COLUMN_FIELD,
+  logWorkHeaderColumnConfigs,
+} from './log-work/log-work.model';
+import { LogWorkComponent } from './log-work/log-work.component';
+import { TimeTrackingStore } from './time-tracking.store';
 
 @Component({
   selector: 'app-time-tracking',
@@ -131,12 +135,13 @@ import { FixBugDoImprovementComponent } from './fix-bug-do-improvement/fix-bug-d
     TagModule,
     FixBugDoImprovementComponent,
     ConvertIdToNamePipe,
+    LogWorkComponent,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.BUG);
+  activeTab = signal<ETabName>(ETabName.FIX_BUG_DO_IMPROVEMENT);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -174,7 +179,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       case ETabName.ESTIMATE:
         return estimateHeaderColumns;
       case ETabName.LOG_WORK:
-        return logWorkHeaderColumns;
+        return logWorkHeaderColumnConfigs;
       case ETabName.ISSUE:
         return issuesHeaderColumns;
       default:
@@ -198,6 +203,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   createFormGroup!: FormGroup;
   intervalId: any;
   FAKE_REPORT_DATA = FAKE_REPORT_DATA;
+  private timeTrackingStore = this.injector.get(TimeTrackingStore);
 
   constructor(override injector: Injector) {
     super(injector);
@@ -514,8 +520,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         mode: EGetApiMode.DROPDOWN,
       })
       .subscribe((result) => {
-        this.allDropdownData.update((oldValue) => ({ ...oldValue, ...result }));
-
+        this.timeTrackingStore.setAllDropdownData({ allDropdownData: result });
+        
         // Level nhân viên
         const employeeLevelList = result.employeeLevels;
         if (employeeLevelList && employeeLevelList.length > 0) {
@@ -711,10 +717,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         dropDownOptions = this.menuScreenDropdown();
         break;
       }
-      case FORM_GROUP_KEYS.menuId: {
-        dropDownOptions = this.departmentInterruptionReasonDropdown();
-        break;
-      }
+      // case FORM_GROUP_KEYS.menuId: {
+      //   dropDownOptions = this.departmentInterruptionReasonDropdown();
+      //   break;
+      // }
       default: {
         dropDownOptions = this.screenFeatureDropdown();
         break;
@@ -1117,7 +1123,11 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     });
   }
 
-  handleActionAfterBugImprovementListUpdated() {
-    this.warningWhenChangeChromeTab();
+  handleActionAfterBugImprovementListUpdated(isStartTimeTracking: boolean) {
+    if (!isStartTimeTracking) {
+      this.startBlinking();
+    } else {
+      this.clearBlinking();
+    }
   }
 }
