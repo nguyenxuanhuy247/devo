@@ -48,14 +48,13 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import {
   bugImprovementListHeaderColumns,
-  CHILD_FORM_GROUP_KEYS,
+  LOG_WORK_CHILD_FORM_GROUP_KEYS,
   estimateHeaderColumns,
   FAKE_REPORT_DATA,
   IAllDropDownResponseDTO,
   IDefaultValueInLocalStorage,
   IDependentDropDown,
   IIndependentDropDownSignal,
-  issuesHeaderColumns,
   LOCAL_STORAGE_KEY,
   nullableObj,
   SELECT_FORM_GROUP_KEY,
@@ -100,6 +99,7 @@ import {
 import { LogWorkComponent } from './log-work/log-work.component';
 import { TimeTrackingStore } from './time-tracking.store';
 import { getValue } from 'src/app/utils/function';
+import { IssuesComponent } from './issues/issues.component';
 
 @Component({
   selector: 'app-time-tracking',
@@ -137,12 +137,13 @@ import { getValue } from 'src/app/utils/function';
     FixBugDoImprovementComponent,
     ConvertIdToNamePipe,
     LogWorkComponent,
+    IssuesComponent
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.FIX_BUG_DO_IMPROVEMENT);
+  activeTab = signal<ETabName>(ETabName.ISSUE);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -180,8 +181,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         return estimateHeaderColumns;
       case ETabName.LOG_WORK:
         return logWorkHeaderColumnConfigs;
-      case ETabName.ISSUE:
-        return issuesHeaderColumns;
       default:
         return bugImprovementListHeaderColumns;
     }
@@ -196,7 +195,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   formArray!: FormArray;
 
-  FORM_GROUP_KEYS = CHILD_FORM_GROUP_KEYS;
+  FORM_GROUP_KEYS = LOG_WORK_CHILD_FORM_GROUP_KEYS;
 
   fixedRowData: ILogWorkRowData[] = [];
 
@@ -240,13 +239,14 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       [SELECT_FORM_GROUP_KEY.employeeId]: null,
       [SELECT_FORM_GROUP_KEY.projectId]: null,
       [SELECT_FORM_GROUP_KEY.dateRange]: null,
-      [SELECT_FORM_GROUP_KEY.quickDate]: 'TODAY',
+      [SELECT_FORM_GROUP_KEY.quickDate]: null,
       [SELECT_FORM_GROUP_KEY.formArray]: this.formBuilder.array([]),
     });
 
     this.formArray = this.formGroup.get('formArray') as FormArray;
 
     this.getControl(SELECT_FORM_GROUP_KEY.dateRange).disable();
+    this.getControl(SELECT_FORM_GROUP_KEY.quickDate).setValue('TODAY');
 
     // Phải gọi trước khi khởi tạo giá trị cho dateRange
     this.initSubscriptions();
@@ -340,7 +340,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           endTime: dateRange[1].toISOString(),
         }));
 
-        this.callAPIGetTableData();
+        // this.callAPIGetTableData();
       }),
     );
 
@@ -364,14 +364,14 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.projectId).subscribe(
         (_: string) => {
           // Thiết lập giờ cho ô Tùy chỉnh sau khi chọn dự án
-          this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).setValue([
+          this.getControl(LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange).setValue([
             startOfDay(new Date()),
             endOfDay(new Date()),
           ]);
 
           // Lưu những thông tin chung vào store và local storage
           const employeeId = this.getControlValue(
-            CHILD_FORM_GROUP_KEYS.employeeId,
+            SELECT_FORM_GROUP_KEY.employeeId,
           );
           const selectedEmployee = getValue(
             this.allDropdownData$,
@@ -379,11 +379,11 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
           const commonValue = {
             employeeLevelId: this.getControlValue(
-              CHILD_FORM_GROUP_KEYS.employeeLevelId,
+              SELECT_FORM_GROUP_KEY.employeeLevelId,
             ),
-            employeeId: this.getControlValue(CHILD_FORM_GROUP_KEYS.employeeId),
+            employeeId: this.getControlValue(SELECT_FORM_GROUP_KEY.employeeId),
             employee: selectedEmployee,
-            projectId: this.getControlValue(CHILD_FORM_GROUP_KEYS.projectId),
+            projectId: this.getControlValue(SELECT_FORM_GROUP_KEY.projectId),
           };
 
           this.timeTrackingStore.setSharedData(commonValue);
@@ -394,31 +394,32 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.subscription.add(
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.quickDate).subscribe(
         (dateString: string) => {
-          this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).disable({
+          console.log('quickDate ', dateString);
+          this.getControl(LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange).disable({
             emitEvent: false,
           });
 
           switch (dateString) {
             case 'TODAY':
-              this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).setValue([
-                startOfDay(new Date()),
-                endOfDay(new Date()),
-              ]);
+              this.getControl(
+                LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange,
+              ).setValue([startOfDay(new Date()), endOfDay(new Date())]);
               break;
             case 'WEEK':
-              this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).setValue([
+              this.getControl(
+                LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange,
+              ).setValue([
                 startOfWeek(new Date(), { weekStartsOn: 1 }),
                 endOfWeek(new Date(), { weekStartsOn: 1 }),
               ]);
               break;
             case 'MONTH':
-              this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).setValue([
-                startOfMonth(new Date()),
-                endOfMonth(new Date()),
-              ]);
+              this.getControl(
+                LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange,
+              ).setValue([startOfMonth(new Date()), endOfMonth(new Date())]);
               break;
             default:
-              this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).enable({
+              this.getControl(LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange).enable({
                 emitEvent: false,
               });
           }
@@ -443,53 +444,53 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       }),
     );
 
-    this.subscription.add(
-      this.getTableDataApiRequest$
-        .pipe(
-          debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
-          filter(() => this.activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT),
-          switchMap(() => {
-            return this.timeTrackingService
-              .getListAsync(this.doGetRequestDTO())
-              .pipe(
-                catchError(() => {
-                  this.messageService.add({
-                    severity: 'error',
-                    summary: 'Thất bại',
-                    detail: message.serverError,
-                  });
-                  return EMPTY;
-                }),
-                finalize(() => {}),
-              );
-          }),
-        )
-        .subscribe((listData: ILogWorkTableDataResponseDTO[]) => {
-          this.mode.set(EMode.VIEW);
-          this.formArray.clear();
+    // this.subscription.add(
+    //   this.getTableDataApiRequest$
+    //     .pipe(
+    //       debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
+    //       filter(() => this.activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT),
+    //       switchMap(() => {
+    //         return this.timeTrackingService
+    //           .getListAsync(this.doGetRequestDTO())
+    //           .pipe(
+    //             catchError(() => {
+    //               this.messageService.add({
+    //                 severity: 'error',
+    //                 summary: 'Thất bại',
+    //                 detail: message.serverError,
+    //               });
+    //               return EMPTY;
+    //             }),
+    //             finalize(() => {}),
+    //           );
+    //       }),
+    //     )
+    //     .subscribe((listData: ILogWorkTableDataResponseDTO[]) => {
+    //       this.mode.set(EMode.VIEW);
+    //       this.formArray.clear();
 
-          listData.forEach((rowData) => {
-            const formGroup = this.formBuilder.group({
-              ...rowData,
-              mode: EMode.VIEW,
-              startTime: rowData.startTime ? new Date(rowData.startTime) : null,
-              endTime: rowData.endTime ? new Date(rowData.endTime) : null,
-            });
-            this.formArray.push(formGroup);
-          });
+    //       listData.forEach((rowData) => {
+    //         const formGroup = this.formBuilder.group({
+    //           ...rowData,
+    //           mode: EMode.VIEW,
+    //           startTime: rowData.startTime ? new Date(rowData.startTime) : null,
+    //           endTime: rowData.endTime ? new Date(rowData.endTime) : null,
+    //         });
+    //         this.formArray.push(formGroup);
+    //       });
 
-          this.tableData = this.formArray.value;
-          this.createFormGroup.reset();
+    //       this.tableData = this.formArray.value;
+    //       this.createFormGroup.reset();
 
-          if (
-            this.activeTab() === ETabName.ESTIMATE ||
-            this.activeTab() === ETabName.LOG_WORK ||
-            this.activeTab() === ETabName.ISSUE
-          ) {
-            this.addCreateRowForm();
-          }
-        }),
-    );
+    //       if (
+    //         this.activeTab() === ETabName.ESTIMATE ||
+    //         this.activeTab() === ETabName.LOG_WORK ||
+    //         this.activeTab() === ETabName.ISSUE
+    //       ) {
+    //         this.addCreateRowForm();
+    //       }
+    //     }),
+    // );
 
     this.subscription.add(
       this.projectDependentOptions$.subscribe((_) => {
@@ -579,11 +580,11 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
     let dropDownOptions: IDependentDropDown;
     switch (dependentFormControlName) {
-      case CHILD_FORM_GROUP_KEYS.moduleId: {
+      case LOG_WORK_CHILD_FORM_GROUP_KEYS.moduleId: {
         dropDownOptions = this.moduleMenuDropdown();
         break;
       }
-      case CHILD_FORM_GROUP_KEYS.menuId: {
+      case LOG_WORK_CHILD_FORM_GROUP_KEYS.menuId: {
         dropDownOptions = this.menuScreenDropdown();
         break;
       }
@@ -600,10 +601,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     return dropDownOptions?.[value] || [];
   }
 
-  private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
-  callAPIGetTableData(): void {
-    this.getTableDataApiRequest$.next();
-  }
+  // private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
+  // callAPIGetTableData(): void {
+  //   this.getTableDataApiRequest$.next();
+  // }
 
   addCreateRowForm() {
     this.fixedRowData = [
@@ -611,10 +612,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         ...nullableObj,
         mode: EMode.CREATE,
         tab: this.activeTab(),
-        employee: this.getControlValue(this.FORM_GROUP_KEYS.employeeId),
-        employeeLevel: this.getControlValue(
-          this.FORM_GROUP_KEYS.employeeLevelId,
-        ),
         isLunchBreak: true,
         createdDate: new Date(),
       },
@@ -637,7 +634,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           ...oldValue,
           tabId: this.tabId(),
         }));
-        this.callAPIGetTableData();
+        // this.callAPIGetTableData();
         clearInterval(this.intervalId);
         break;
       case ETabName.ISSUE:
@@ -646,7 +643,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           ...oldValue,
           tabId: this.tabId(),
         }));
-        this.callAPIGetTableData();
+        // this.callAPIGetTableData();
         clearInterval(this.intervalId);
         break;
       case ETabName.BUG:
@@ -656,7 +653,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           ...oldValue,
           tabId: this.tabId(),
         }));
-        this.callAPIGetTableData();
+        // this.callAPIGetTableData();
         clearInterval(this.intervalId);
         break;
       case ETabName.FIX_BUG_DO_IMPROVEMENT:
@@ -678,8 +675,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         width: '51.5rem',
       },
     });
-
-    drawerRef.onClose.subscribe((res: any) => {});
   }
 
   getFormControl(index: number, formControlName: string): FormControl {
@@ -733,7 +728,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           detail: res?.message,
         });
         this.mode.set(EMode.VIEW);
-        this.callAPIGetTableData();
+        // this.callAPIGetTableData();
       });
   }
 
@@ -788,7 +783,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           summary: 'Thành công',
           detail: res?.message,
         });
-        this.callAPIGetTableData();
+        // this.callAPIGetTableData();
       });
   }
 
@@ -817,7 +812,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         }),
       )
       .subscribe((_) => {
-        this.callAPIGetTableData();
+        // this.callAPIGetTableData();
       });
   }
 
@@ -835,7 +830,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   }
 
   onReload() {
-    this.callAPIGetTableData();
+    // this.callAPIGetTableData();
   }
 
   checkForFixBugAndImprovementUpdates() {
@@ -911,7 +906,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           this.onDeleteLogTimeFixBugSheets();
         }
 
-        this.callAPIGetTableData();
+        // this.callAPIGetTableData();
       });
   }
 
@@ -980,7 +975,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
               this.isLoading.set(false);
             }
 
-            this.callAPIGetTableData();
+            // this.callAPIGetTableData();
           });
       },
     });

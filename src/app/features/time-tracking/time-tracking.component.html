@@ -144,6 +144,7 @@
 
       <p-tabpanels>
         <!-- Tab Log work -->
+        @if(activeTab() === ETabName.LOG_WORK) {
         <p-tabpanel [value]="ETabName.LOG_WORK">
           <app-log-work
             [formGroupControl]="formGroup"
@@ -151,8 +152,9 @@
           >
           </app-log-work>
         </p-tabpanel>
-
+        }
         <!-- Tab Fix Bug & Do Improvement -->
+        @if(activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
         <p-tabpanel [value]="ETabName.FIX_BUG_DO_IMPROVEMENT">
           <app-fix-bug-do-improvement
             [formGroupControl]="formGroup"
@@ -161,6 +163,18 @@
             (updateList)="handleActionAfterBugImprovementListUpdated($event)"
           ></app-fix-bug-do-improvement>
         </p-tabpanel>
+        }
+
+        <!-- Tab Vấn đề -->
+        @if(activeTab() === ETabName.ISSUE) {
+        <p-tabpanel [value]="ETabName.ISSUE">
+          <app-issues
+            [formGroupControl]="formGroup"
+            [projectFormControl]="projectId"
+          >
+          </app-issues>
+        </p-tabpanel>
+        }
 
         <!--        <p-tabpanel [value]="activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT ? activeTab()  : null">-->
         <!--          &lt;!&ndash;        <p-tabpanel>&ndash;&gt;-->

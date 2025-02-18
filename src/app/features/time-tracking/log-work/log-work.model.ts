@@ -16,17 +16,17 @@ export const LOG_WORK_COLUMN_FIELD = Object.assign(
 export interface ILogWorkRowData {
   mode: EMode;
   id: ID;
-  employeeLevelId: string;
-  employeeId: string;
-  projectId: string;
-  moduleId: string;
-  menuId: string;
-  screenId: string;
-  featureId: string;
-  tabId: string;
-  categoryId: string;
+  // employeeLevelId: ID;
+  // employeeId: ID;
+  // projectId: ID;
+  moduleId: ID;
+  menuId: ID;
+  screenId: ID;
+  featureId: ID;
+  tabId: ID;
+  categoryId: ID;
   workContent: string;
-  issueId: string;
+  issueId: ID;
   startTime: string;
   endTime: string;
   duration: number;
@@ -38,9 +38,9 @@ export interface ILogWorkRowData {
 export const nullableLogWorkObj: ILogWorkRowData = {
   mode: EMode.VIEW,
   id: null,
-  employeeLevelId: null,
-  projectId: null,
-  employeeId: null,
+  // employeeLevelId: null,
+  // projectId: null,
+  // employeeId: null,
   moduleId: null,
   menuId: null,
   screenId: null,

@@ -51,7 +51,7 @@ export interface IFormGroup extends ILogWorkRowData {
   quickDateRange: string;
 }
 
-export const CHILD_FORM_GROUP_KEYS =
+export const LOG_WORK_CHILD_FORM_GROUP_KEYS =
   CommonService.generateEnumFromInterface<IFormGroup>();
 
 export const commonHeaderColumn: IColumnHeaderConfigs[] = [
@@ -104,65 +104,6 @@ export const estimateHeaderColumns: IColumnHeaderConfigs[] = [
     field: LOG_WORK_COLUMN_FIELD.endTime,
     minWidth: 120,
   },
-  {
-    label: 'Hành động',
-    field: LOG_WORK_COLUMN_FIELD.actions,
-    minWidth: 120,
-  },
-];
-
-export const issuesHeaderColumns: IColumnHeaderConfigs[] = [
-  ...commonHeaderColumn,
-  {
-    label: 'Phân loại',
-    field: LOG_WORK_COLUMN_FIELD.categoryId,
-    minWidth: 200,
-  },
-  {
-    label: 'Bộ phận gây gián đoạn',
-    field: LOG_WORK_COLUMN_FIELD.categoryId,
-    minWidth: 140,
-  },
-  {
-    label: 'Lý do gián đoạn',
-    field: LOG_WORK_COLUMN_FIELD.categoryId,
-    minWidth: 200,
-  },
-  {
-    label: 'Nội dung vấn đề',
-    field: LOG_WORK_COLUMN_FIELD.issueId,
-    minWidth: 200,
-  },
-  {
-    label: 'Người gây gián đoạn',
-    field: LOG_WORK_COLUMN_FIELD.employeeId,
-    minWidth: 120,
-  },
-  // {
-  //   label: 'Block tiến độ',
-  //   field: COLUMN_FIELD.isProgressBlock,
-  //   minWidth: 120,
-  // },
-  {
-    label: 'Thời gian bắt đầu',
-    field: LOG_WORK_COLUMN_FIELD.startTime,
-    minWidth: 200,
-  },
-  {
-    label: 'Thời gian hoàn thành',
-    field: LOG_WORK_COLUMN_FIELD.endTime,
-    minWidth: 200,
-  },
-  {
-    label: 'Thời lượng',
-    field: LOG_WORK_COLUMN_FIELD.duration,
-    minWidth: 80,
-  },
-  // {
-  //   label: 'Trạng thái',
-  //   field: COLUMN_FIELD.status,
-  //   minWidth: 180,
-  // },
   {
     label: 'Hành động',
     field: LOG_WORK_COLUMN_FIELD.actions,

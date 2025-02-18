@@ -7,7 +7,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import {
-  CHILD_FORM_GROUP_KEYS,
+  LOG_WORK_CHILD_FORM_GROUP_KEYS,
   IDependentDropDown,
   IIndependentDropDownSignal,
   ISelectFormGroup,
@@ -90,7 +90,7 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   projectFormControl = input<LibFormSelectComponent>();
 
   independentDropdowns = input<IIndependentDropDownSignal>();
-  protected readonly FORM_GROUP_KEYS = CHILD_FORM_GROUP_KEYS;
+  protected readonly FORM_GROUP_KEYS = LOG_WORK_CHILD_FORM_GROUP_KEYS;
   protected readonly ETabName = ETabName;
   protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
@@ -149,7 +149,7 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   }
 
   initSubscriptions() {
-    this.onDestroy$.subscribe(() => {});
+    // this.onDestroy$.subscribe(() => {});
 
     this.subscription.add(
       this.tabOptions$.subscribe((tabOptions: IOption[]) => {
@@ -166,11 +166,13 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
         .pipe(
           debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
           switchMap(() => {
+            console.log('vaò đây 11111');
             this.isLoading.set(true);
 
             this.doGetRequestDTO.update((oldValue: any) => {
               const formGroupValue = this.formGroupControl()
                 .value as ISelectFormGroup;
+              console.log('vaò đây 22222', formGroupValue);
 
               return {
                 ...oldValue,
@@ -225,13 +227,9 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   addCreateRowForm() {
     this.fixedRowData = [
       {
-        ...nullableObj,
+        ...nullableLogWorkObj,
         mode: EMode.CREATE,
-        // tab: this.activeTab(),
-        employee: this.getControlValue(this.FORM_GROUP_KEYS.employeeId),
-        employeeLevel: this.getControlValue(
-          this.FORM_GROUP_KEYS.employeeLevelId,
-        ),
+        tabId: this.tabId(),
         isLunchBreak: true,
         createdDate: new Date(),
       },
@@ -404,7 +402,8 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   onSaveCreate() {
     const tabId = getValue(this.tabOptions$)?.find(
       (tab: IOption) => tab.label === ETabName.LOG_WORK,
-    );
+    )?.value;
+
     const data: ILogWorkRowData = {
       ...this.createFormGroup.value,
       ...this.getCommonValue(),
