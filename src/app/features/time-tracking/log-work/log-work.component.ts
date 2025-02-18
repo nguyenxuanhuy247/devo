@@ -10,6 +10,7 @@ import {
   CHILD_FORM_GROUP_KEYS,
   IDependentDropDown,
   IIndependentDropDownSignal,
+  ISelectFormGroup,
   nullableObj,
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
@@ -24,7 +25,11 @@ import { EApiMethod, EMode } from '../../../contants/common.constant';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
-import { IColumnHeaderConfigs } from 'src/app/shared/interface/common.interface';
+import {
+  IColumnHeaderConfigs,
+  ID,
+  IOption,
+} from 'src/app/shared/interface/common.interface';
 import {
   ILogWorkRowData,
   LOG_WORK_COLUMN_FIELD,
@@ -37,6 +42,7 @@ import {
   catchError,
   debounceTime,
   EMPTY,
+  filter,
   finalize,
   Subject,
   Subscription,
@@ -54,6 +60,7 @@ import * as _ from 'lodash';
 import { WorkDurationDirective } from '../../../directives';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
+import { getValue } from 'src/app/utils/function';
 
 @Component({
   selector: 'app-log-work',
@@ -79,7 +86,9 @@ import { TextareaModule } from 'primeng/textarea';
   styleUrl: './log-work.component.scss',
 })
 export class LogWorkComponent extends FormBaseComponent implements OnInit {
+  formGroupControl = input<FormGroup>();
   projectFormControl = input<LibFormSelectComponent>();
+
   independentDropdowns = input<IIndependentDropDownSignal>();
   protected readonly FORM_GROUP_KEYS = CHILD_FORM_GROUP_KEYS;
   protected readonly ETabName = ETabName;
@@ -90,7 +99,7 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
 
   isLoading = signal(false);
 
-  formArray!: FormArray;
+  formArray: FormArray = new FormArray([]);
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
     ids: null,
@@ -115,10 +124,13 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   createFormGroup!: FormGroup;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
   allDropdownData$ = this.timeTrackingStore.allDropdownData$;
-  moduleDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
-  menuDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
-  screenDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
-  featureDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
+  moduleDependentOptions$ = this.timeTrackingStore.moduleDependentOptions$;
+  menuDependentOptions$ = this.timeTrackingStore.menuDependentOptions$;
+  screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
+  featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
+  tabOptions$ = this.timeTrackingStore.tabOptions$;
+  categoryOptions$ = this.timeTrackingStore.categoryOptions$;
+  tabId = signal<ID>(null);
 
   constructor(override injector: Injector) {
     super(injector);
@@ -131,16 +143,23 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
       createdDate: new Date(),
     });
 
-    this.formArray = this.formGroup.get('formArray') as FormArray;
     this.addCreateRowForm();
 
     this.initSubscriptions();
   }
 
   initSubscriptions() {
-    this.onDestroy$.subscribe(() => {
-      console.log('aaaa');
-    });
+    this.onDestroy$.subscribe(() => {});
+
+    this.subscription.add(
+      this.tabOptions$.subscribe((tabOptions: IOption[]) => {
+        const tabId = tabOptions?.find(
+          (tab: IOption) => tab.label === ETabName.LOG_WORK,
+        )?.value;
+
+        this.tabId.set(tabId);
+      }),
+    );
 
     this.subscription.add(
       this.getTableDataApiRequest$
@@ -148,6 +167,21 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
           debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
           switchMap(() => {
             this.isLoading.set(true);
+
+            this.doGetRequestDTO.update((oldValue: any) => {
+              const formGroupValue = this.formGroupControl()
+                .value as ISelectFormGroup;
+
+              return {
+                ...oldValue,
+                employeeLevelId: formGroupValue.employeeLevelId,
+                employeeId: formGroupValue.employeeId,
+                projectId: formGroupValue.projectId,
+                tabId: this.tabId(),
+                startTime: formGroupValue.dateRange[0].toISOString(),
+                endTime: formGroupValue.dateRange[1].toISOString(),
+              };
+            });
 
             return this.timeTrackingService
               .getListAsync(this.doGetRequestDTO())
@@ -359,7 +393,7 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   }
 
   getCommonValue() {
-    const commonValue = _.cloneDeep(this.formGroup.value);
+    const commonValue = _.cloneDeep(this.formGroupControl().value);
     delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
     delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
     delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
@@ -368,19 +402,25 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   }
 
   onSaveCreate() {
+    const tabId = getValue(this.tabOptions$)?.find(
+      (tab: IOption) => tab.label === ETabName.LOG_WORK,
+    );
     const data: ILogWorkRowData = {
       ...this.createFormGroup.value,
       ...this.getCommonValue(),
+      tabId,
       createdDate: new Date(),
-      // tab: this.activeTab(),
     };
 
+    console.log('1111111111 ', data);
     this.isLoading.set(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
       data: [data],
     }));
+
+    console.log('222222222222 ', this.doPostRequestDTO());
 
     this.timeTrackingService
       .createItemAsync(this.doPostRequestDTO())

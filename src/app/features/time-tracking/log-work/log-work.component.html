@@ -11,40 +11,38 @@
     <!-- TABLE HEADER -->
     <ng-template pTemplate="header">
       <tr>
-        @for (col of headerColumnConfigs; track col.field) {
-          @if (col.field
-          === COLUMN_FIELD.categoryId) {
-            <th
-              [pSortableColumn]="col.field"
-              pResizableColumn
-              pFrozenColumn
-              [style.min-width.px]="col.minWidth"
+        @for (col of headerColumnConfigs; track col.field) { @if (col.field ===
+        COLUMN_FIELD.categoryId) {
+        <th
+          [pSortableColumn]="col.field"
+          pResizableColumn
+          pFrozenColumn
+          [style.min-width.px]="col.minWidth"
+        >
+          <div class="flex">
+            <div class="flex-1 line-clamp line-clamp-2">
+              {{ col.label }}
+            </div>
+            <p-sortIcon [field]="col.field" />
+          </div>
+        </th>
+        } @else {
+        <th
+          [pSortableColumn]="col.field"
+          pResizableColumn
+          [style.min-width.px]="col.minWidth"
+        >
+          <div class="flex">
+            <div
+              class="flex-1 line-clamp line-clamp-2"
+              [pTooltip]="col.label"
             >
-              <div class="flex">
-                <div class="flex-1 line-clamp line-clamp-2">
-                  {{ col.label }}
-                </div>
-                <p-sortIcon [field]="col.field" />
-              </div>
-            </th>
-          } @else {
-            <th
-              [pSortableColumn]="col.field"
-              pResizableColumn
-              [style.min-width.px]="col.minWidth"
-            >
-              <div class="flex">
-                <div
-                  class="flex-1 line-clamp line-clamp-2"
-                  [pTooltip]="col.label"
-                >
-                  {{ col.label }}
-                </div>
-                <p-sortIcon [field]="col.field" />
-              </div>
-            </th>
-          }
-        }
+              {{ col.label }}
+            </div>
+            <p-sortIcon [field]="col.field" />
+          </div>
+        </th>
+        } }
       </tr>
     </ng-template>
 
@@ -113,7 +111,7 @@
           <div>
             <lib-form-select
               [formControlName]="FORM_GROUP_KEYS.categoryId"
-              [options]="independentDropdowns()?.categories || []"
+              [options]="(categoryOptions$ | async) || []"
             ></lib-form-select>
           </div>
         </td>
@@ -244,276 +242,278 @@
       let-index="rowIndex"
     >
       @if (rowData.mode === EMode.VIEW) {
-        <!-- Chế độ VIEW chỉ hiển thị text -->
-        <tr>
-          @for (col of headerColumnConfigs; track col.field) {
-            @if (col.field ===
-            COLUMN_FIELD.no) {
-              <td>{{ index + 1 }}</td>
-            } @else if (col.field === COLUMN_FIELD.moduleId) {
-              <td>
-                {{
-                  rowData[col.field]
-                    | convertIdToName : (allDropdownData$ | async)?.modules : 'moduleName'
-                }}
-              </td>
-            } @else if (col.field === COLUMN_FIELD.menuId) {
-              <td>
-                {{
-                  rowData[col.field]
-                    | convertIdToName : (allDropdownData$ | async)?.menus : 'menuName'
-                }}
-              </td>
-            } @else if (col.field === COLUMN_FIELD.screenId) {
-              <td>
-                {{
-                  rowData[col.field]
-                    | convertIdToName : (allDropdownData$ | async)?.screens : 'screenName'
-                }}
-              </td>
-            } @else if (col.field === COLUMN_FIELD.featureId) {
-              <td>
-                {{
-                  rowData[col.field]
-                    | convertIdToName
-                    :  (allDropdownData$ | async)?.features
-                      : 'featureName'
-                }}
-              </td>
-            } @else if (col.field === COLUMN_FIELD.categoryId) {
-              <td>
-                {{
-                  rowData[col.field]
-                    | convertIdToName
-                    :  (allDropdownData$ | async)?.categories
-                      : 'categoryName'
-                }}
-              </td>
-            } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
-            COLUMN_FIELD.endTime) {
-              <td>{{ rowData[col.field] | formatDate }}</td>
-            } @else if (col.field === COLUMN_FIELD.categoryId) {
-              <td>
-                <p-tag
-                  [severity]="rowData[col.field] ? 'danger' : 'success'"
-                  [value]="rowData[col.field] ? 'Có' : 'Không'"
-                />
-              </td>
-            } @else if (col.field === COLUMN_FIELD.duration) {
-              <td>{{ rowData[col.field] | roundNumber }}</td>
-            } @else if (col.field === COLUMN_FIELD.actions) {
-              <td>
-                <div class="flex align-items-center justify-content-between gap-1">
-                  <p-button
-                    variant="outlined"
-                    severity="secondary"
-                    size="small"
-                    icon="pi pi-file-edit"
-                    aria-label="Chỉnh sửa"
-                    pTooltip="Chỉnh sửa"
-                    tooltipPosition="bottom"
-                    (click)="onChangeToUpdateMode(index)"
-                  />
-                  <p-button
-                    variant="outlined"
-                    severity="secondary"
-                    size="small"
-                    icon="pi pi-trash"
-                    aria-label="Xóa"
-                    pTooltip="Xóa"
-                    tooltipPosition="bottom"
-                    (click)="onDelete(rowData)"
-                  />
-                </div>
-              </td>
-            } @else {
-              <td>
-                <div
-                  class="line-clamp line-clamp-1"
-                  [pTooltip]="rowData[col.field]"
-                >
-                  {{ rowData[col.field] }}
-                </div>
-              </td>
-            }
-          }
-        </tr>
+      <!-- Chế độ VIEW chỉ hiển thị text -->
+      <tr>
+        @for (col of headerColumnConfigs; track col.field) { @if (col.field ===
+        COLUMN_FIELD.no) {
+        <td>{{ index + 1 }}</td>
+        } @else if (col.field === COLUMN_FIELD.moduleId) {
+        <td>
+          {{
+            rowData[col.field]
+              | convertIdToName
+                : (allDropdownData$ | async)?.modules
+                : 'moduleName'
+          }}
+        </td>
+        } @else if (col.field === COLUMN_FIELD.menuId) {
+        <td>
+          {{
+            rowData[col.field]
+              | convertIdToName : (allDropdownData$ | async)?.menus : 'menuName'
+          }}
+        </td>
+        } @else if (col.field === COLUMN_FIELD.screenId) {
+        <td>
+          {{
+            rowData[col.field]
+              | convertIdToName
+                : (allDropdownData$ | async)?.screens
+                : 'screenName'
+          }}
+        </td>
+        } @else if (col.field === COLUMN_FIELD.featureId) {
+        <td>
+          {{
+            rowData[col.field]
+              | convertIdToName
+                : (allDropdownData$ | async)?.features
+                : 'featureName'
+          }}
+        </td>
+        } @else if (col.field === COLUMN_FIELD.categoryId) {
+        <td>
+          {{
+            rowData[col.field]
+              | convertIdToName
+                : (allDropdownData$ | async)?.categories
+                : 'categoryName'
+          }}
+        </td>
+        } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
+        COLUMN_FIELD.endTime) {
+        <td>{{ rowData[col.field] | formatDate }}</td>
+        } @else if (col.field === COLUMN_FIELD.categoryId) {
+        <td>
+          <p-tag
+            [severity]="rowData[col.field] ? 'danger' : 'success'"
+            [value]="rowData[col.field] ? 'Có' : 'Không'"
+          />
+        </td>
+        } @else if (col.field === COLUMN_FIELD.duration) {
+        <td>{{ rowData[col.field] | roundNumber }}</td>
+        } @else if (col.field === COLUMN_FIELD.actions) {
+        <td>
+          <div class="flex align-items-center justify-content-between gap-1">
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-file-edit"
+              aria-label="Chỉnh sửa"
+              pTooltip="Chỉnh sửa"
+              tooltipPosition="bottom"
+              (click)="onChangeToUpdateMode(index)"
+            />
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-trash"
+              aria-label="Xóa"
+              pTooltip="Xóa"
+              tooltipPosition="bottom"
+              (click)="onDelete(rowData)"
+            />
+          </div>
+        </td>
+        } @else {
+        <td>
+          <div
+            class="line-clamp line-clamp-1"
+            [pTooltip]="rowData[col.field]"
+          >
+            {{ rowData[col.field] }}
+          </div>
+        </td>
+        } }
+      </tr>
       } @else {
-        <!-- Hiển thị Form Update -->
-        <tr [formGroup]="getFormGroup(index)">
-          <td>
-            <div>{{ index + 1 }}</div>
-          </td>
-          <td>
-            <div>
-              <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.categoryId"
-                [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
-              ></lib-form-select>
-            </div>
-          </td>
+      <!-- Hiển thị Form Update -->
+      <tr [formGroup]="getFormGroup(index)">
+        <td>
+          <div>{{ index + 1 }}</div>
+        </td>
+        <td>
+          <div>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.categoryId"
+              [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
+            ></lib-form-select>
+          </div>
+        </td>
 
-          <td>
-            <div>
-              <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.categoryId"
-                [options]="
+        <td>
+          <div>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.categoryId"
+              [options]="
                 getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)
               "
-              ></lib-form-select>
-            </div>
-          </td>
+            ></lib-form-select>
+          </div>
+        </td>
 
-          <td>
-            <div>
-              <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.categoryId"
-                [options]="
+        <td>
+          <div>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.categoryId"
+              [options]="
                 getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)
               "
-              ></lib-form-select>
-            </div>
-          </td>
+            ></lib-form-select>
+          </div>
+        </td>
 
-          <td>
-            <div>
-              <lib-form-select
-                [formControl]="getFormControl(index, FORM_GROUP_KEYS.categoryId)"
-                [options]="
+        <td>
+          <div>
+            <lib-form-select
+              [formControl]="getFormControl(index, FORM_GROUP_KEYS.categoryId)"
+              [options]="
                 getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)
               "
-              ></lib-form-select>
-            </div>
-          </td>
+            ></lib-form-select>
+          </div>
+        </td>
 
-          <td>
-            <div>
-              <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.categoryId"
-                [options]="independentDropdowns()?.categories"
-              ></lib-form-select>
-            </div>
-          </td>
+        <td>
+          <div>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.categoryId"
+              [options]="independentDropdowns()?.categories"
+            ></lib-form-select>
+          </div>
+        </td>
 
-          <td>
-            <div>
+        <td>
+          <div>
             <textarea
               [formControl]="getFormControl(index, FORM_GROUP_KEYS.workContent)"
               rows="1"
               cols="30"
               pTextarea
             ></textarea>
-            </div>
-          </td>
+          </div>
+        </td>
 
-          <td>
-            <div>
-              <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.categoryId"
-                [options]="[{ label: 'Vấn đề gặp phải 1', value: 'aaaaaa' }]"
-              ></lib-form-select>
-            </div>
-          </td>
+        <td>
+          <div>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.categoryId"
+              [options]="[{ label: 'Vấn đề gặp phải 1', value: 'aaaaaa' }]"
+            ></lib-form-select>
+          </div>
+        </td>
 
-          <!-- Thời gian bắt đầu -->
-          <td>
-            <div class="flex align-items-center justify-content-center gap-1">
-              <p-button
-                variant="outlined"
-                severity="secondary"
-                size="small"
-                icon="pi pi-clock"
-                aria-label="Thời gian hiện tại"
-                pTooltip="Thời gian hiện tại"
-                tooltipPosition="bottom"
-                (click)="
+        <!-- Thời gian bắt đầu -->
+        <td>
+          <div class="flex align-items-center justify-content-center gap-1">
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-clock"
+              aria-label="Thời gian hiện tại"
+              pTooltip="Thời gian hiện tại"
+              tooltipPosition="bottom"
+              (click)="
                 onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.startTime)
               "
-              />
-              <p-datepicker
-                [formControlName]="FORM_GROUP_KEYS.startTime"
-                [showTime]="true"
-                hourFormat="24"
-                dateFormat="dd/mm"
-                appendTo="body"
-              >
-              </p-datepicker>
-            </div>
-          </td>
+            />
+            <p-datepicker
+              [formControlName]="FORM_GROUP_KEYS.startTime"
+              [showTime]="true"
+              hourFormat="24"
+              dateFormat="dd/mm"
+              appendTo="body"
+            >
+            </p-datepicker>
+          </div>
+        </td>
 
-          <!-- Thời gian hoàn thành -->
-          <td>
-            <div class="flex align-items-center justify-content-center gap-1">
-              <p-button
-                variant="outlined"
-                severity="secondary"
-                size="small"
-                icon="pi pi-clock"
-                aria-label="Thời gian hiện tại"
-                pTooltip="Thời gian hiện tại"
-                tooltipPosition="bottom"
-                (click)="
+        <!-- Thời gian hoàn thành -->
+        <td>
+          <div class="flex align-items-center justify-content-center gap-1">
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-clock"
+              aria-label="Thời gian hiện tại"
+              pTooltip="Thời gian hiện tại"
+              tooltipPosition="bottom"
+              (click)="
                 onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.endTime)
               "
-              />
+            />
 
-              <p-datepicker
-                [formControlName]="FORM_GROUP_KEYS.endTime"
-                [showTime]="true"
-                hourFormat="24"
-                dateFormat="dd/mm"
-                appendTo="body"
-              >
-              </p-datepicker>
-            </div>
-          </td>
+            <p-datepicker
+              [formControlName]="FORM_GROUP_KEYS.endTime"
+              [showTime]="true"
+              hourFormat="24"
+              dateFormat="dd/mm"
+              appendTo="body"
+            >
+            </p-datepicker>
+          </div>
+        </td>
 
-          <td>
-            <div>
-              <input
-                appWorkDuration
-                [formControlName]="FORM_GROUP_KEYS.duration"
-                id="duration"
-                pInputText
-                [formGroup]="getFormGroup(index)"
-              />
-            </div>
-          </td>
+        <td>
+          <div>
+            <input
+              appWorkDuration
+              [formControlName]="FORM_GROUP_KEYS.duration"
+              id="duration"
+              pInputText
+              [formGroup]="getFormGroup(index)"
+            />
+          </div>
+        </td>
 
-          <td>
-            <div>
-              <p-checkbox
-                [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
-                [binary]="true"
-              />
-            </div>
-          </td>
+        <td>
+          <div>
+            <p-checkbox
+              [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
+              [binary]="true"
+            />
+          </div>
+        </td>
 
-          <td>
-            <div class="flex align-items-center justify-content-between gap-1">
-              <p-button
-                variant="outlined"
-                severity="secondary"
-                size="small"
-                icon="pi pi-times"
-                aria-label="Hủy"
-                pTooltip="Hủy"
-                tooltipPosition="bottom"
-                (click)="onCancelUpdateMode(index)"
-              />
-              <p-button
-                variant="outlined"
-                severity="secondary"
-                size="small"
-                icon="pi pi-save"
-                aria-label="Lưu"
-                pTooltip="Lưu"
-                tooltipPosition="bottom"
-                (click)="onSaveUpdate(index)"
-              />
-            </div>
-          </td>
-        </tr>
+        <td>
+          <div class="flex align-items-center justify-content-between gap-1">
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-times"
+              aria-label="Hủy"
+              pTooltip="Hủy"
+              tooltipPosition="bottom"
+              (click)="onCancelUpdateMode(index)"
+            />
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-save"
+              aria-label="Lưu"
+              pTooltip="Lưu"
+              tooltipPosition="bottom"
+              (click)="onSaveUpdate(index)"
+            />
+          </div>
+        </td>
+      </tr>
       }
     </ng-template>
   </p-table>

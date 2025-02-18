@@ -99,6 +99,7 @@ import {
 } from './log-work/log-work.model';
 import { LogWorkComponent } from './log-work/log-work.component';
 import { TimeTrackingStore } from './time-tracking.store';
+import { getValue } from 'src/app/utils/function';
 
 @Component({
   selector: 'app-time-tracking',
@@ -141,7 +142,7 @@ import { TimeTrackingStore } from './time-tracking.store';
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.LOG_WORK);
+  activeTab = signal<ETabName>(ETabName.FIX_BUG_DO_IMPROVEMENT);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -163,7 +164,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     const foundTab = this.allDropdownData().tabs.find(
       (item: ITabResponseDTO) => item.tabName === tabName,
     );
-    console.log('tabName', tabName, foundTab);
     return foundTab?.id;
   });
 
@@ -207,7 +207,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   employeeLevelOptions$ = this.timeTrackingStore.employeeLevelOptions$;
   employeeDependentOptions$ = this.timeTrackingStore.employeeDependentOptions$;
   projectDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
-
+  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
   constructor(override injector: Injector) {
     super(injector);
 
@@ -252,7 +252,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.initSubscriptions();
 
     this.timeTrackingStore.getAllDropdownData();
-    // this.callAPIGetDependentDropdown();
 
     document.addEventListener(
       'visibilitychange',
@@ -345,39 +344,49 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       }),
     );
 
-    this.subscription.add(
-      this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employeeId).subscribe(
-        (employeeId: ID) => {
-          const employee = this.allDropdownData()?.employees.find(
-            (employee) => employee.id === employeeId,
-          );
-          this.currentEmployee.set({
-            ...employee,
-            employeeLevelId: this.getControlValue(
-              this.SELECT_FORM_GROUP_KEY.employeeLevelId,
-            ),
-          });
-        },
-      ),
-    );
+    // this.subscription.add(
+    //   this.getControlValueChanges(SELECT_FORM_GROUP_KEY.employeeId).subscribe(
+    //     (employeeId: ID) => {
+    //       const employee = getValue(this.allDropdownData$)?.employees.find(
+    //         (employee) => employee.id === employeeId,
+    //       );
+    //       this.currentEmployee.set({
+    //         ...employee,
+    //         employeeLevelId: this.getControlValue(
+    //           this.SELECT_FORM_GROUP_KEY.employeeLevelId,
+    //         ),
+    //       });
+    //     },
+    //   ),
+    // );
 
     this.subscription.add(
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.projectId).subscribe(
         (_: string) => {
+          // Thiết lập giờ cho ô Tùy chỉnh sau khi chọn dự án
           this.getControl(CHILD_FORM_GROUP_KEYS.dateRange).setValue([
             startOfDay(new Date()),
             endOfDay(new Date()),
           ]);
 
-          const defaultValue = {
+          // Lưu những thông tin chung vào store và local storage
+          const employeeId = this.getControlValue(
+            CHILD_FORM_GROUP_KEYS.employeeId,
+          );
+          const selectedEmployee = getValue(
+            this.allDropdownData$,
+          )?.employees.find((employee) => employee.id === employeeId);
+
+          const commonValue = {
             employeeLevelId: this.getControlValue(
               CHILD_FORM_GROUP_KEYS.employeeLevelId,
             ),
             employeeId: this.getControlValue(CHILD_FORM_GROUP_KEYS.employeeId),
+            employee: selectedEmployee,
             projectId: this.getControlValue(CHILD_FORM_GROUP_KEYS.projectId),
           };
 
-          this.localStorageService.setItem(LOCAL_STORAGE_KEY, defaultValue);
+          this.timeTrackingStore.setSharedData(commonValue);
         },
       ),
     );
@@ -440,8 +449,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
           filter(() => this.activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT),
           switchMap(() => {
-            this.isLoading.set(true);
-
             return this.timeTrackingService
               .getListAsync(this.doGetRequestDTO())
               .pipe(
@@ -453,7 +460,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
                   });
                   return EMPTY;
                 }),
-                finalize(() => this.isLoading.set(false)),
+                finalize(() => {}),
               );
           }),
         )
@@ -482,6 +489,12 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
             this.addCreateRowForm();
           }
         }),
+    );
+
+    this.subscription.add(
+      this.projectDependentOptions$.subscribe((_) => {
+        this.setDefaultValue();
+      }),
     );
   }
 
@@ -517,56 +530,14 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     features: [],
   });
 
-  callAPIGetDependentDropdown() {
-    this.isLoading.set(true);
-    this.timeTrackingService
-      .getDropdownListAsync({
-        mode: EGetApiMode.DROPDOWN,
-      })
-      .subscribe((result) => {
-        // Bộ phận làm việc Options
-        const departments = result.departments;
-        if (departments && departments.length > 0) {
-          const departmentOptions: IOption[] = departments.map(
-            (department) => ({
-              label: department.departmentName,
-              value: department.id,
-            }),
-          );
-
-          const departmentInterruptionReasonDropdown =
-            this.commonService.convertToDependentDropdown(
-              departments,
-              'departmentName',
-              'interruptionReasons',
-              'interruptionReasonName',
-            );
-          this.departmentInterruptionReasonDropdown.set(
-            departmentInterruptionReasonDropdown,
-          );
-        }
-
-        this.isLoading.set(false);
-        this.setDefaultValue();
-
-        if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
-          this.fetchDataFromBugImprovementList();
-          return;
-        } else if (
-          this.activeTab() === ETabName.BUG ||
-          this.activeTab() === ETabName.IMPROVEMENT
-        ) {
-          return;
-        }
-      });
-  }
-
+  /**
+   * Thiết lập giá trị mặc định từ Local Storage để user không cần nhập thông tin chung
+   */
   setDefaultValue() {
     const defaultValue: IDefaultValueInLocalStorage =
       this.localStorageService.getItem(LOCAL_STORAGE_KEY);
     if (defaultValue) {
       this.formGroup.patchValue(defaultValue);
-      console.log('setting default value', defaultValue, this.formGroup.value);
     }
   }
 
@@ -652,7 +623,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   onChangeTab(tabName: unknown) {
     this.activeTab.set(tabName as ETabName);
-    console.log('onChangeTab ', this.activeTab());
     this.tableData = [];
 
     switch (tabName) {
@@ -686,7 +656,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           ...oldValue,
           tabId: this.tabId(),
         }));
-        console.log('update tabId ', this.tabId());
         this.callAPIGetTableData();
         clearInterval(this.intervalId);
         break;
@@ -710,9 +679,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       },
     });
 
-    drawerRef.onClose.subscribe((res: any) => {
-      console.log('aaaaaaaaaaa ', res);
-    });
+    drawerRef.onClose.subscribe((res: any) => {});
   }
 
   getFormControl(index: number, formControlName: string): FormControl {
@@ -911,9 +878,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   onBulkCreate() {
     let listData: any;
-    if (this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
-      console.log('this.fixList', this.allDropdownData());
-    }
 
     this.isLoading.set(true);
     this.doPostRequestDTO.update((oldValue) => ({

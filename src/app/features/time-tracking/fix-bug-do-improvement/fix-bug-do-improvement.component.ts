@@ -38,13 +38,15 @@ import { TagModule } from 'primeng/tag';
 import { FormBaseComponent } from '../../../shared';
 import { TooltipModule } from 'primeng/tooltip';
 import { Button } from 'primeng/button';
-import { catchError, EMPTY, finalize } from 'rxjs';
+import { catchError, EMPTY, filter, finalize } from 'rxjs';
 import { TimeTrackingApiService } from '../time-tracking-api.service';
 import { message } from '../../../contants/api.contant';
 import * as _ from 'lodash';
 import { IFixBugDoImprovementResponseDTO } from './fix-bug-do-improvement.dto.model';
 import { ILogWorkRequestDTO } from '../log-work/log-work.dto.model';
 import { LOG_WORK_COLUMN_FIELD } from '../log-work/log-work.model';
+import { TimeTrackingStore } from '../time-tracking.store';
+import { getValue } from 'src/app/utils/function';
 
 @Component({
   standalone: true,
@@ -68,7 +70,6 @@ export class FixBugDoImprovementComponent
 {
   formGroupControl = input.required<FormGroup>();
   commonFormGroupKey = input.required<any>();
-  currentEmployee = input.required<IEmployeeResponseDTO>();
   allDropdownData = input.required<IAllDropDownResponseDTO>();
   updateList = output<boolean>();
   protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
@@ -85,13 +86,14 @@ export class FixBugDoImprovementComponent
     data: null,
   });
   intervalId: any;
+  private timeTrackingStore = this.injector.get(TimeTrackingStore);
+  selectedEmployee$ = this.timeTrackingStore.selectedEmployee$;
 
   constructor(override injector: Injector) {
     super(injector);
 
     effect(() => {
-      console.log('effect ', this.currentEmployee());
-      if (this.currentEmployee()) {
+      if (getValue(this.selectedEmployee$)) {
         this.checkForFixBugAndImprovementUpdates();
         this.intervalId = setInterval(
           () => this.checkForFixBugAndImprovementUpdates(),
@@ -104,24 +106,29 @@ export class FixBugDoImprovementComponent
   ngOnInit() {
     this.onDestroy$.subscribe(() => {
       clearInterval(this.intervalId);
-      console.log('onDestroy$');
     });
+
+    this.selectedEmployee$
+      .pipe(filter((employee: IEmployeeResponseDTO) => !!employee))
+      .subscribe((_) => {
+        this.checkForFixBugAndImprovementUpdates();
+        this.intervalId = setInterval(
+          () => this.checkForFixBugAndImprovementUpdates(),
+          36000,
+        );
+      });
   }
 
   checkForFixBugAndImprovementUpdates() {
-    console.log('1111111 ', this.currentEmployee());
-    if (!this.currentEmployee()?.bugImprovementApi) return;
+    const currentEmployee = getValue(this.selectedEmployee$);
+    if (!currentEmployee?.bugImprovementApi) return;
 
-    console.log('2222222 ', this.currentEmployee());
-    this.isLoading.set(true);
+    this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
-      .getBugImprovementContinuousUpdate(
-        this.currentEmployee().bugImprovementApi,
-        {},
-      )
+      .getBugImprovementContinuousUpdate(currentEmployee.bugImprovementApi, {})
       .pipe(
         finalize(() => {
-          this.isLoading.set(false);
+          this.timeTrackingStore.setLoading(true);
         }),
       )
       .subscribe((list) => {
@@ -137,7 +144,6 @@ export class FixBugDoImprovementComponent
           };
         });
 
-        console.log('this.tableData = ', this.tableData);
         const isStartTimeTracking = this.tableData?.some(
           (item) => item.startTime && !item.endTime,
         );
@@ -146,7 +152,10 @@ export class FixBugDoImprovementComponent
   }
 
   openGoogleSheets() {
-    window.open(this.currentEmployee().bugImprovementSpreadsheet, '_blank'); // Mở trong tab mới
+    window.open(
+      getValue(this.selectedEmployee$)?.bugImprovementSpreadsheet,
+      '_blank',
+    ); // Mở trong tab mới
   }
 
   convertListBugOrImprovementBeforeSave() {
