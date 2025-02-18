@@ -145,41 +145,6 @@ export const bugImprovementListHeaderColumns: IColumnHeaderConfigs[] = [
   },
 ];
 
-// Bảng tiến độ
-export const reportHeaderColumns: IColumnHeaderConfigs[] = [
-  ...commonHeaderColumn,
-  {
-    label: 'Phân loại',
-    field: LOG_WORK_COLUMN_FIELD.tabId,
-    minWidth: 200,
-  },
-  {
-    label: 'Mã bug & improvement',
-    field: LOG_WORK_COLUMN_FIELD.workContent,
-    minWidth: 120,
-  },
-  {
-    label: 'Thời gian bắt đầu',
-    field: LOG_WORK_COLUMN_FIELD.startTime,
-    minWidth: 120,
-  },
-  {
-    label: 'Thời gian hoàn thành',
-    field: LOG_WORK_COLUMN_FIELD.endTime,
-    minWidth: 120,
-  },
-  {
-    label: 'Thời lượng',
-    field: LOG_WORK_COLUMN_FIELD.duration,
-    minWidth: 120,
-  },
-  {
-    label: 'Hành động',
-    field: LOG_WORK_COLUMN_FIELD.actions,
-    minWidth: 120,
-  },
-];
-
 export const nullableObj: any = {
   mode: EMode.VIEW,
   id: null,

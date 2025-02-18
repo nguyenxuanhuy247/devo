@@ -7,11 +7,10 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import {
-  LOG_WORK_CHILD_FORM_GROUP_KEYS,
   IDependentDropDown,
   IIndependentDropDownSignal,
   ISelectFormGroup,
-  nullableObj,
+  LOG_WORK_CHILD_FORM_GROUP_KEYS,
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
 import {
@@ -42,7 +41,6 @@ import {
   catchError,
   debounceTime,
   EMPTY,
-  filter,
   finalize,
   Subject,
   Subscription,
@@ -90,15 +88,9 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   projectFormControl = input<LibFormSelectComponent>();
 
   independentDropdowns = input<IIndependentDropDownSignal>();
-  protected readonly FORM_GROUP_KEYS = LOG_WORK_CHILD_FORM_GROUP_KEYS;
-  protected readonly ETabName = ETabName;
-  protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
-  protected readonly EMode = EMode;
   headerColumnConfigs: IColumnHeaderConfigs[] = logWorkHeaderColumnConfigs;
-
   isLoading = signal(false);
-
   formArray: FormArray = new FormArray([]);
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
@@ -116,12 +108,15 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
     endTime: null,
   });
   timeTrackingService = this.injector.get(TimeTrackingApiService);
-
   subscription: Subscription = new Subscription();
-
   tableData: ILogWorkRowData[] = [];
-
   createFormGroup!: FormGroup;
+  tabId = signal<ID>(null);
+  fixedRowData: ILogWorkRowData[] = [];
+  protected readonly FORM_GROUP_KEYS = LOG_WORK_CHILD_FORM_GROUP_KEYS;
+  protected readonly ETabName = ETabName;
+  protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
+  protected readonly EMode = EMode;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
   allDropdownData$ = this.timeTrackingStore.allDropdownData$;
   moduleDependentOptions$ = this.timeTrackingStore.moduleDependentOptions$;
@@ -130,13 +125,14 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
   featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
   tabOptions$ = this.timeTrackingStore.tabOptions$;
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
-  tabId = signal<ID>(null);
+  private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
 
   constructor(override injector: Injector) {
     super(injector);
   }
 
-  ngOnInit() {
+  override ngOnInit() {
+    super.ngOnInit();
     this.createFormGroup = this.formBuilder.group({
       ...nullableLogWorkObj,
       mode: EMode.CREATE,
@@ -222,8 +218,6 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
     );
   }
 
-  fixedRowData: ILogWorkRowData[] = [];
-
   addCreateRowForm() {
     this.fixedRowData = [
       {
@@ -285,7 +279,6 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
       });
   }
 
-  private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
   callAPIGetTableData(): void {
     this.getTableDataApiRequest$.next();
   }

@@ -4,7 +4,6 @@ import {
   Injector,
   input,
   OnInit,
-  output,
   signal,
 } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -71,7 +70,7 @@ export class FixBugDoImprovementComponent
   formGroupControl = input.required<FormGroup>();
   commonFormGroupKey = input.required<any>();
   allDropdownData = input.required<IAllDropDownResponseDTO>();
-  updateList = output<boolean>();
+
   protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
 
   headerColumnConfigs: IColumnHeaderConfigs[] =
@@ -103,10 +102,8 @@ export class FixBugDoImprovementComponent
     });
   }
 
-  ngOnInit() {
-    this.onDestroy$.subscribe(() => {
-      clearInterval(this.intervalId);
-    });
+  override ngOnInit() {
+    super.ngOnInit();
 
     this.selectedEmployee$
       .pipe(filter((employee: IEmployeeResponseDTO) => !!employee))
@@ -117,6 +114,11 @@ export class FixBugDoImprovementComponent
           36000,
         );
       });
+  }
+
+  override ngOnDestroy() {
+    super.ngOnDestroy();
+    clearInterval(this.intervalId);
   }
 
   checkForFixBugAndImprovementUpdates() {
@@ -144,12 +146,28 @@ export class FixBugDoImprovementComponent
           };
         });
 
-        const isStartTimeTracking = this.tableData?.some(
-          (item) => item.startTime && !item.endTime,
+        this.totalDuration = this.tableData.reduce(
+          (acc, rowData) => acc + rowData.duration,
+          0,
         );
-        this.updateList.emit(isStartTimeTracking);
+
+        this.warningWhenChangeChromeTab();
       });
   }
+
+  totalDuration: number = 0;
+
+  override warningWhenChangeChromeTab = () => {
+    const isStartTimeTracking = this.tableData?.some(
+      (item) => item.startTime && !item.endTime,
+    );
+
+    if (!isStartTimeTracking) {
+      this.startBlinking();
+    } else {
+      this.clearBlinking();
+    }
+  };
 
   openGoogleSheets() {
     window.open(

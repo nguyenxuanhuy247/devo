@@ -3,10 +3,16 @@ import {
   Component,
   Injector,
   OnDestroy,
+  OnInit,
   Renderer2,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DrawerService, LocalStorageService } from '../../services';
@@ -17,7 +23,7 @@ import { DomSanitizer } from '@angular/platform-browser';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
 })
-export abstract class FormBaseComponent implements OnDestroy {
+export abstract class FormBaseComponent implements OnInit, OnDestroy {
   formGroup: FormGroup = new FormGroup({});
 
   renderer = this.injector.get(Renderer2);
@@ -30,12 +36,54 @@ export abstract class FormBaseComponent implements OnDestroy {
   localStorageService = this.injector.get(LocalStorageService);
 
   onDestroy$: Subject<any> = new Subject<any>();
+  private blinkInterval: any;
+  private originalTitle = document.title;
+  private warningTitle = '⚠️ Chưa điền thời gian bắt đầu';
 
   constructor(protected injector: Injector) {}
+
+  ngOnInit() {
+    // Cảnh báo khi người dùng chuyển Tab
+    document.addEventListener(
+      'visibilitychange',
+      this.warningWhenChangeChromeTab,
+    );
+    this.warningWhenChangeChromeTab();
+  }
 
   ngOnDestroy() {
     this.onDestroy$.next(null);
     this.onDestroy$.complete();
+    document.removeEventListener(
+      'visibilitychange',
+      this.warningWhenChangeChromeTab,
+    );
+    clearInterval(this.blinkInterval);
+  }
+
+  /*
+   * @usage Hiển thị cảnh báo trên thanh tiêu đề trình duyệt
+   */
+  warningWhenChangeChromeTab = () => {};
+
+  /**
+   * @usage Hiển thị nhấp nháy cảnh báo trên Tiêu đề tab trình duyệt
+   */
+  startBlinking() {
+    this.clearBlinking();
+    this.blinkInterval = setInterval(() => {
+      document.title =
+        document.title === this.originalTitle
+          ? this.warningTitle
+          : this.originalTitle;
+    }, 500);
+  }
+
+  clearBlinking() {
+    if (this.blinkInterval) {
+      clearInterval(this.blinkInterval);
+      document.title = this.originalTitle;
+    }
   }
 
   getControlValue(controlName: string, customFormGroup?: FormGroup) {

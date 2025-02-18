@@ -30,7 +30,9 @@ export class CreateFormComponent extends FormBaseComponent implements OnInit {
   data: any;
   onClosePopup: (params: { code: EClosePopupCode; data: any }) => void;
 
-  ngOnInit() {
+  override ngOnInit() {
+    super.ngOnInit();
+
     this.data = this.inputData?.['data'];
     this.onClosePopup = this.inputData?.['close'];
 

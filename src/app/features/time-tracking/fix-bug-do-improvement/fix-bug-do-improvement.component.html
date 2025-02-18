@@ -39,38 +39,40 @@
     <!-- TABLE HEADER -->
     <ng-template pTemplate="header">
       <tr>
-        @for (col of headerColumnConfigs; track col.field) { @if (col.field ===
-        COLUMN_FIELD.categoryId) {
-        <th
-          [pSortableColumn]="col.field"
-          pResizableColumn
-          pFrozenColumn
-          [style.min-width.px]="col.minWidth"
-        >
-          <div class="flex">
-            <div class="flex-1 line-clamp line-clamp-2">
-              {{ col.label }}
-            </div>
-            <p-sortIcon [field]="col.field" />
-          </div>
-        </th>
-        } @else {
-        <th
-          [pSortableColumn]="col.field"
-          pResizableColumn
-          [style.min-width.px]="col.minWidth"
-        >
-          <div class="flex">
-            <div
-              class="flex-1 line-clamp line-clamp-2"
-              [pTooltip]="col.label"
+        @for (col of headerColumnConfigs; track col.field) {
+          @if (col.field ===
+          COLUMN_FIELD.categoryId) {
+            <th
+              [pSortableColumn]="col.field"
+              pResizableColumn
+              pFrozenColumn
+              [style.min-width.px]="col.minWidth"
             >
-              {{ col.label }}
-            </div>
-            <p-sortIcon [field]="col.field" />
-          </div>
-        </th>
-        } }
+              <div class="flex">
+                <div class="flex-1 line-clamp line-clamp-2">
+                  {{ col.label }}
+                </div>
+                <p-sortIcon [field]="col.field" />
+              </div>
+            </th>
+          } @else {
+            <th
+              [pSortableColumn]="col.field"
+              pResizableColumn
+              [style.min-width.px]="col.minWidth"
+            >
+              <div class="flex">
+                <div
+                  class="flex-1 line-clamp line-clamp-2"
+                  [pTooltip]="col.label"
+                >
+                  {{ col.label }}
+                </div>
+                <p-sortIcon [field]="col.field" />
+              </div>
+            </th>
+          }
+        }
       </tr>
     </ng-template>
 
@@ -81,27 +83,31 @@
       let-index="rowIndex"
     >
       <tr>
-        @for (col of headerColumnConfigs; track col.field) { @if (col.field ===
-        COLUMN_FIELD.no) {
-        <td>{{ index + 1 }}</td>
-        } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
-        COLUMN_FIELD.endTime) {
-        <td>{{ rowData[col.field] | formatDate }}</td>
-        } @else if (col.field === COLUMN_FIELD.duration) {
-        <td>{{ rowData[col.field] | roundNumber }}</td>
-        } @else {
-        <td>
-          <div
-            class="line-clamp line-clamp-1"
-            [pTooltip]="rowData[col.field]"
-          >
-            {{ rowData[col.field] }}
-          </div>
-        </td>
-        } }
+        @for (col of headerColumnConfigs; track col.field) {
+          @if (col.field ===
+          COLUMN_FIELD.no) {
+            <td>{{ index + 1 }}</td>
+          } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
+          COLUMN_FIELD.endTime) {
+            <td>{{ rowData[col.field] | formatDate }}</td>
+          } @else if (col.field === COLUMN_FIELD.duration) {
+            <td>{{ rowData[col.field] | roundNumber }}</td>
+          } @else {
+            <td>
+              <div
+                class="line-clamp line-clamp-1"
+                [pTooltip]="rowData[col.field]"
+              >
+                {{ rowData[col.field] }}
+              </div>
+            </td>
+          }
+        }
       </tr>
     </ng-template>
 
-    <ng-template #summary> Tổng thời lượng : {{ 'aaaa' }} giờ </ng-template>
+    <ng-template #summary>
+      <div>Tổng thời lượng : {{ (totalDuration | roundNumber) || '0' }} giờ</div>
+    </ng-template>
   </p-table>
 </div>

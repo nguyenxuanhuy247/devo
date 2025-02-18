@@ -5,6 +5,9 @@ import {
   ID,
 } from 'src/app/shared/interface/common.interface';
 
+export const ISSUES_FORM_GROUP_KEYS =
+  CommonService.generateEnumFromInterface<IIssuesRowData>();
+
 export interface IIssuesRowData {
   mode: EMode;
   id: ID;
@@ -13,7 +16,7 @@ export interface IIssuesRowData {
   screenId: ID;
   featureId: ID;
   categoryId: ID;
-  IssueName: string;
+  issueName: string;
   departmentMakeId: ID;
   employeeMakeId: ID;
   interruptionReasonId: ID;
@@ -25,7 +28,7 @@ export interface IIssuesRowData {
   updatedDate: Date;
 }
 
-export const nullableLogWorkObj: IIssuesRowData = {
+export const nullableIssuesObj: IIssuesRowData = {
   mode: EMode.VIEW,
   id: null,
   moduleId: null,
@@ -33,7 +36,7 @@ export const nullableLogWorkObj: IIssuesRowData = {
   screenId: null,
   featureId: null,
   categoryId: null,
-  IssueName: null,
+  issueName: null,
   departmentMakeId: null,
   employeeMakeId: null,
   interruptionReasonId: null,
@@ -86,7 +89,7 @@ export const issuesHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   },
   {
     label: 'Nội dung vấn đề',
-    field: ISSUES_COLUMN_FIELD.IssueName,
+    field: ISSUES_COLUMN_FIELD.issueName,
     minWidth: 120,
   },
   {
