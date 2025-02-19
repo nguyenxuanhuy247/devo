@@ -1,8 +1,8 @@
 import { Directive, Injector, Input, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { TimeTrackingCalculateService } from '../features/time-tracking/time-tracking-calculate.service';
-import { LOG_WORK_CHILD_FORM_GROUP_KEYS } from '../features/time-tracking/time-tracking.model';
 import { combineLatest, startWith } from 'rxjs';
+import { LOG_WORK_CHILD_FORM_GROUP_KEYS } from '../features/time-tracking/log-work/log-work.model';
 
 @Directive({
   selector: '[appWorkDuration]',

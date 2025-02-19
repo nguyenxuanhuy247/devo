@@ -137,6 +137,7 @@
         </td>
 
         <td>
+          <!-- Thời gian bắt đầu -->
           <div class="flex align-items-center justify-content-center gap-1">
             <p-button
               variant="outlined"
@@ -162,6 +163,7 @@
         </td>
 
         <td>
+          <!-- Thời gian hoàn thành -->
           <div class="flex align-items-center justify-content-center gap-1">
             <p-button
               variant="outlined"
@@ -215,10 +217,10 @@
               severity="secondary"
               size="small"
               icon="pi pi-times"
-              aria-label="Xóa dữ liệu"
-              pTooltip="Xóa dữ liệu"
+              aria-label="Hủy"
+              pTooltip="Hủy"
               tooltipPosition="bottom"
-              (click)="onResetCreateForm()"
+              (click)="onCancelUpdateMode(index)"
             />
             <p-button
               variant="outlined"
@@ -228,7 +230,7 @@
               aria-label="Lưu"
               pTooltip="Lưu"
               tooltipPosition="bottom"
-              (click)="onSaveCreate()"
+              (click)="onSaveUpdate(index)"
             />
           </div>
         </td>
@@ -347,8 +349,38 @@
         <td>
           <div>
             <lib-form-select
-              [formControlName]="FORM_GROUP_KEYS.categoryId"
-              [options]="getDependentModuleDropDown(FORM_GROUP_KEYS.project)"
+              #moduleId
+              [formControlName]="FORM_GROUP_KEYS.moduleId"
+              [options]="(moduleDependentOptions$ | async)?.[projectFormControl().value]"
+            ></lib-form-select>
+          </div>
+        </td>
+
+        <td>
+          <div>
+            <lib-form-select
+              #menuId
+              [formControlName]="FORM_GROUP_KEYS.menuId"
+              [options]="(menuDependentOptions$ | async)?.[moduleId.value]"
+            ></lib-form-select>
+          </div>
+        </td>
+
+        <td>
+          <div>
+            <lib-form-select
+              #screenId
+              [formControlName]="FORM_GROUP_KEYS.screenId"
+              [options]="(screenDependentOptions$ | async)?.[menuId.value]"
+            ></lib-form-select>
+          </div>
+        </td>
+
+        <td>
+          <div>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.featureId"
+              [options]="(featureDependentOptions$ | async)?.[screenId.value]"
             ></lib-form-select>
           </div>
         </td>
@@ -357,40 +389,7 @@
           <div>
             <lib-form-select
               [formControlName]="FORM_GROUP_KEYS.categoryId"
-              [options]="
-                getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)
-              "
-            ></lib-form-select>
-          </div>
-        </td>
-
-        <td>
-          <div>
-            <lib-form-select
-              [formControlName]="FORM_GROUP_KEYS.categoryId"
-              [options]="
-                getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)
-              "
-            ></lib-form-select>
-          </div>
-        </td>
-
-        <td>
-          <div>
-            <lib-form-select
-              [formControl]="getFormControl(index, FORM_GROUP_KEYS.categoryId)"
-              [options]="
-                getDependentDropDown(index, rowData, FORM_GROUP_KEYS.categoryId)
-              "
-            ></lib-form-select>
-          </div>
-        </td>
-
-        <td>
-          <div>
-            <lib-form-select
-              [formControlName]="FORM_GROUP_KEYS.categoryId"
-              [options]="independentDropdowns()?.categories"
+              [options]="(categoryOptions$ | async) || []"
             ></lib-form-select>
           </div>
         </td>
@@ -398,10 +397,10 @@
         <td>
           <div>
             <textarea
-              [formControl]="getFormControl(index, FORM_GROUP_KEYS.workContent)"
+              pTextarea
+              [formControlName]="FORM_GROUP_KEYS.workContent"
               rows="1"
               cols="30"
-              pTextarea
             ></textarea>
           </div>
         </td>
@@ -409,8 +408,8 @@
         <td>
           <div>
             <lib-form-select
-              [formControlName]="FORM_GROUP_KEYS.categoryId"
-              [options]="[{ label: 'Vấn đề gặp phải 1', value: 'aaaaaa' }]"
+              [formControlName]="FORM_GROUP_KEYS.issueId"
+              [options]="[{ label: 'aaaaaa', value: 'aaaaaa' }]"
             ></lib-form-select>
           </div>
         </td>
@@ -475,7 +474,7 @@
               [formControlName]="FORM_GROUP_KEYS.duration"
               id="duration"
               pInputText
-              [formGroup]="getFormGroup(index)"
+              [formGroup]="getFormGroupInFormArray(formArray, index)"
             />
           </div>
         </td>

@@ -5,6 +5,9 @@ import {
 } from 'src/app/shared/interface/common.interface';
 import { CommonService } from 'src/app/services';
 
+export const LOG_WORK_CHILD_FORM_GROUP_KEYS =
+  CommonService.generateEnumFromInterface<ILogWorkRowData>();
+
 export const LOG_WORK_COLUMN_FIELD = Object.assign(
   CommonService.generateEnumFromInterface<ILogWorkRowData>(),
   {
@@ -55,7 +58,7 @@ export const logWorkHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   {
     label: 'STT',
     field: LOG_WORK_COLUMN_FIELD.no,
-    minWidth: 70,
+    minWidth: 80,
   },
   {
     label: 'Module',
@@ -110,7 +113,7 @@ export const logWorkHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   {
     label: 'Nghỉ trưa',
     field: LOG_WORK_COLUMN_FIELD.isLunchBreak,
-    minWidth: 60,
+    minWidth: 100,
   },
   {
     label: 'Hành động',

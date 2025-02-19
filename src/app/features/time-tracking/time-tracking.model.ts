@@ -51,14 +51,14 @@ export interface IFormGroup extends ILogWorkRowData {
   quickDateRange: string;
 }
 
-export const LOG_WORK_CHILD_FORM_GROUP_KEYS =
-  CommonService.generateEnumFromInterface<IFormGroup>();
+// export const LOG_WORK_CHILD_FORM_GROUP_KEYS =
+//   CommonService.generateEnumFromInterface<IFormGroup>();
 
 export const commonHeaderColumn: IColumnHeaderConfigs[] = [
   {
     label: 'STT',
     field: LOG_WORK_COLUMN_FIELD.no,
-    minWidth: 70,
+    minWidth: 80,
   },
   {
     label: 'Module',

@@ -51,7 +51,6 @@ import {
   IDependentDropDown,
   IIndependentDropDownSignal,
   LOCAL_STORAGE_KEY,
-  LOG_WORK_CHILD_FORM_GROUP_KEYS,
   nullableObj,
   SELECT_FORM_GROUP_KEY,
 } from './time-tracking.model';
@@ -89,6 +88,7 @@ import { TagModule } from 'primeng/tag';
 import { FixBugDoImprovementComponent } from './fix-bug-do-improvement/fix-bug-do-improvement.component';
 import {
   ILogWorkRowData,
+  LOG_WORK_CHILD_FORM_GROUP_KEYS,
   LOG_WORK_COLUMN_FIELD,
   logWorkHeaderColumnConfigs,
 } from './log-work/log-work.model';
@@ -317,7 +317,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.projectId).subscribe(
         (_: string) => {
           // Thiết lập giờ cho ô Tùy chỉnh sau khi chọn dự án
-          this.getControl(LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange).setValue([
+          this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
             startOfDay(new Date()),
             endOfDay(new Date()),
           ]);
@@ -348,31 +348,31 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.quickDate).subscribe(
         (dateString: string) => {
           console.log('quickDate ', dateString);
-          this.getControl(LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange).disable({
+          this.getControl(SELECT_FORM_GROUP_KEY.dateRange).disable({
             emitEvent: false,
           });
 
           switch (dateString) {
             case 'TODAY':
-              this.getControl(
-                LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange,
-              ).setValue([startOfDay(new Date()), endOfDay(new Date())]);
+              this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
+                startOfDay(new Date()),
+                endOfDay(new Date()),
+              ]);
               break;
             case 'WEEK':
-              this.getControl(
-                LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange,
-              ).setValue([
+              this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
                 startOfWeek(new Date(), { weekStartsOn: 1 }),
                 endOfWeek(new Date(), { weekStartsOn: 1 }),
               ]);
               break;
             case 'MONTH':
-              this.getControl(
-                LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange,
-              ).setValue([startOfMonth(new Date()), endOfMonth(new Date())]);
+              this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
+                startOfMonth(new Date()),
+                endOfMonth(new Date()),
+              ]);
               break;
             default:
-              this.getControl(LOG_WORK_CHILD_FORM_GROUP_KEYS.dateRange).enable({
+              this.getControl(SELECT_FORM_GROUP_KEY.dateRange).enable({
                 emitEvent: false,
               });
           }
@@ -396,54 +396,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         }
       }),
     );
-
-    // this.subscription.add(
-    //   this.getTableDataApiRequest$
-    //     .pipe(
-    //       debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
-    //       filter(() => this.activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT),
-    //       switchMap(() => {
-    //         return this.timeTrackingService
-    //           .getListAsync(this.doGetRequestDTO())
-    //           .pipe(
-    //             catchError(() => {
-    //               this.messageService.add({
-    //                 severity: 'error',
-    //                 summary: 'Thất bại',
-    //                 detail: message.serverError,
-    //               });
-    //               return EMPTY;
-    //             }),
-    //             finalize(() => {}),
-    //           );
-    //       }),
-    //     )
-    //     .subscribe((listData: ILogWorkTableDataResponseDTO[]) => {
-    //       this.mode.set(EMode.VIEW);
-    //       this.formArray.clear();
-
-    //       listData.forEach((rowData) => {
-    //         const formGroup = this.formBuilder.group({
-    //           ...rowData,
-    //           mode: EMode.VIEW,
-    //           startTime: rowData.startTime ? new Date(rowData.startTime) : null,
-    //           endTime: rowData.endTime ? new Date(rowData.endTime) : null,
-    //         });
-    //         this.formArray.push(formGroup);
-    //       });
-
-    //       this.tableData = this.formArray.value;
-    //       this.createFormGroup.reset();
-
-    //       if (
-    //         this.activeTab() === ETabName.ESTIMATE ||
-    //         this.activeTab() === ETabName.LOG_WORK ||
-    //         this.activeTab() === ETabName.ISSUE
-    //       ) {
-    //         this.addCreateRowForm();
-    //       }
-    //     }),
-    // );
 
     this.subscription.add(
       this.projectDependentOptions$.subscribe((_) => {

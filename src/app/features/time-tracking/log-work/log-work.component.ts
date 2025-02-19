@@ -7,10 +7,8 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import {
-  IDependentDropDown,
   IIndependentDropDownSignal,
   ISelectFormGroup,
-  LOG_WORK_CHILD_FORM_GROUP_KEYS,
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
 import {
@@ -31,6 +29,7 @@ import {
 } from 'src/app/shared/interface/common.interface';
 import {
   ILogWorkRowData,
+  LOG_WORK_CHILD_FORM_GROUP_KEYS,
   LOG_WORK_COLUMN_FIELD,
   logWorkHeaderColumnConfigs,
   nullableLogWorkObj,
@@ -41,6 +40,7 @@ import {
   catchError,
   debounceTime,
   EMPTY,
+  filter,
   finalize,
   Subject,
   Subscription,
@@ -162,13 +162,11 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
         .pipe(
           debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
           switchMap(() => {
-            console.log('vaò đây 11111');
             this.isLoading.set(true);
 
             this.doGetRequestDTO.update((oldValue: any) => {
-              const formGroupValue = this.formGroupControl()
-                .value as ISelectFormGroup;
-              console.log('vaò đây 22222', formGroupValue);
+              const formGroupValue =
+                this.formGroupControl().getRawValue() as ISelectFormGroup;
 
               return {
                 ...oldValue,
@@ -204,6 +202,7 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
             const formGroup = this.formBuilder.group({
               ...rowData,
               mode: EMode.VIEW,
+              isLunchBreak: true,
               startTime: rowData.startTime ? new Date(rowData.startTime) : null,
               endTime: rowData.endTime ? new Date(rowData.endTime) : null,
             });
@@ -212,8 +211,18 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
 
           this.tableData = this.formArray.value;
           this.createFormGroup.reset();
+        }),
+    );
 
-          this.addCreateRowForm();
+    this.subscription.add(
+      this.getControlValueChanges(
+        SELECT_FORM_GROUP_KEY.dateRange,
+        this.formGroupControl(),
+      )
+        .pipe(filter((dataRange) => !!dataRange))
+        .subscribe((_) => {
+          // Sau khi thiết lập các giá trị chung như Level, Nhân viên, dự án, thời gian mới gọi API lấy danh sách
+          this.callAPIGetTableData();
         }),
     );
   }
@@ -238,6 +247,9 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
     this.tableData = this.formArray.value;
   }
 
+  /**
+   * @usage Cập nhật bản ghi
+   */
   onSaveUpdate(index: number) {
     this.isLoading.set(true);
     const value = this.formArray?.at(index)?.value;
@@ -302,56 +314,6 @@ export class LogWorkComponent extends FormBaseComponent implements OnInit {
 
   getFormControl(index: number, formControlName: string): FormControl {
     return this.formArray?.at(index)?.get(formControlName) as FormControl;
-  }
-
-  /**
-   * @usage Lấy danh sách Dropdown phụ thuộc trong Form thêm mới
-   */
-  getDependentDropDown(
-    index: number,
-    rowData: ILogWorkRowData,
-    dependentFormControlName: string,
-  ): any {
-    const mode = rowData.mode;
-    let value;
-    if (mode === EMode.CREATE) {
-      value = this.getControlValue(
-        dependentFormControlName,
-        this.createFormGroup,
-      );
-    } else {
-      value = this.getFormControl(index, dependentFormControlName)?.value;
-    }
-
-    let dropDownOptions: IDependentDropDown;
-    // switch (dependentFormControlName) {
-    //   case FORM_GROUP_KEYS.moduleId: {
-    //     dropDownOptions = this.moduleMenuDropdown();
-    //     break;
-    //   }
-    //   case FORM_GROUP_KEYS.menuId: {
-    //     dropDownOptions = this.menuScreenDropdown();
-    //     break;
-    //   }
-    //   case FORM_GROUP_KEYS.menuId: {
-    //     dropDownOptions = this.departmentInterruptionReasonDropdown();
-    //     break;
-    //   }
-    //   default: {
-    //     dropDownOptions = this.screenFeatureDropdown();
-    //     break;
-    //   }
-    // }
-
-    return dropDownOptions?.[value] || [];
-  }
-
-  getDependentModuleDropDown(
-    formControlName: string,
-    formGroup?: FormGroup,
-  ): any {
-    const value = this.getControlValue(formControlName);
-    // return this.projectModuleDropdown()?.[value] || [];
   }
 
   onDelete(rowData: ILogWorkRowData) {
