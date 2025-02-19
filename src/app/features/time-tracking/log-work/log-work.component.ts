@@ -9,6 +9,7 @@ import {
 import {
   IIndependentDropDownSignal,
   ISelectFormGroup,
+  ITabComponent,
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
 import {
@@ -83,7 +84,10 @@ import { getValue } from 'src/app/utils/function';
   templateUrl: './log-work.component.html',
   styleUrl: './log-work.component.scss',
 })
-export class LogWorkComponent extends FormBaseComponent implements OnInit {
+export class LogWorkComponent
+  extends FormBaseComponent
+  implements OnInit, ITabComponent
+{
   formGroupControl = input<FormGroup>();
   projectFormControl = input<LibFormSelectComponent>();
 

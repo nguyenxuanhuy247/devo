@@ -31,6 +31,7 @@ import { ConvertIdToNamePipe, FormatDatePipe, RoundPipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
 import { RippleModule } from 'primeng/ripple';
 import { LogWorkComponent } from '../log-work/log-work.component';
+import { ITabComponent } from '../time-tracking.model';
 
 @Component({
   selector: 'app-issues',
@@ -56,7 +57,10 @@ import { LogWorkComponent } from '../log-work/log-work.component';
   templateUrl: './issues.component.html',
   styleUrl: './issues.component.scss',
 })
-export class IssuesComponent extends FormBaseComponent implements OnInit {
+export class IssuesComponent
+  extends FormBaseComponent
+  implements OnInit, ITabComponent
+{
   formGroupControl = input<FormGroup>();
   projectFormControl = input<LibFormSelectComponent>();
 
@@ -150,5 +154,11 @@ export class IssuesComponent extends FormBaseComponent implements OnInit {
 
   onDelete(rowData: IIssuesRowData) {}
 
+  onMarkFinish() {
+    this.createFormGroup.reset();
+  }
+
   onSaveCreate() {}
+
+  callAPIGetTableData() {}
 }

@@ -16,7 +16,9 @@ export interface IIssuesRowData {
   screenId: ID;
   featureId: ID;
   categoryId: ID;
+  issueCode: null;
   issueName: string;
+  issueContent: string;
   departmentMakeId: ID;
   employeeMakeId: ID;
   interruptionReasonId: ID;
@@ -36,7 +38,9 @@ export const nullableIssuesObj: IIssuesRowData = {
   screenId: null,
   featureId: null,
   categoryId: null,
+  issueCode: null,
   issueName: null,
+  issueContent: null,
   departmentMakeId: null,
   employeeMakeId: null,
   interruptionReasonId: null,

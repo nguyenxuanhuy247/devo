@@ -1,7 +1,46 @@
-import { EMode } from "src/app/contants/common.constant";
-import { CommonService } from "src/app/services";
-import { IColumnHeaderConfigs, ID } from "src/app/shared/interface/common.interface";
+import { EMode } from 'src/app/contants/common.constant';
+import { CommonService } from 'src/app/services';
+import {
+  IColumnHeaderConfigs,
+  ID,
+} from 'src/app/shared/interface/common.interface';
 
+export const BUG_IMPROVEMENT_FORM_GROUP_KEYS =
+  CommonService.generateEnumFromInterface<IBugImprovementRowData>();
+
+export interface IBugImprovementRowData {
+  mode: EMode;
+  id: ID;
+  moduleId: ID;
+  menuId: ID;
+  screenId: ID;
+  featureId: ID;
+  categoryId: ID;
+  workContent: string;
+  deadlineId: ID;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  createdDate: Date;
+  updatedDate: Date;
+}
+
+export const nullableBugImprovementObj: IBugImprovementRowData = {
+  mode: EMode.VIEW,
+  id: null,
+  moduleId: null,
+  menuId: null,
+  screenId: null,
+  featureId: null,
+  categoryId: null,
+  workContent: null,
+  deadlineId: null,
+  startTime: null,
+  endTime: null,
+  duration: null,
+  createdDate: null,
+  updatedDate: null,
+};
 
 export const BUG_IMPROVEMENT_LIST_COLUMN_FIELD = Object.assign(
   CommonService.generateEnumFromInterface<IBugImprovementListRowData>(),
@@ -32,7 +71,7 @@ export const bugImprovementListHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'STT',
     field: BUG_IMPROVEMENT_LIST_COLUMN_FIELD.no,
-    minWidth: 70,
+    minWidth: 80,
   },
   {
     label: 'Module',
