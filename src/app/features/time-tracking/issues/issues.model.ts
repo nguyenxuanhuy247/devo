@@ -92,6 +92,16 @@ export const issuesHeaderColumnConfigs: IColumnHeaderConfigs[] = [
     minWidth: 200,
   },
   {
+    label: 'Mã vấn đề',
+    field: ISSUES_COLUMN_FIELD.issueCode,
+    minWidth: 120,
+  },
+  {
+    label: 'Tên vấn đề',
+    field: ISSUES_COLUMN_FIELD.issueContent,
+    minWidth: 120,
+  },
+  {
     label: 'Nội dung vấn đề',
     field: ISSUES_COLUMN_FIELD.issueName,
     minWidth: 120,
