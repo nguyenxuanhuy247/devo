@@ -100,12 +100,12 @@ export const issuesHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   },
   {
     label: 'Tên vấn đề',
-    field: ISSUES_COLUMN_FIELD.issueContent,
+    field: ISSUES_COLUMN_FIELD.issueName,
     minWidth: 120,
   },
   {
     label: 'Nội dung vấn đề',
-    field: ISSUES_COLUMN_FIELD.issueName,
+    field: ISSUES_COLUMN_FIELD.issueContent,
     minWidth: 120,
   },
   {
@@ -126,6 +126,11 @@ export const issuesHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   {
     label: 'Mốc bàn giao',
     field: ISSUES_COLUMN_FIELD.deadlineId,
+    minWidth: 200,
+  },
+  {
+    label: 'Hiện trạng',
+    field: ISSUES_COLUMN_FIELD.statusId,
     minWidth: 200,
   },
   {

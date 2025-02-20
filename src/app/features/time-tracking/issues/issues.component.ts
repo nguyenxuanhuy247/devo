@@ -198,12 +198,6 @@ export class IssuesComponent
           });
 
           this.tableData = this.formArray.value;
-          // eslint-disable-next-line no-constant-binary-expression
-          this.expandedRows = this.tableData.reduce((acc, p) => {
-            acc[p.id] = true;
-            return acc;
-          }, {});
-          console.log('expandedRows : ', this.expandedRows);
           this.createFormGroup.reset();
         }),
     );
@@ -344,6 +338,53 @@ export class IssuesComponent
           summary: 'Thành công',
           detail: res?.message,
         });
+        this.callAPIGetTableData();
+      });
+  }
+
+  onCancelUpdateMode(index: number) {
+    this.mode.set(EMode.VIEW);
+    this.getFormGroupInFormArray(this.formArray, index).patchValue({
+      mode: EMode.VIEW,
+    });
+    this.tableData = this.formArray.value;
+  }
+
+  onSaveUpdate(index: number) {
+    this.timeTrackingStore.setLoading(true);
+    const value = this.formArray?.at(index)?.value;
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.PUT,
+      data: [
+        {
+          ...value,
+          updatedDate: new Date(),
+        },
+      ],
+    }));
+
+    this.timeTrackingService
+      .updateItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: message.serverError,
+          });
+
+          this.timeTrackingStore.setLoading(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+        this.mode.set(EMode.VIEW);
         this.callAPIGetTableData();
       });
   }
