@@ -20,3 +20,22 @@ export interface ILogWorkRequestDTO {
   updatedDate: Date;
 }
 
+export interface ILogWorkTableDataResponseDTO {
+  id: ID;
+  employeeLevelId: ID;
+  employeeId: ID;
+  projectId: ID;
+  moduleId: ID;
+  menuId: ID;
+  screenId: ID;
+  featureId: ID;
+  categoryId: ID;
+  workContent: string;
+  issueId: ID;
+  deadlineId: ID;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  createdDate: string;
+  updatedDate: string;
+}

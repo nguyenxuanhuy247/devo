@@ -19,9 +19,18 @@ import {
 import { IColumnHeaderConfigs } from 'src/app/shared/interface/common.interface';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
-import { EMode } from '../../../contants/common.constant';
+import { EApiMethod, EMode } from '../../../contants/common.constant';
 import { FormBaseComponent } from '../../../shared';
-import { Subscription } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  EMPTY,
+  filter,
+  finalize,
+  Subject,
+  Subscription,
+  switchMap,
+} from 'rxjs';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -31,7 +40,21 @@ import { ConvertIdToNamePipe, FormatDatePipe, RoundPipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
 import { RippleModule } from 'primeng/ripple';
 import { LogWorkComponent } from '../log-work/log-work.component';
-import { ITabComponent } from '../time-tracking.model';
+import {
+  ISelectFormGroup,
+  ITabComponent,
+  SELECT_FORM_GROUP_KEY,
+} from '../time-tracking.model';
+import {
+  EGetApiMode,
+  ETabName,
+  ITimeTrackingDoGetRequestDTO,
+  ITimeTrackingDoPostRequestDTO,
+} from '../time-tracking.dto';
+import { TimeTrackingApiService } from '../time-tracking-api.service';
+import { message } from 'src/app/contants/api.contant';
+import { IIssuesTableDataResponseDTO } from './issues.dto.model';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-issues',
@@ -82,7 +105,21 @@ export class IssuesComponent
   featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
   tabOptions$ = this.timeTrackingStore.tabOptions$;
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
+  departmentOptions$ = this.timeTrackingStore.categoryOptions$;
   formArray: FormArray = new FormArray([]);
+
+  doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
+    method: EApiMethod.GET,
+    mode: EGetApiMode.TABLE_DATA,
+    employeeLevelId: null,
+    employeeId: null,
+    projectId: null,
+    sheetName: ETabName.LOG_WORK,
+    startTime: null,
+    endTime: null,
+  });
+  timeTrackingService = this.injector.get(TimeTrackingApiService);
+  expandedRows = {};
 
   constructor(override injector: Injector) {
     super(injector);
@@ -107,6 +144,81 @@ export class IssuesComponent
 
   initSubscriptions() {
     // this.onDestroy$.subscribe(() => {});
+
+    this.subscription.add(
+      this.getTableDataApiRequest$
+        .pipe(
+          debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
+          switchMap(() => {
+            this.timeTrackingStore.setLoading(true);
+            this.doGetRequestDTO.update((oldValue: any) => {
+              const formGroupValue =
+                this.formGroupControl().getRawValue() as ISelectFormGroup;
+
+              return {
+                ...oldValue,
+                employeeLevelId: formGroupValue.employeeLevelId,
+                employeeId: formGroupValue.employeeId,
+                projectId: formGroupValue.projectId,
+                sheetName: ETabName.ISSUE,
+                startTime: formGroupValue.dateRange[0].toISOString(),
+                endTime: formGroupValue.dateRange[1].toISOString(),
+              };
+            });
+
+            return this.timeTrackingService
+              .getListAsync(this.doGetRequestDTO())
+              .pipe(
+                catchError(() => {
+                  this.messageService.add({
+                    severity: 'error',
+                    summary: 'Thất bại',
+                    detail: message.serverError,
+                  });
+                  return EMPTY;
+                }),
+                finalize(() => {
+                  this.timeTrackingStore.setLoading(true);
+                }),
+              );
+          }),
+        )
+        .subscribe((listData: IIssuesTableDataResponseDTO[]) => {
+          this.mode.set(EMode.VIEW);
+          this.formArray.clear();
+
+          listData.forEach((rowData) => {
+            const formGroup = this.formBuilder.group({
+              ...rowData,
+              mode: EMode.VIEW,
+              startTime: rowData.startTime ? new Date(rowData.startTime) : null,
+              endTime: rowData.endTime ? new Date(rowData.endTime) : null,
+            });
+            this.formArray.push(formGroup);
+          });
+
+          this.tableData = this.formArray.value;
+          // eslint-disable-next-line no-constant-binary-expression
+          this.expandedRows = this.tableData.reduce((acc, p) => {
+            acc[p.id] = true;
+            return acc;
+          }, {});
+          console.log('expandedRows : ', this.expandedRows);
+          this.createFormGroup.reset();
+        }),
+    );
+
+    this.subscription.add(
+      this.getControlValueChanges(
+        SELECT_FORM_GROUP_KEY.dateRange,
+        this.formGroupControl(),
+      )
+        .pipe(filter((dataRange) => !!dataRange))
+        .subscribe((_) => {
+          // Sau khi thiết lập các giá trị chung như Level, Nhân viên, dự án, thời gian mới gọi API lấy danh sách
+          this.callAPIGetTableData();
+        }),
+    );
   }
 
   onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
@@ -158,7 +270,62 @@ export class IssuesComponent
     this.createFormGroup.reset();
   }
 
-  onSaveCreate() {}
+  private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
+  callAPIGetTableData(): void {
+    this.getTableDataApiRequest$.next();
+  }
 
-  callAPIGetTableData() {}
+  doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
+    method: EApiMethod.POST,
+    sheetName: ETabName.ISSUE,
+    ids: null,
+    data: null,
+  });
+
+  getCommonValue() {
+    const commonValue = _.cloneDeep(this.formGroupControl().value);
+    delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
+    delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
+    delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
+
+    return commonValue;
+  }
+
+  onSaveCreate() {
+    const data: IIssuesRowData = {
+      ...this.createFormGroup.value,
+      ...this.getCommonValue(),
+      createdDate: new Date(),
+    };
+
+    console.log('1111111111 ', data);
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.POST,
+      data: [data],
+    }));
+
+    console.log('222222222222 ', this.doPostRequestDTO());
+
+    this.timeTrackingService
+      .createItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: message.serverError,
+          });
+          return EMPTY;
+        }),
+      )
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+        this.callAPIGetTableData();
+      });
+  }
 }

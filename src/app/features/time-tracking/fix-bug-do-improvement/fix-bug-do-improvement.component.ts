@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
+  ETabName,
   IEmployeeResponseDTO,
   IFeatureResponseDTO,
   IMenuResponseDTO,
@@ -81,6 +82,7 @@ export class FixBugDoImprovementComponent
   isLoading = signal(false);
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<ILogWorkRequestDTO>>({
     method: EApiMethod.POST,
+    sheetName: ETabName.BUG,
     ids: null,
     data: null,
   });

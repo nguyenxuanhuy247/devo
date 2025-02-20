@@ -17,11 +17,11 @@ export enum EGetApiMode {
 }
 
 export enum ETabName {
-  ESTIMATE = 'Dự toán',
-  LOG_WORK = 'Log work',
-  ISSUE = 'Vấn đề',
-  BUG = 'Bug',
-  IMPROVEMENT = 'Improvement',
+  ESTIMATE = 'estimates',
+  LOG_WORK = 'logWorks',
+  ISSUE = 'issues',
+  BUG = 'bugs',
+  IMPROVEMENT = 'improvements',
   FIX_BUG_DO_IMPROVEMENT = 'Fix Bug & Do Improvement',
   REPORT = 'Report',
 }
@@ -44,13 +44,14 @@ export interface ITimeTrackingDoGetRequestDTO {
   employeeLevelId: ID;
   employeeId: ID;
   projectId: ID;
-  tabId: ID;
+  sheetName: string;
   startTime: Date;
   endTime: Date;
 }
 
 export interface ITimeTrackingDoPostRequestDTO<T> {
   method: EApiMethod.POST | EApiMethod.PUT | EApiMethod.DELETE;
+  sheetName: ETabName,
   ids: ID[];
   data: T[];
 }
@@ -60,30 +61,6 @@ export interface ITimeTrackingDoPostRequestDTO<T> {
 // 🡫🡫🡫🡫🡫 START REGION : Response DTO 🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫🡫
 
 // Lấy danh sách TableData từ DATABASE
-export interface ILogWorkTableDataResponseDTO {
-  id: ID;
-  project: string;
-  pic: string;
-  picLevel: string;
-  tab: string;
-  module: string;
-  menu: string;
-  screen: string;
-  feature: string;
-  category: string;
-  workContent: string;
-  isSolveIssue: string;
-  encounteredIssue: string;
-  interruptionReason: string;
-  startTime: string;
-  endTime: string;
-  duration: number;
-  isLunchBreak: boolean;
-  isProgressBlock: boolean;
-  notes: string;
-  createdDate: string;
-  updatedDate: string;
-}
 
 // Lấy danh sách dropdown phụ thuộc
 
@@ -214,6 +191,9 @@ export interface IInterruptionReasonChildListResponseDTO {
   updatedDate: string;
 }
 
+export type IInterruptionReasonResponseDTO =
+  IInterruptionReasonChildListResponseDTO;
+
 export interface ICategoryResponseDTO {
   id: ID;
   categoryName: string;
@@ -231,6 +211,20 @@ export interface ITabResponseDTO {
 export interface IDayOffResponseDTO {
   id: ID;
   dayOff: string;
+  createdDate: string;
+  updatedDate: string;
+}
+
+export interface IStageResponseDTO {
+  id: ID;
+  stageName: string;
+  createdDate: string;
+  updatedDate: string;
+}
+
+export interface IStatuseResponseDTO {
+  id: ID;
+  statusName: string;
   createdDate: string;
   updatedDate: string;
 }

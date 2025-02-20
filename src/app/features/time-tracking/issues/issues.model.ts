@@ -16,7 +16,7 @@ export interface IIssuesRowData {
   screenId: ID;
   featureId: ID;
   categoryId: ID;
-  issueCode: null;
+  issueCode: string;
   issueName: string;
   issueContent: string;
   departmentMakeId: ID;

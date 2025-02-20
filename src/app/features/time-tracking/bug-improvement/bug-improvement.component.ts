@@ -103,6 +103,7 @@ export class BugImprovementComponent
   headerColumnConfigs: IColumnHeaderConfigs[] = bugImprovementListHeaderColumns;
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
+    sheetName: ETabName.BUG,
     ids: null,
     data: null,
   });
@@ -115,12 +116,12 @@ export class BugImprovementComponent
     employeeLevelId: null,
     employeeId: null,
     projectId: null,
-    tabId: null,
+    sheetName: ETabName.BUG,
     startTime: null,
     endTime: null,
   });
 
-  tabId = signal<ID>(null);
+  DBTableName = signal<ID>(null);
 
   constructor(override injector: Injector) {
     super(injector);
@@ -134,11 +135,12 @@ export class BugImprovementComponent
   initSubscriptions() {
     this.subscription.add(
       this.tabOptions$.subscribe((tabOptions: IOption[]) => {
-        const tabId = tabOptions?.find(
+        const sheetName = tabOptions?.find(
           (tab: IOption) => tab.label === ETabName.LOG_WORK,
-        )?.value;
+        )?.label;
 
-        this.tabId.set(tabId);
+        console.log('aaaaaaaa ', sheetName);
+        this.DBTableName.set(sheetName);
       }),
     );
 
@@ -156,7 +158,7 @@ export class BugImprovementComponent
                 employeeLevelId: formGroupValue.employeeLevelId,
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
-                tabId: this.tabId(),
+                sheetName: ETabName.BUG,
                 startTime: formGroupValue.dateRange[0].toISOString(),
                 endTime: formGroupValue.dateRange[1].toISOString(),
               };

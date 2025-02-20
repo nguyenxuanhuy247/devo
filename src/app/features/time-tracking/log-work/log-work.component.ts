@@ -15,7 +15,6 @@ import {
 import {
   EGetApiMode,
   ETabName,
-  ILogWorkTableDataResponseDTO,
   ITimeTrackingDoGetRequestDTO,
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
@@ -60,6 +59,7 @@ import { WorkDurationDirective } from '../../../directives';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { getValue } from 'src/app/utils/function';
+import { ILogWorkTableDataResponseDTO } from './log-work.dto.model';
 
 @Component({
   selector: 'app-log-work',
@@ -98,6 +98,7 @@ export class LogWorkComponent
   formArray: FormArray = new FormArray([]);
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
+    sheetName: ETabName.LOG_WORK,
     ids: null,
     data: null,
   });
@@ -107,7 +108,7 @@ export class LogWorkComponent
     employeeLevelId: null,
     employeeId: null,
     projectId: null,
-    tabId: null,
+    sheetName: null,
     startTime: null,
     endTime: null,
   });
@@ -115,7 +116,7 @@ export class LogWorkComponent
   subscription: Subscription = new Subscription();
   tableData: ILogWorkRowData[] = [];
   createFormGroup!: FormGroup;
-  tabId = signal<ID>(null);
+  // tabId = signal<ID>(null);
   fixedRowData: ILogWorkRowData[] = [];
   protected readonly FORM_GROUP_KEYS = LOG_WORK_CHILD_FORM_GROUP_KEYS;
   protected readonly ETabName = ETabName;
@@ -151,15 +152,15 @@ export class LogWorkComponent
   initSubscriptions() {
     // this.onDestroy$.subscribe(() => {});
 
-    this.subscription.add(
-      this.tabOptions$.subscribe((tabOptions: IOption[]) => {
-        const tabId = tabOptions?.find(
-          (tab: IOption) => tab.label === ETabName.LOG_WORK,
-        )?.value;
+    // this.subscription.add(
+    //   this.tabOptions$.subscribe((tabOptions: IOption[]) => {
+    //     const tabId = tabOptions?.find(
+    //       (tab: IOption) => tab.label === ETabName.LOG_WORK,
+    //     )?.value;
 
-        this.tabId.set(tabId);
-      }),
-    );
+    //     this.tabId.set(tabId);
+    //   }),
+    // );
 
     this.subscription.add(
       this.getTableDataApiRequest$
@@ -177,7 +178,6 @@ export class LogWorkComponent
                 employeeLevelId: formGroupValue.employeeLevelId,
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
-                tabId: this.tabId(),
                 startTime: formGroupValue.dateRange[0].toISOString(),
                 endTime: formGroupValue.dateRange[1].toISOString(),
               };
@@ -236,7 +236,6 @@ export class LogWorkComponent
       {
         ...nullableLogWorkObj,
         mode: EMode.CREATE,
-        tabId: this.tabId(),
         isLunchBreak: true,
         createdDate: new Date(),
       },
@@ -359,14 +358,9 @@ export class LogWorkComponent
   }
 
   onSaveCreate() {
-    const tabId = getValue(this.tabOptions$)?.find(
-      (tab: IOption) => tab.label === ETabName.LOG_WORK,
-    )?.value;
-
     const data: ILogWorkRowData = {
       ...this.createFormGroup.value,
       ...this.getCommonValue(),
-      tabId,
       createdDate: new Date(),
     };
 

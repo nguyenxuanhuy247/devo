@@ -13,6 +13,8 @@ import {
   IModuleResponseDTO,
   IProjectResponseDTO,
   IScreenResponseDTO,
+  IStageResponseDTO,
+  IStatuseResponseDTO,
   ITabResponseDTO,
 } from './time-tracking.dto';
 
@@ -124,6 +126,8 @@ export interface IAllDropDownResponseDTO {
   categories: ICategoryResponseDTO[];
   tabs: ITabResponseDTO[];
   dayOffs: IDayOffResponseDTO[];
+  stages: IStageResponseDTO[];
+  statuses: IStatuseResponseDTO[];
 }
 
 export interface ITabComponent {

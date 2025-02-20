@@ -55,6 +55,8 @@ const initState: ITimeTrackingState = {
     menus: [],
     screens: [],
     features: [],
+    stages: [],
+    statuses: []
   },
   employeeLevelOptions: [],
   employeeDependentOptions: null,

@@ -125,19 +125,20 @@ import { BugImprovementComponent } from './bug-improvement/bug-improvement.compo
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.ISSUE);
+  activeTab = signal<ETabName>(ETabName.FIX_BUG_DO_IMPROVEMENT);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
     employeeLevelId: null,
     employeeId: null,
     projectId: null,
-    tabId: null,
+    sheetName: null,
     startTime: null,
     endTime: null,
   });
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
+    sheetName: null,
     ids: null,
     data: null,
   });
@@ -168,6 +169,8 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     menus: [],
     screens: [],
     features: [],
+    stages: [],
+    statuses: [],
   });
   tabId = computed<ID>(() => {
     const tabName = this.activeTab();
