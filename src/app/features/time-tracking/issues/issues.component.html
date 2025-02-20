@@ -190,6 +190,15 @@
           </td>
 
           <td>
+            <div>
+              <lib-form-select
+                [formControlName]="FORM_GROUP_KEYS.statusId"
+                [options]="(categoryOptions$ | async) || []"
+              ></lib-form-select>
+            </div>
+          </td>
+
+          <td>
             <div class="flex align-items-center justify-content-center gap-1">
               <p-button
                 variant="outlined"
@@ -534,6 +543,15 @@
           </td>
 
           <td>
+            <div>
+              <lib-form-select
+                [formControlName]="FORM_GROUP_KEYS.statusId"
+                [options]="(categoryOptions$ | async) || []"
+              ></lib-form-select>
+            </div>
+          </td>
+
+          <td>
             <div class="flex align-items-center justify-content-center gap-1">
               <p-button
                 variant="outlined"
@@ -598,7 +616,7 @@
             </div>
           </td>
 
-          <!-- Danh sách nút hành động của Thêm mới -->
+          <!-- Danh sách nút hành động  -->
           <td>
             <div class="flex align-items-center justify-content-between gap-1">
               <p-button

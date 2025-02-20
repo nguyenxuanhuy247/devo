@@ -264,7 +264,26 @@ export class IssuesComponent
     return this.getFormGroupInFormArray(this.formArray, index);
   }
 
-  onDelete(rowData: IIssuesRowData) {}
+  onDelete(rowData: IIssuesRowData) {
+    this.timeTrackingStore.setLoading(true);
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      ids: [rowData.id],
+      method: EApiMethod.DELETE,
+    }));
+
+    this.timeTrackingService
+      .deleteItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.timeTrackingStore.setLoading(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((_) => {
+        this.callAPIGetTableData();
+      });
+  }
 
   onMarkFinish() {
     this.createFormGroup.reset();

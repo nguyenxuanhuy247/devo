@@ -38,6 +38,14 @@ export interface ISelectFormGroup {
   formArray: FormArray;
 }
 
+export enum EStatsBy {
+  ALL = 'ALL',
+  TODAY = 'TODAY',
+  WEEK = 'WEEK',
+  MONTH = 'MONTH',
+  CUSTOM = 'CUSTOM',
+}
+
 export const nullableObj: any = {
   mode: EMode.VIEW,
   id: null,

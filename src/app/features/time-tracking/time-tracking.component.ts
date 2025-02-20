@@ -43,6 +43,7 @@ import {
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import {
+  EStatsBy,
   IAllDropDownResponseDTO,
   IDefaultValueInLocalStorage,
   ITabComponent,
@@ -125,7 +126,7 @@ import { BugImprovementComponent } from './bug-improvement/bug-improvement.compo
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.FIX_BUG_DO_IMPROVEMENT);
+  activeTab = signal<ETabName>(ETabName.ISSUE);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -229,7 +230,13 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.formArray = this.formGroup.get('formArray') as FormArray;
 
     this.getControl(SELECT_FORM_GROUP_KEY.dateRange).disable();
-    this.getControl(SELECT_FORM_GROUP_KEY.quickDate).setValue('TODAY');
+
+    // Thiết lập giá trị ban đầu cho "Thống kê bởi"
+    if (this.activeTab() === ETabName.ISSUE) {
+      this.getControl(SELECT_FORM_GROUP_KEY.quickDate).setValue(EStatsBy.ALL);
+    } else {
+      this.getControl(SELECT_FORM_GROUP_KEY.quickDate).setValue(EStatsBy.TODAY);
+    }
 
     // Phải gọi trước khi khởi tạo giá trị cho dateRange
     this.initSubscriptions();
@@ -309,28 +316,35 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           });
 
           switch (dateString) {
-            case 'TODAY':
+            case EStatsBy.TODAY:
               this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
                 startOfDay(new Date()),
                 endOfDay(new Date()),
               ]);
               break;
-            case 'WEEK':
+            case EStatsBy.WEEK:
               this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
                 startOfWeek(new Date(), { weekStartsOn: 1 }),
                 endOfWeek(new Date(), { weekStartsOn: 1 }),
               ]);
               break;
-            case 'MONTH':
+            case EStatsBy.MONTH:
               this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
                 startOfMonth(new Date()),
                 endOfMonth(new Date()),
               ]);
               break;
-            default:
+            case EStatsBy.CUSTOM:
               this.getControl(SELECT_FORM_GROUP_KEY.dateRange).enable({
                 emitEvent: false,
               });
+              break;
+            default:
+              // Mặc định chọn Tất cả
+              this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
+                null,
+                null,
+              ]);
           }
         },
       ),

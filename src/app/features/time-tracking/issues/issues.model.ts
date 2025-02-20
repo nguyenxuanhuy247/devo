@@ -23,6 +23,7 @@ export interface IIssuesRowData {
   employeeMakeId: ID;
   interruptionReasonId: ID;
   deadlineId: ID;
+  statusId: ID;
   startTime: string;
   endTime: string;
   duration: number;
@@ -45,6 +46,7 @@ export const nullableIssuesObj: IIssuesRowData = {
   employeeMakeId: null,
   interruptionReasonId: null,
   deadlineId: null,
+  statusId: null,
   startTime: null,
   endTime: null,
   duration: null,
