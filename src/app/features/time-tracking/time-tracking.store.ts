@@ -10,7 +10,6 @@ import {
   EGetApiMode,
   ICategoryResponseDTO,
   IEmployeeResponseDTO,
-  ITabResponseDTO,
 } from './time-tracking.dto';
 import { finalize, tap } from 'rxjs/operators';
 import { message } from '../../contants/api.contant';
@@ -21,6 +20,12 @@ import { CommonService, LocalStorageService } from '../../services';
 interface ITimeTrackingState {
   isLoading: boolean;
   originalAllDropdownData: IAllDropDownResponseDTO;
+  common: {
+    employeeLevelId: ID;
+    employeeId: ID;
+    employee: IEmployeeResponseDTO;
+    projectId: ID;
+  };
   employeeLevelOptions: IOption[];
   employeeDependentOptions: Record<ID, IOption[]>;
   projectDependentOptions: Record<ID, IOption[]>;
@@ -28,26 +33,16 @@ interface ITimeTrackingState {
   menuDependentOptions: Record<ID, IOption[]>;
   screenDependentOptions: Record<ID, IOption[]>;
   featureDependentOptions: Record<ID, IOption[]>;
-  departmentOptions: IOption[];
-  interruptionReasonDependentOptions: Record<ID, IOption[]>;
-  tabOptions: IOption[];
-  dayoffs: IOption[];
   categoryOptions: IOption[];
-  common: {
-    employeeLevelId: ID;
-    employeeId: ID;
-    employee: IEmployeeResponseDTO;
-    projectId: ID;
-  };
+  departmentOptions: IOption[];
+  employeeDependentDepartmentOptions: Record<ID, IOption[]>;
+  interruptionReasonDependentOptions: Record<ID, IOption[]>;
+  dayOffs: IOption[];
 }
 
 const initState: ITimeTrackingState = {
   isLoading: false,
   originalAllDropdownData: {
-    tabs: [],
-    categories: [],
-    dayOffs: [],
-    departments: [],
     employeeLevels: [],
     employees: [],
     projects: [],
@@ -55,8 +50,19 @@ const initState: ITimeTrackingState = {
     menus: [],
     screens: [],
     features: [],
+    categories: [],
+    departments: [],
+    departmentEmployees: [],
+    interruptionReasons: [],
     stages: [],
-    statuses: []
+    statuses: [],
+    dayOffs: [],
+  },
+  common: {
+    employeeLevelId: null,
+    employeeId: null,
+    employee: null,
+    projectId: null,
   },
   employeeLevelOptions: [],
   employeeDependentOptions: null,
@@ -65,17 +71,11 @@ const initState: ITimeTrackingState = {
   menuDependentOptions: null,
   screenDependentOptions: null,
   featureDependentOptions: null,
-  departmentOptions: null,
-  interruptionReasonDependentOptions: null,
-  tabOptions: null,
-  dayoffs: null,
   categoryOptions: null,
-  common: {
-    employeeLevelId: null,
-    employeeId: null,
-    employee: null,
-    projectId: null,
-  },
+  departmentOptions: null,
+  employeeDependentDepartmentOptions: null,
+  interruptionReasonDependentOptions: null,
+  dayOffs: null,
 };
 
 @Injectable({
@@ -155,8 +155,15 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
   readonly featureDependentOptions$ = this.select(
     (state) => state.featureDependentOptions,
   );
-  readonly tabOptions$ = this.select((state) => state.tabOptions);
   readonly categoryOptions$ = this.select((state) => state.categoryOptions);
+  readonly departmentOptions$ = this.select((state) => state.departmentOptions);
+  readonly employeeInDepartmentOptions$ = this.select(
+    (state) => state.employeeDependentDepartmentOptions,
+  );
+  readonly interruptionReasonDependentOptions = this.select(
+    (state) => state.interruptionReasonDependentOptions,
+  );
+
   readonly getAllDropdownData = this.effect((trigger$: Observable<void>) => {
     return trigger$.pipe(
       switchMap(() => {
@@ -260,6 +267,7 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
               const departments = res.departments;
               let departmentOptions: IOption[] = [];
               let interruptionReasonDependentOptions: IOption[] = [];
+              let employeeDependentDepartmentOptions: IOption[] = [];
               if (departments && departments.length > 0) {
                 departmentOptions = departments.map((department) => ({
                   label: department.departmentName,
@@ -273,16 +281,15 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
                     'interruptionReasons',
                     'interruptionReasonName',
                   );
-              }
 
-              // Bộ phận làm việc Options và Lý do gián đoạn Options
-              const tabs = res.tabs;
-              let tabOptions: IOption[] = [];
-              if (tabs && tabs.length > 0) {
-                tabOptions = tabs.map((tab: ITabResponseDTO) => ({
-                  label: tab.tabName,
-                  value: tab.id,
-                }));
+                // Nhân viên trong phòng ban
+                employeeDependentDepartmentOptions =
+                  this.commonService.convertToDependentDropdown(
+                    departments,
+                    'departmentName',
+                    'employees',
+                    'username',
+                  );
               }
 
               // Phân loại
@@ -307,8 +314,8 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
                 screenDependentOptions: screenDependentOptions,
                 featureDependentOptions: featureDependentOptions,
                 departmentOptions,
+                employeeDependentDepartmentOptions,
                 interruptionReasonDependentOptions,
-                tabOptions,
                 categoryOptions,
               };
 

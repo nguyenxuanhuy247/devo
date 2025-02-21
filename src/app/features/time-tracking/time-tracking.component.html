@@ -9,7 +9,7 @@
         <label
           for="employeeLevel"
           class=""
-          >Level</label
+        >Level</label
         >
         <div class="">
           <lib-form-select
@@ -24,7 +24,7 @@
         <label
           for="employee"
           class=""
-          >Nhân viên</label
+        >Nhân viên</label
         >
         <div class="">
           <lib-form-select
@@ -39,7 +39,7 @@
         <label
           for="project"
           class=""
-          >Dự án</label
+        >Dự án</label
         >
         <div class="">
           <lib-form-select
@@ -65,7 +65,7 @@
             <label
               for="all"
               class="ml-2"
-              >Tất cả</label
+            >Tất cả</label
             >
           </div>
 
@@ -78,7 +78,7 @@
             <label
               for="today"
               class="ml-2"
-              >Hôm nay</label
+            >Hôm nay</label
             >
           </div>
 
@@ -91,7 +91,7 @@
             <label
               for="week"
               class="ml-2"
-              >Tuần này</label
+            >Tuần này</label
             >
           </div>
 
@@ -104,7 +104,7 @@
             <label
               for="month"
               class="ml-2"
-              >Tháng này</label
+            >Tháng này</label
             >
           </div>
 
@@ -117,7 +117,7 @@
             <label
               for="custom"
               class="ml-2"
-              >Tùy chỉnh</label
+            >Tùy chỉnh</label
             >
           </div>
         </div>
@@ -150,7 +150,7 @@
         <p-tab [value]="ETabName.ISSUE">Vấn đề</p-tab>
         <p-tab [value]="ETabName.IMPROVEMENT">Improvement</p-tab>
         <p-tab [value]="ETabName.FIX_BUG_DO_IMPROVEMENT"
-          >Fix Bug & Do Improvement
+        >Fix Bug & Do Improvement
         </p-tab>
         <p-tab [value]="ETabName.REPORT">Báo cáo</p-tab>
       </p-tablist>
@@ -158,60 +158,59 @@
       <p-tabpanels>
         <!-- Tab Log work -->
         @if (activeTab() === ETabName.LOG_WORK) {
-        <p-tabpanel [value]="ETabName.LOG_WORK">
-          <app-log-work
-            #tab
-            [formGroupControl]="formGroup"
-            [projectFormControl]="projectId"
-          >
-          </app-log-work>
-        </p-tabpanel>
+          <p-tabpanel [value]="ETabName.LOG_WORK">
+            <app-log-work
+              #tab
+              [formGroupControl]="formGroup"
+              [projectFormControl]="projectId"
+            >
+            </app-log-work>
+          </p-tabpanel>
         }
 
         <!-- Tab Bug -->
         @if (activeTab() === ETabName.BUG) {
-        <p-tabpanel [value]="ETabName.BUG">
-          <app-bug-improvement
-            #tab
-            [formGroupControl]="formGroup"
-            [projectFormControl]="projectId"
-          >
-          </app-bug-improvement>
-        </p-tabpanel>
+          <p-tabpanel [value]="ETabName.BUG">
+            <app-bug-improvement
+              #tab
+              [formGroupControl]="formGroup"
+              [projectFormControl]="projectId"
+            >
+            </app-bug-improvement>
+          </p-tabpanel>
         }
         <!-- Tab Improvement -->
         @if (activeTab() === ETabName.IMPROVEMENT) {
-        <p-tabpanel [value]="ETabName.IMPROVEMENT">
-          <app-bug-improvement
-            #tab
-            [formGroupControl]="formGroup"
-            [projectFormControl]="projectId"
-          >
-          </app-bug-improvement>
-        </p-tabpanel>
+          <p-tabpanel [value]="ETabName.IMPROVEMENT">
+            <app-bug-improvement
+              #tab
+              [formGroupControl]="formGroup"
+              [projectFormControl]="projectId"
+            >
+            </app-bug-improvement>
+          </p-tabpanel>
         }
 
         <!-- Tab Vấn đề -->
         @if (activeTab() === ETabName.ISSUE) {
-        <p-tabpanel [value]="ETabName.ISSUE">
-          <app-issues
-            #tab
-            [formGroupControl]="formGroup"
-            [projectFormControl]="projectId"
-          >
-          </app-issues>
-        </p-tabpanel>
+          <p-tabpanel [value]="ETabName.ISSUE">
+            <app-issues
+              #tab
+              [formGroupControl]="formGroup"
+              [projectFormControl]="projectId"
+            >
+            </app-issues>
+          </p-tabpanel>
         }
 
         <!-- Tab Fix Bug & Do Improvement -->
         @if (activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
-        <p-tabpanel [value]="ETabName.FIX_BUG_DO_IMPROVEMENT">
-          <app-fix-bug-do-improvement
-            [formGroupControl]="formGroup"
-            [commonFormGroupKey]="SELECT_FORM_GROUP_KEY"
-            [allDropdownData]="allDropdownData()"
-          ></app-fix-bug-do-improvement>
-        </p-tabpanel>
+          <p-tabpanel [value]="ETabName.FIX_BUG_DO_IMPROVEMENT">
+            <app-fix-bug-do-improvement
+              [formGroupControl]="formGroup"
+              [commonFormGroupKey]="SELECT_FORM_GROUP_KEY"
+            ></app-fix-bug-do-improvement>
+          </p-tabpanel>
         }
 
         <!--        <p-tabpanel [value]="activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT ? activeTab()  : null">-->

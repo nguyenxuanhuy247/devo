@@ -20,7 +20,6 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  title = 'devo';
   isLoading$ = this.timeTrackingStore.isLoading$;
   isLoading: boolean = false;
 
@@ -33,6 +32,6 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.drawerService.setViewContainerRef(this.viewContainerRef);
 
-    // this.isLoading$.subscribe((value) => (this.isLoading = value));
+    this.isLoading$.subscribe((value) => (this.isLoading = value));
   }
 }

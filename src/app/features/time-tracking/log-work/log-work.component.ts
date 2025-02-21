@@ -128,8 +128,8 @@ export class LogWorkComponent
   menuDependentOptions$ = this.timeTrackingStore.menuDependentOptions$;
   screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
   featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
-  tabOptions$ = this.timeTrackingStore.tabOptions$;
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
+
   private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
 
   constructor(override injector: Injector) {
@@ -350,11 +350,12 @@ export class LogWorkComponent
     const data: ILogWorkRowData = {
       ...this.createFormGroup.value,
       ...this.getCommonValue(),
+      issueId: this.issueId,
       createdDate: new Date(),
     };
 
     console.log('1111111111 ', data);
-    this.isLoading.set(true);
+    this.timeTrackingStore.setLoading(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
@@ -372,7 +373,7 @@ export class LogWorkComponent
             summary: 'Thất bại',
             detail: message.serverError,
           });
-          this.isLoading.set(false);
+          this.timeTrackingStore.setLoading(false);
           return EMPTY;
         }),
       )

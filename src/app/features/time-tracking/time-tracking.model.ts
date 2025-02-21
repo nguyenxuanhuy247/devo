@@ -5,17 +5,18 @@ import { FormArray } from '@angular/forms';
 import {
   ICategoryResponseDTO,
   IDayOffResponseDTO,
+  IDepartmentEmployeeResponseDTO,
   IDepartmentResponseDTO,
   IEmployeeLevelResponseDTO,
   IEmployeeResponseDTO,
   IFeatureResponseDTO,
+  IInterruptionReasonResponseDTO,
   IMenuResponseDTO,
   IModuleResponseDTO,
   IProjectResponseDTO,
   IScreenResponseDTO,
   IStageResponseDTO,
   IStatuseResponseDTO,
-  ITabResponseDTO,
 } from './time-tracking.dto';
 
 export const LOCAL_STORAGE_KEY = 'defaultValue';
@@ -123,16 +124,17 @@ export interface IIndependentDropDownSignal {
 // ];
 
 export interface IAllDropDownResponseDTO {
+  employeeLevels: IEmployeeLevelResponseDTO[];
   employees: IEmployeeResponseDTO[];
   projects: IProjectResponseDTO[];
   modules: IModuleResponseDTO[];
   menus: IMenuResponseDTO[];
   screens: IScreenResponseDTO[];
   features: IFeatureResponseDTO[];
-  employeeLevels: IEmployeeLevelResponseDTO[];
-  departments: IDepartmentResponseDTO[];
   categories: ICategoryResponseDTO[];
-  tabs: ITabResponseDTO[];
+  departments: IDepartmentResponseDTO[];
+  departmentEmployees: IDepartmentEmployeeResponseDTO[];
+  interruptionReasons: IInterruptionReasonResponseDTO[];
   dayOffs: IDayOffResponseDTO[];
   stages: IStageResponseDTO[];
   statuses: IStatuseResponseDTO[];

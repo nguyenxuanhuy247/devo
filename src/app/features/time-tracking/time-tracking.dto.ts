@@ -52,7 +52,7 @@ export interface ITimeTrackingDoGetRequestDTO {
 
 export interface ITimeTrackingDoPostRequestDTO<T> {
   method: EApiMethod.POST | EApiMethod.PUT | EApiMethod.DELETE;
-  sheetName: ETabName,
+  sheetName: ETabName;
   ids: ID[];
   data: T[];
 }
@@ -176,6 +176,14 @@ export interface IFeatureResponseDTO {
   updatedDate: string;
 }
 
+export interface IDepartmentEmployeeResponseDTO {
+  id: ID;
+  departmentName: string;
+  createdDate: string;
+  updatedDate: string;
+  employees: IEmployeeResponseDTO[];
+}
+
 export interface IDepartmentResponseDTO {
   id: ID;
   departmentName: string;
@@ -198,13 +206,6 @@ export type IInterruptionReasonResponseDTO =
 export interface ICategoryResponseDTO {
   id: ID;
   categoryName: string;
-  createdDate: string;
-  updatedDate: string;
-}
-
-export interface ITabResponseDTO {
-  id: ID;
-  tabName: string;
   createdDate: string;
   updatedDate: string;
 }

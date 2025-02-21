@@ -16,7 +16,6 @@ import { TableModule } from 'primeng/table';
 import {
   IColumnHeaderConfigs,
   ID,
-  IOption,
 } from '../../../shared/interface/common.interface';
 import {
   FormArray,
@@ -96,7 +95,6 @@ export class BugImprovementComponent
   menuDependentOptions$ = this.timeTrackingStore.menuDependentOptions$;
   screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
   featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
-  tabOptions$ = this.timeTrackingStore.tabOptions$;
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
 
   tableData: any[];
@@ -134,17 +132,6 @@ export class BugImprovementComponent
   }
 
   initSubscriptions() {
-    this.subscription.add(
-      this.tabOptions$.subscribe((tabOptions: IOption[]) => {
-        const sheetName = tabOptions?.find(
-          (tab: IOption) => tab.label === ETabName.LOG_WORK,
-        )?.label;
-
-        console.log('aaaaaaaa ', sheetName);
-        this.DBTableName.set(sheetName);
-      }),
-    );
-
     this.subscription.add(
       this.getTableDataApiRequest$
         .pipe(
@@ -290,7 +277,6 @@ export class BugImprovementComponent
 
           return EMPTY;
         }),
-        finalize(() => {}),
       )
       .subscribe((res) => {
         this.messageService.add({

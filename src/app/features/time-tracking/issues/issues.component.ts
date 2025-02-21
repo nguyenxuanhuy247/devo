@@ -111,9 +111,13 @@ export class IssuesComponent
   menuDependentOptions$ = this.timeTrackingStore.menuDependentOptions$;
   screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
   featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
-  tabOptions$ = this.timeTrackingStore.tabOptions$;
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
-  departmentOptions$ = this.timeTrackingStore.categoryOptions$;
+  departmentOptions$ = this.timeTrackingStore.departmentOptions$;
+  employeeInDepartmentOptions$ =
+    this.timeTrackingStore.employeeInDepartmentOptions$;
+  interruptionReasonDependentOptions$ =
+    this.timeTrackingStore.interruptionReasonDependentOptions;
+
   formArray: FormArray = new FormArray([]);
 
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
@@ -187,7 +191,7 @@ export class IssuesComponent
                   return EMPTY;
                 }),
                 finalize(() => {
-                  this.timeTrackingStore.setLoading(true);
+                  this.timeTrackingStore.setLoading(false);
                 }),
               );
           }),
@@ -400,6 +404,7 @@ export class IssuesComponent
 
   @ViewChildren('logWorkComponent')
   logWorkComponents: QueryList<LogWorkComponent>;
+
   toggleExpandRow(rowData: IIssuesRowData, index: number) {
     setTimeout(() => {
       this.changeDetectorRef.detectChanges();
