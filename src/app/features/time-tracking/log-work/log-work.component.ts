@@ -25,7 +25,6 @@ import { TooltipModule } from 'primeng/tooltip';
 import {
   IColumnHeaderConfigs,
   ID,
-  IOption,
 } from 'src/app/shared/interface/common.interface';
 import {
   ILogWorkRowData,
@@ -58,7 +57,6 @@ import * as _ from 'lodash';
 import { WorkDurationDirective } from '../../../directives';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { getValue } from 'src/app/utils/function';
 import { ILogWorkTableDataResponseDTO } from './log-work.dto.model';
 
 @Component({
@@ -90,6 +88,7 @@ export class LogWorkComponent
 {
   formGroupControl = input<FormGroup>();
   projectFormControl = input<LibFormSelectComponent>();
+  issueId = input<ID>(null);
 
   independentDropdowns = input<IIndependentDropDownSignal>();
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
@@ -108,6 +107,7 @@ export class LogWorkComponent
     employeeLevelId: null,
     employeeId: null,
     projectId: null,
+    issueId: this.issueId(),
     sheetName: null,
     startTime: null,
     endTime: null,
@@ -150,18 +150,6 @@ export class LogWorkComponent
   }
 
   initSubscriptions() {
-    // this.onDestroy$.subscribe(() => {});
-
-    // this.subscription.add(
-    //   this.tabOptions$.subscribe((tabOptions: IOption[]) => {
-    //     const tabId = tabOptions?.find(
-    //       (tab: IOption) => tab.label === ETabName.LOG_WORK,
-    //     )?.value;
-
-    //     this.tabId.set(tabId);
-    //   }),
-    // );
-
     this.subscription.add(
       this.getTableDataApiRequest$
         .pipe(
@@ -170,6 +158,7 @@ export class LogWorkComponent
             this.isLoading.set(true);
 
             this.doGetRequestDTO.update((oldValue: any) => {
+              console.log('oldValue ', oldValue);
               const formGroupValue =
                 this.formGroupControl().getRawValue() as ISelectFormGroup;
 

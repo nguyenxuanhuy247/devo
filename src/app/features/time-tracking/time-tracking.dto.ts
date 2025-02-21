@@ -44,6 +44,7 @@ export interface ITimeTrackingDoGetRequestDTO {
   employeeLevelId: ID;
   employeeId: ID;
   projectId: ID;
+  issueId: ID;
   sheetName: string;
   startTime: Date;
   endTime: Date;

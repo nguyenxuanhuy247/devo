@@ -1,4 +1,12 @@
-import { Component, Injector, input, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  Injector,
+  input,
+  OnInit,
+  QueryList,
+  signal,
+  ViewChildren,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormArray,
@@ -114,6 +122,7 @@ export class IssuesComponent
     employeeLevelId: null,
     employeeId: null,
     projectId: null,
+    issueId: null,
     sheetName: ETabName.LOG_WORK,
     startTime: null,
     endTime: null,
@@ -387,5 +396,18 @@ export class IssuesComponent
         this.mode.set(EMode.VIEW);
         this.callAPIGetTableData();
       });
+  }
+
+  @ViewChildren('logWorkComponent')
+  logWorkComponents: QueryList<LogWorkComponent>;
+  toggleExpandRow(rowData: IIssuesRowData, index: number) {
+    setTimeout(() => {
+      this.changeDetectorRef.detectChanges();
+      this.logWorkComponents.forEach((component, componentIndex) => {
+        if (componentIndex === index) {
+          component.callAPIGetTableData();
+        }
+      });
+    });
   }
 }

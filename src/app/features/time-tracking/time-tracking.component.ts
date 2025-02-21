@@ -133,6 +133,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     employeeLevelId: null,
     employeeId: null,
     projectId: null,
+    issueId: null,
     sheetName: null,
     startTime: null,
     endTime: null,
@@ -231,15 +232,15 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
     this.getControl(SELECT_FORM_GROUP_KEY.dateRange).disable();
 
+    // Phải gọi trước khi khởi tạo giá trị cho dateRange
+    this.initSubscriptions();
+
     // Thiết lập giá trị ban đầu cho "Thống kê bởi"
     if (this.activeTab() === ETabName.ISSUE) {
       this.getControl(SELECT_FORM_GROUP_KEY.quickDate).setValue(EStatsBy.ALL);
     } else {
       this.getControl(SELECT_FORM_GROUP_KEY.quickDate).setValue(EStatsBy.TODAY);
     }
-
-    // Phải gọi trước khi khởi tạo giá trị cho dateRange
-    this.initSubscriptions();
 
     this.timeTrackingStore.getAllDropdownData();
 
@@ -316,6 +317,17 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
           });
 
           switch (dateString) {
+            case EStatsBy.ALL:
+              this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
+                new Date('1900-01-01'), // Ngày nhỏ nhất hợp lý
+                new Date('9999-12-31'), // Ngày lớn nhất hợp lý
+              ]);
+
+              console.log(
+                'vaaa ',
+                this.getControl(SELECT_FORM_GROUP_KEY.dateRange),
+              );
+              break;
             case EStatsBy.TODAY:
               this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
                 startOfDay(new Date()),
@@ -334,17 +346,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
                 endOfMonth(new Date()),
               ]);
               break;
-            case EStatsBy.CUSTOM:
+            default:
               this.getControl(SELECT_FORM_GROUP_KEY.dateRange).enable({
                 emitEvent: false,
               });
-              break;
-            default:
-              // Mặc định chọn Tất cả
-              this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
-                null,
-                null,
-              ]);
           }
         },
       ),

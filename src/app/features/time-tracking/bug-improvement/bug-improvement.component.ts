@@ -116,6 +116,7 @@ export class BugImprovementComponent
     employeeLevelId: null,
     employeeId: null,
     projectId: null,
+    issueId: null,
     sheetName: ETabName.BUG,
     startTime: null,
     endTime: null,
