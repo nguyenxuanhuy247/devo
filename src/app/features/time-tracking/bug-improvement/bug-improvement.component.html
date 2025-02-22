@@ -209,21 +209,12 @@
               <div>
             <textarea
               pTextarea
-              [formControlName]="FORM_GROUP_KEYS.workContent"
+              [formControlName]="FORM_GROUP_KEYS.code"
               rows="1"
               cols="30"
             ></textarea>
               </div>
             </td>
-
-            <!--            <td>-->
-            <!--              <div>-->
-            <!--                <lib-form-select-->
-            <!--                  [formControlName]="FORM_GROUP_KEYS.deadlineId"-->
-            <!--                  [options]="[{ label: 'aaaaaa', value: 'aaaaaa' }]"-->
-            <!--                ></lib-form-select>-->
-            <!--              </div>-->
-            <!--            </td>-->
 
             <!-- Thời gian bắt đầu -->
             <td>
@@ -285,8 +276,16 @@
                   [formControlName]="FORM_GROUP_KEYS.duration"
                   id="duration"
                   pInputText
-                  [formGroup]="getFormGroupInFormArray(formArray, index)"
                 />
+              </div>
+            </td>
+
+            <td>
+              <div>
+                <p-check-box
+                  [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
+                  [binary]="true"
+                ></p-check-box>
               </div>
             </td>
 

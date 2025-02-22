@@ -14,6 +14,7 @@ import {
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { LibFormSelectComponent } from 'src/app/components';
@@ -27,7 +28,11 @@ import {
 import { IColumnHeaderConfigs } from 'src/app/shared/interface/common.interface';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
-import { EApiMethod, EMode } from '../../../contants/common.constant';
+import {
+  DATE_FORMAT,
+  EApiMethod,
+  EMode,
+} from '../../../contants/common.constant';
 import { FormBaseComponent } from '../../../shared';
 import {
   catchError,
@@ -43,7 +48,10 @@ import { TimeTrackingStore } from '../time-tracking.store';
 import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
-import { WorkDurationDirective } from '../../../directives';
+import {
+  DevTemplateDirective,
+  WorkDurationDirective,
+} from '../../../directives';
 import { ConvertIdToNamePipe, FormatDatePipe, RoundPipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
 import { RippleModule } from 'primeng/ripple';
@@ -61,8 +69,9 @@ import {
 } from '../time-tracking.dto';
 import { TimeTrackingApiService } from '../time-tracking-api.service';
 import { message } from 'src/app/contants/api.contant';
-import { IIssuesTableDataResponseDTO } from './issues.dto.model';
+import { IIssueResponseDTO } from './issues.dto.model';
 import * as _ from 'lodash';
+import { Checkbox } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-issues',
@@ -84,6 +93,8 @@ import * as _ from 'lodash';
     TagModule,
     RippleModule,
     LogWorkComponent,
+    DevTemplateDirective,
+    Checkbox,
   ],
   templateUrl: './issues.component.html',
   styleUrl: './issues.component.scss',
@@ -108,6 +119,8 @@ export class IssuesComponent
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
   allDropdownData$ = this.timeTrackingStore.allDropdownData$;
   moduleDependentOptions$ = this.timeTrackingStore.moduleDependentOptions$;
+  deadlineDependentModuleOptions$ =
+    this.timeTrackingStore.deadlineDependentModuleOptions$;
   menuDependentOptions$ = this.timeTrackingStore.menuDependentOptions$;
   screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
   featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
@@ -117,6 +130,7 @@ export class IssuesComponent
     this.timeTrackingStore.employeeInDepartmentOptions$;
   interruptionReasonDependentOptions$ =
     this.timeTrackingStore.interruptionReasonDependentOptions;
+  statusOptions$ = this.timeTrackingStore.statusOptions;
 
   formArray: FormArray = new FormArray([]);
 
@@ -141,17 +155,30 @@ export class IssuesComponent
   override ngOnInit() {
     super.ngOnInit();
     this.createFormGroup = this.formBuilder.group({
-      ...nullableIssuesObj,
-      mode: EMode.CREATE,
+      mode: EMode.VIEW,
+      id: null,
+      moduleId: [null, Validators.required],
+      menuId: null,
+      screenId: null,
+      featureId: null,
+      categoryId: null,
+      issueCode: null,
+      issueName: null,
+      issueContent: null,
+      departmentMakeId: null,
+      employeeMakeId: null,
+      interruptionReasonId: null,
+      deadlineId: null,
+      isBlockProgress: false,
+      statusId: null,
+      startTime: null,
+      endTime: null,
+      duration: null,
       createdDate: new Date(),
+      updatedDate: null,
     });
 
-    console.log(' this.createFormGroup', this.createFormGroup);
     this.addCreateRowForm();
-
-    console.log('formArray', this.formArray);
-    const newFormGroup = this.formBuilder.group({ ...nullableIssuesObj });
-    this.formArray.push(newFormGroup);
     this.initSubscriptions();
   }
 
@@ -163,7 +190,6 @@ export class IssuesComponent
         .pipe(
           debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
           switchMap(() => {
-            this.timeTrackingStore.setLoading(true);
             this.doGetRequestDTO.update((oldValue: any) => {
               const formGroupValue =
                 this.formGroupControl().getRawValue() as ISelectFormGroup;
@@ -179,6 +205,7 @@ export class IssuesComponent
               };
             });
 
+            this.timeTrackingStore.setLoading(true);
             return this.timeTrackingService
               .getListAsync(this.doGetRequestDTO())
               .pipe(
@@ -196,7 +223,7 @@ export class IssuesComponent
               );
           }),
         )
-        .subscribe((listData: IIssuesTableDataResponseDTO[]) => {
+        .subscribe((listData: IIssueResponseDTO[]) => {
           this.mode.set(EMode.VIEW);
           this.formArray.clear();
 
@@ -318,21 +345,25 @@ export class IssuesComponent
   }
 
   onSaveCreate() {
+    const isValid = this.createFormGroup.valid;
+    if (!isValid) {
+      this.createFormGroup.markAsTouched();
+      this.createFormGroup.updateValueAndValidity();
+      return;
+    }
     const data: IIssuesRowData = {
       ...this.createFormGroup.value,
       ...this.getCommonValue(),
       createdDate: new Date(),
     };
 
-    console.log('1111111111 ', data);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
       data: [data],
     }));
 
-    console.log('222222222222 ', this.doPostRequestDTO());
-
+    this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .createItemAsync(this.doPostRequestDTO())
       .pipe(
@@ -342,6 +373,7 @@ export class IssuesComponent
             summary: 'Thất bại',
             detail: message.serverError,
           });
+          this.timeTrackingStore.setLoading(false);
           return EMPTY;
         }),
       )
@@ -415,4 +447,6 @@ export class IssuesComponent
       });
     });
   }
+
+  protected readonly DATE_FORMAT = DATE_FORMAT;
 }

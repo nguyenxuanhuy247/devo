@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, QueryList, TemplateRef } from '@angular/core';
+import { DevTemplateDirective } from '../directives';
 
 const POSSSIBLE =
   'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
@@ -111,4 +112,13 @@ export class CommonService {
       /^([01]\d|2[0-3]):([0-5]\d) - ([0-2]\d|3[01])\/(0[1-9]|1[0-2])$/;
     return regex.test(dateStr);
   };
+
+  getTemplateByAttribute(
+    templates: QueryList<DevTemplateDirective>,
+    attributeName: string,
+  ): TemplateRef<any> {
+    return templates.find((template) => {
+      return template.devTemplate === attributeName;
+    })?.templateRef;
+  }
 }

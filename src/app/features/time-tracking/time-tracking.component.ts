@@ -1,18 +1,6 @@
-import {
-  Component,
-  effect,
-  Injector,
-  OnInit,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { Component, Injector, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormArray,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import { FormArray, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
@@ -34,11 +22,9 @@ import {
   IDefaultValueInLocalStorage,
   ITabComponent,
   LOCAL_STORAGE_KEY,
-  nullableObj,
   SELECT_FORM_GROUP_KEY,
 } from './time-tracking.model';
 import { TabsModule } from 'primeng/tabs';
-import { CreateFormComponent } from './create-form/create-form.component';
 import { TooltipModule } from 'primeng/tooltip';
 import { EApiMethod, EMode } from '../../contants/common.constant';
 import { SplitButtonModule } from 'primeng/splitbutton';
@@ -60,7 +46,6 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { LibFormSelectComponent } from 'src/app/components';
 import { TagModule } from 'primeng/tag';
 import { FixBugDoImprovementComponent } from './fix-bug-do-improvement/fix-bug-do-improvement.component';
-import { ILogWorkRowData } from './log-work/log-work.model';
 import { LogWorkComponent } from './log-work/log-work.component';
 import { TimeTrackingStore } from './time-tracking.store';
 import { getValue } from 'src/app/utils/function';
@@ -106,7 +91,7 @@ import { BugImprovementComponent } from './bug-improvement/bug-improvement.compo
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.ISSUE);
+  activeTab = signal<ETabName>(ETabName.LOG_WORK);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -124,42 +109,16 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
   EMode = EMode;
   formArray!: FormArray;
-  fixedRowData: ILogWorkRowData[] = [];
-  createFormGroup!: FormGroup;
-
-  @ViewChild(FixBugDoImprovementComponent, { static: true })
-  fixBugDoImprovementComponent: FixBugDoImprovementComponent;
 
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
+
+  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
   employeeLevelOptions$ = this.timeTrackingStore.employeeLevelOptions$;
   employeeDependentOptions$ = this.timeTrackingStore.employeeDependentOptions$;
   projectDependentOptions$ = this.timeTrackingStore.projectDependentOptions$;
-  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
 
   constructor(override injector: Injector) {
     super(injector);
-
-    this.createFormGroup = this.formBuilder.group({
-      ...nullableObj,
-      mode: EMode.CREATE,
-      tab: this.activeTab(),
-      employee: null,
-      employeeLevel: null,
-      isLunchBreak: true,
-      createdDate: new Date(),
-    });
-
-    effect(() => {
-      if (
-        this.activeTab() === ETabName.BUG ||
-        this.activeTab() === ETabName.IMPROVEMENT ||
-        this.activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT
-      ) {
-        this.fixedRowData = [];
-      } else {
-        this.addCreateRowForm();
-      }
-    });
   }
 
   override ngOnInit() {
@@ -256,7 +215,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     this.subscription.add(
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.quickDate).subscribe(
         (dateString: string) => {
-          console.log('quickDate ', dateString);
           this.getControl(SELECT_FORM_GROUP_KEY.dateRange).disable({
             emitEvent: false,
           });
@@ -268,10 +226,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
                 new Date('9999-12-31'), // Ngày lớn nhất hợp lý
               ]);
 
-              console.log(
-                'vaaa ',
-                this.getControl(SELECT_FORM_GROUP_KEY.dateRange),
-              );
               break;
             case EStatsBy.TODAY:
               this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
@@ -301,23 +255,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     );
 
     this.subscription.add(
-      this.createFormGroup.valueChanges.subscribe((value: any) => {
-        if (
-          this.activeTab() === ETabName.LOG_WORK ||
-          this.activeTab() === ETabName.ISSUE
-        ) {
-          const isStartTimeTracking = value.startTime && !value.endTime;
-
-          if (!isStartTimeTracking) {
-            this.startBlinking();
-          } else {
-            this.clearBlinking();
-          }
-        }
-      }),
-    );
-
-    this.subscription.add(
       this.projectDependentOptions$.subscribe((_) => {
         this.setDefaultValue();
       }),
@@ -335,35 +272,12 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     }
   }
 
+  @ViewChild('tab') tabComponent!: ITabComponent;
+
   onChangeTab(event: ID) {
     this.activeTab.set(event as ETabName);
+    setTimeout(() => this.tabComponent.callAPIGetTableData());
   }
-
-  addCreateRowForm() {
-    this.fixedRowData = [
-      {
-        ...nullableObj,
-        mode: EMode.CREATE,
-        tab: this.activeTab(),
-        isLunchBreak: true,
-        createdDate: new Date(),
-      },
-    ];
-  }
-
-  onViewDetail(event: Event) {
-    event.stopPropagation();
-
-    const drawerRef = this.drawerService.create({
-      component: CreateFormComponent,
-      data: {},
-      configs: {
-        width: '51.5rem',
-      },
-    });
-  }
-
-  @ViewChild('tab') tabComponent!: ITabComponent;
 
   onReload() {
     this.tabComponent.callAPIGetTableData();

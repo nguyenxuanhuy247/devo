@@ -1,6 +1,4 @@
 import { CommonService } from '../../services';
-import { ID, IOption } from '../../shared/interface/common.interface';
-import { EMode } from '../../contants/common.constant';
 import { FormArray } from '@angular/forms';
 import {
   ICategoryResponseDTO,
@@ -12,8 +10,10 @@ import {
   IFeatureResponseDTO,
   IInterruptionReasonResponseDTO,
   IMenuResponseDTO,
+  IModuleDeadlineResponseDTO,
   IModuleResponseDTO,
   IProjectResponseDTO,
+  IScreenIssuesResponseDTO,
   IScreenResponseDTO,
   IStageResponseDTO,
   IStatuseResponseDTO,
@@ -35,7 +35,7 @@ export interface ISelectFormGroup {
   employeeId: string;
   projectId: string;
   dateRange: [Date, Date];
-  quickDate: 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'CUSTOM';
+  quickDate: EStatsBy;
   formArray: FormArray;
 }
 
@@ -44,92 +44,19 @@ export enum EStatsBy {
   TODAY = 'TODAY',
   WEEK = 'WEEK',
   MONTH = 'MONTH',
+  YEAR = 'YEAR',
   CUSTOM = 'CUSTOM',
 }
-
-export const nullableObj: any = {
-  mode: EMode.VIEW,
-  id: null,
-  employeeLevelId: null,
-  projectId: null,
-  employeeId: null,
-  moduleId: null,
-  menuId: null,
-  screenId: null,
-  featureId: null,
-  tabId: null,
-  categoryId: null,
-  workContent: null,
-  isSolveIssue: null,
-  departmentMakeIssue: null,
-  interruptionReason: null,
-  employeeMakeIssue: null,
-  encounteredIssue: null,
-  startTime: null,
-  endTime: null,
-  duration: null,
-  isLunchBreak: true,
-  isProgressBlock: null,
-  // notes: null,
-  status: null,
-  createdDate: null,
-  updatedDate: null,
-};
-
-export interface IDependentDropDown {
-  [s: string]: Record<ID, IOption[]>;
-}
-
-export interface IIndependentDropDownSignal {
-  tabs: IOption[];
-  categories: IOption[];
-  dayoffs: IOption[];
-  departments: IOption[];
-}
-
-//
-// export const FAKE_REPORT_DATA = [
-//   {
-//     id: '1000',
-//     module: 'Lịch họp',
-//     menu: 'Danh sách lịch họp',
-//     screen: 'Danh sách lịch họp',
-//     issueNumber: '3',
-//     status: 'Đang làm',
-//     details: [
-//       {
-//         id: '1000-0',
-//         screen: 'f230fh0g3',
-//         issueNumber: '3',
-//         status: 'Đang làm',
-//       },
-//     ],
-//   },
-//   {
-//     id: '1001',
-//     module: 'Lịch họp 22',
-//     menu: 'Danh sách lịch họp22',
-//     screen: 'Danh sách lịch họp22',
-//     issueNumber: '3',
-//     status: 'Đang làm',
-//     details: [
-//       {
-//         id: '1000-0',
-//         screen: 'f230fh0g3',
-//         issueNumber: '3',
-//         status: 'Đang làm',
-//       },
-//     ],
-//   },
-// ];
 
 export interface IAllDropDownResponseDTO {
   employeeLevels: IEmployeeLevelResponseDTO[];
   employees: IEmployeeResponseDTO[];
   projects: IProjectResponseDTO[];
   modules: IModuleResponseDTO[];
+  moduleDeadlines: IModuleDeadlineResponseDTO[];
   menus: IMenuResponseDTO[];
   screens: IScreenResponseDTO[];
+  screenIssues: IScreenIssuesResponseDTO[];
   features: IFeatureResponseDTO[];
   categories: ICategoryResponseDTO[];
   departments: IDepartmentResponseDTO[];

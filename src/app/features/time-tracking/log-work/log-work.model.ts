@@ -23,7 +23,6 @@ export interface ILogWorkRowData {
   menuId: ID;
   screenId: ID;
   featureId: ID;
-  tabId: ID;
   categoryId: ID;
   workContent: string;
   issueId: ID;
@@ -42,7 +41,6 @@ export const nullableLogWorkObj: ILogWorkRowData = {
   menuId: null,
   screenId: null,
   featureId: null,
-  tabId: null,
   categoryId: null,
   workContent: null,
   issueId: null,

@@ -16,19 +16,15 @@
         <tr>
           <td>ssss</td>
           @for (col of headerColumnConfigs; track col.field) {
-            @if (col.field
-            === COLUMN_FIELD.categoryId) {
+            @if (col.field === COLUMN_FIELD.actions) {
               <th
                 [pSortableColumn]="col.field"
-                pResizableColumn
-                pFrozenColumn
                 [style.min-width.px]="col.minWidth"
               >
                 <div class="flex">
                   <div class="flex-1 line-clamp line-clamp-2">
                     {{ col.label }}
                   </div>
-                  <p-sortIcon [field]="col.field" />
                 </div>
               </th>
             } @else {
@@ -187,8 +183,16 @@
             <div>
               <lib-form-select
                 [formControlName]="FORM_GROUP_KEYS.deadlineId"
-                [options]="(categoryOptions$ | async) || []"
-              ></lib-form-select>
+                [options]="(deadlineDependentModuleOptions$ | async)?.[moduleId.value]"
+              >
+                <ng-template [devTemplate]="FORM_GROUP_KEYS.deadlineId" let-rowData>
+                  <div class="line-clamp">{{ rowData.label | formatDate: DATE_FORMAT.FULL_DATE }}</div>
+                </ng-template>
+
+                <ng-template [devTemplate]="'option'" let-rowData>
+                  <div class="line-clamp">{{ rowData.label | formatDate: DATE_FORMAT.FULL_DATE }}</div>
+                </ng-template>
+              </lib-form-select>
             </div>
           </td>
 
@@ -196,8 +200,17 @@
             <div>
               <lib-form-select
                 [formControlName]="FORM_GROUP_KEYS.statusId"
-                [options]="(categoryOptions$ | async) || []"
+                [options]="(statusOptions$ | async) || []"
               ></lib-form-select>
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <p-check-box
+                [formControlName]="FORM_GROUP_KEYS.isBlockProgress"
+                [binary]="true"
+              ></p-check-box>
             </div>
           </td>
 

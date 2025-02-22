@@ -10,6 +10,23 @@ export interface IFixBugDoImprovementRowData
   no: number;
 }
 
+export const fixBugDoImprovementNullableObj: IFixBugDoImprovementRowData = {
+  no: 0,
+  moduleName: '',
+  menuName: '',
+  screenName: '',
+  featureName: '',
+  tabName: '',
+  workContent: '',
+  bugName: '',
+  startTime: '',
+  endTime: '',
+  duration: 0,
+  status: '',
+  notes: '',
+  createdDate: '',
+};
+
 export const fixBugDoImprovementHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   {
     label: 'STT',

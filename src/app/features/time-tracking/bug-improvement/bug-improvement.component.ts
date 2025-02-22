@@ -13,12 +13,10 @@ import {
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
 import { TableModule } from 'primeng/table';
-import {
-  IColumnHeaderConfigs,
-  ID,
-} from '../../../shared/interface/common.interface';
+import { IColumnHeaderConfigs } from '../../../shared/interface/common.interface';
 import {
   FormArray,
+  FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
@@ -53,6 +51,7 @@ import {
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
 import { IBugImprovementListResponseDTO } from './bug-improvement.dto.model';
+import { Checkbox } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-bug-improvement',
@@ -72,6 +71,7 @@ import { IBugImprovementListResponseDTO } from './bug-improvement.dto.model';
     InputText,
     Textarea,
     WorkDurationDirective,
+    Checkbox,
   ],
   templateUrl: './bug-improvement.component.html',
   styleUrl: './bug-improvement.component.scss',
@@ -119,8 +119,6 @@ export class BugImprovementComponent
     startTime: null,
     endTime: null,
   });
-
-  DBTableName = signal<ID>(null);
 
   constructor(override injector: Injector) {
     super(injector);
@@ -177,6 +175,7 @@ export class BugImprovementComponent
             const formGroup = this.formBuilder.group({
               ...rowData,
               mode: EMode.VIEW,
+              isLunchBreak: true,
               startTime: rowData.startTime ? new Date(rowData.startTime) : null,
               endTime: rowData.endTime ? new Date(rowData.endTime) : null,
             });
@@ -220,8 +219,8 @@ export class BugImprovementComponent
           return EMPTY;
         }),
       )
-      .subscribe((_) => {
-        // this.callAPIGetTableData();
+      .subscribe(() => {
+        this.callAPIGetTableData();
       });
   }
 
@@ -230,16 +229,12 @@ export class BugImprovementComponent
   }
 
   onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
-    // let control: FormControl;
-    // if (this.mode() === EMode.UPDATE) {
-    //   control = this.getFormControl(index, formControlName);
-    // } else {
-    //   control = this.getControl(
-    //     formControlName,
-    //     this.createFormGroup,
-    //   ) as FormControl;
-    // }
-    // control.setValue(new Date());
+    const control = this.getFormControl(index, formControlName);
+    control.setValue(new Date());
+  }
+
+  getFormControl(index: number, formControlName: string): FormControl {
+    return this.formArray?.at(index)?.get(formControlName) as FormControl;
   }
 
   onCancelUpdateMode(index: number) {
@@ -265,6 +260,7 @@ export class BugImprovementComponent
       ],
     }));
 
+    this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .updateItemAsync(this.doPostRequestDTO())
       .pipe(
@@ -275,6 +271,7 @@ export class BugImprovementComponent
             detail: message.serverError,
           });
 
+          this.timeTrackingStore.setLoading(false);
           return EMPTY;
         }),
       )

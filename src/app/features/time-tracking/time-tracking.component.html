@@ -207,77 +207,15 @@
         @if (activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
           <p-tabpanel [value]="ETabName.FIX_BUG_DO_IMPROVEMENT">
             <app-fix-bug-do-improvement
+              #tab
               [formGroupControl]="formGroup"
               [commonFormGroupKey]="SELECT_FORM_GROUP_KEY"
             ></app-fix-bug-do-improvement>
           </p-tabpanel>
         }
-
-        <!--        <p-tabpanel [value]="activeTab() !== ETabName.FIX_BUG_DO_IMPROVEMENT ? activeTab()  : null">-->
-        <!--          &lt;!&ndash;        <p-tabpanel>&ndash;&gt;-->
-        <!--          &lt;!&ndash; Nút Thêm mới &ndash;&gt;-->
-        <!--          @if (mode() === EMode.VIEW) {-->
-        <!--            <div class="flex justify-content-end gap-3">-->
-        <!--              @if (activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {-->
-        <!--                <p-button-->
-        <!--                  [outlined]="true"-->
-        <!--                  severity="secondary"-->
-        <!--                  icon="pi pi-external-link"-->
-        <!--                  pTooltip="Mở rộng trang tính"-->
-        <!--                  label="Mở trang tính"-->
-        <!--                  (click)="openGoogleSheets()"-->
-        <!--                />-->
-
-        <!--                <p-button-->
-        <!--                  [outlined]="true"-->
-        <!--                  severity="secondary"-->
-        <!--                  icon="pi pi-sync"-->
-        <!--                  pTooltip="Tải lại danh sách"-->
-        <!--                  label="Tải lại danh sách"-->
-        <!--                  (click)="checkForFixBugAndImprovementUpdates()"-->
-        <!--                />-->
-        <!--              }-->
-
-        <!--              &lt;!&ndash; TODO - Bổ sung sau &ndash;&gt;-->
-        <!--              <p-button-->
-        <!--                *ngIf="false"-->
-        <!--                icon="pi pi-plus"-->
-        <!--                label="Xóa hàng loạt"-->
-        <!--                (click)="onBulkDelete()"-->
-        <!--              />-->
-
-        <!--              @if (activeTab() === ETabName.ESTIMATE || activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {-->
-        <!--                <p-button-->
-        <!--                  icon="pi pi-plus"-->
-        <!--                  label="Thêm hàng loạt"-->
-        <!--                  (click)="onBulkCreate()"-->
-        <!--                />-->
-        <!--              }-->
-
-        <!--              @if (activeTab() === ETabName.REPORT) {-->
-        <!--                <iframe-->
-        <!--                  src="https://docs.google.com/spreadsheets/d/1s8OjQl2kw8eW2gvflwfjl5PbmgGRAL0dGlwvGcyD4bs/edit?usp=sharing&gid=1098996043"-->
-        <!--                  width="100%"-->
-        <!--                  height="600">-->
-        <!--                </iframe>-->
-        <!--              }-->
-        <!--            </div>-->
-        <!--          }-->
-
-        <!--          @if (activeTab() === ETabName.REPORT) {-->
-        <!--            <ng-container *ngTemplateOutlet="tableDataGeneralTemplate"></ng-container>-->
-        <!--          } @else {-->
-        <!--            <ng-container *ngTemplateOutlet="tableDataDetailTemplate"></ng-container>-->
-        <!--          }-->
-
-        <!--        </p-tabpanel>-->
       </p-tabpanels>
     </p-tabs>
   </div>
 </div>
-<!-- 
-<p-blockui [blocked]="isLoading()">
-  <p-progress-spinner ariaLabel="loading" />
-</p-blockui> -->
 
 <p-confirmdialog></p-confirmdialog>

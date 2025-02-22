@@ -18,7 +18,6 @@ import {
 } from '../time-tracking.dto';
 import {
   ISelectFormGroup,
-  nullableObj,
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
 import { EApiMethod } from '../../../contants/common.constant';
@@ -29,6 +28,7 @@ import {
 } from '../../../shared/interface/common.interface';
 import {
   fixBugDoImprovementHeaderColumnConfigs,
+  fixBugDoImprovementNullableObj,
   IFixBugDoImprovementRowData,
 } from './fix-bug-do-improvement.model';
 import { TableModule } from 'primeng/table';
@@ -132,20 +132,18 @@ export class FixBugDoImprovementComponent
       .getBugImprovementContinuousUpdate(currentEmployee.bugImprovementApi, {})
       .pipe(
         finalize(() => {
-          this.timeTrackingStore.setLoading(true);
+          this.timeTrackingStore.setLoading(false);
         }),
       )
       .subscribe((list) => {
         this.tableData = list?.map((rowData) => {
           return {
-            ...nullableObj,
+            ...fixBugDoImprovementNullableObj,
             ...rowData,
-            startTime: rowData.startTime ? new Date(rowData.startTime) : null,
-            endTime: rowData.endTime ? new Date(rowData.endTime) : null,
             createdDate: rowData.createdDate
               ? new Date(rowData.createdDate)
               : null,
-          };
+          } as any;
         });
 
         this.totalDuration = this.tableData.reduce(

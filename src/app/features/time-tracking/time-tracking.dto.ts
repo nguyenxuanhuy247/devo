@@ -1,5 +1,6 @@
 import { ID } from '../../shared/interface/common.interface';
 import { EApiMethod } from '../../contants/common.constant';
+import { IIssueResponseDTO } from './issues/issues.dto.model';
 
 export enum EGetApiMode {
   DROPDOWN = 'DROPDOWN',
@@ -140,6 +141,22 @@ export interface IMenuChildListResponseDTO {
   updatedDate: string;
 }
 
+export interface IModuleDeadlineResponseDTO {
+  id: ID;
+  moduleName: string;
+  projectId: ID;
+  createdDate: string;
+  updatedDate: string;
+  deadlines: IDeadlineChildListResponseDTO[];
+}
+
+export interface IDeadlineChildListResponseDTO {
+  id: ID;
+  deadlineTime: string;
+  createdDate: string;
+  updatedDate: string;
+}
+
 export interface IMenuResponseDTO {
   id: ID;
   menuName: string;
@@ -174,6 +191,16 @@ export interface IFeatureResponseDTO {
   screenId: ID;
   createdDate: string;
   updatedDate: string;
+}
+
+export interface IScreenIssuesResponseDTO {
+  id: ID;
+  screenName: string;
+  status: string;
+  menuId: ID;
+  createdDate: string;
+  updatedDate: string;
+  issues: IIssueResponseDTO[];
 }
 
 export interface IDepartmentEmployeeResponseDTO {

@@ -6,10 +6,39 @@
   [appendTo]="appendTo"
   (onChange)="handleChange($event)"
   (onBlur)="onTouched()"
+  emptyMessage="Không có lựa chọn"
+  filter
+  filterBy="label"
 >
   <ng-template pTemplate="selectedItem" let-data>
     <div class="flex align-items-center gap-2">
-      <div class="line-clamp">{{ data.label }}</div>
+      @if (isTemplateRef(templateName)) {
+        <!-- Render ra Template -->
+        <ng-container
+          *ngTemplateOutlet="
+                getTemplateRef(templateName);
+                context: { $implicit: data }
+              "
+        ></ng-container>
+      } @else {
+        <div class="line-clamp">{{ data.label }}</div>
+      }
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="item" let-data>
+    <div class="flex align-items-center gap-2">
+      @if (isTemplateRef('option')) {
+        <!-- Render ra Template -->
+        <ng-container
+          *ngTemplateOutlet="
+                getTemplateRef('option');
+                context: { $implicit: data }
+              "
+        ></ng-container>
+      } @else {
+        <div>{{ data.label }}</div>
+      }
     </div>
   </ng-template>
 </p-select>

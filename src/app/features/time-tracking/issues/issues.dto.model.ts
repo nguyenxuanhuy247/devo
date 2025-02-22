@@ -1,6 +1,6 @@
 import { ID } from 'src/app/shared/interface/common.interface';
 
-export interface IIssuesTableDataResponseDTO {
+export interface IIssueResponseDTO {
   id: ID;
   employeeLevelId: ID;
   employeeId: ID;

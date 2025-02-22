@@ -7,7 +7,6 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import {
-  IIndependentDropDownSignal,
   ISelectFormGroup,
   ITabComponent,
   SELECT_FORM_GROUP_KEY,
@@ -90,7 +89,6 @@ export class LogWorkComponent
   projectFormControl = input<LibFormSelectComponent>();
   issueId = input<ID>(null);
 
-  independentDropdowns = input<IIndependentDropDownSignal>();
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
   headerColumnConfigs: IColumnHeaderConfigs[] = logWorkHeaderColumnConfigs;
   isLoading = signal(false);
@@ -116,10 +114,8 @@ export class LogWorkComponent
   subscription: Subscription = new Subscription();
   tableData: ILogWorkRowData[] = [];
   createFormGroup!: FormGroup;
-  // tabId = signal<ID>(null);
   fixedRowData: ILogWorkRowData[] = [];
   protected readonly FORM_GROUP_KEYS = LOG_WORK_CHILD_FORM_GROUP_KEYS;
-  protected readonly ETabName = ETabName;
   protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
   protected readonly EMode = EMode;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
@@ -129,6 +125,8 @@ export class LogWorkComponent
   screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
   featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
+  issueDependentScreenOptions$ =
+    this.timeTrackingStore.issueDependentScreenOptions$;
 
   private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
 
@@ -140,6 +138,7 @@ export class LogWorkComponent
     super.ngOnInit();
     this.createFormGroup = this.formBuilder.group({
       ...nullableLogWorkObj,
+      isLunchBreak: true,
       mode: EMode.CREATE,
       createdDate: new Date(),
     });
@@ -155,10 +154,8 @@ export class LogWorkComponent
         .pipe(
           debounceTime(300), // Giảm số lần gọi API nếu nhiều yêu cầu liên tiếp
           switchMap(() => {
-            this.isLoading.set(true);
-
+            this.timeTrackingStore.setLoading(true);
             this.doGetRequestDTO.update((oldValue: any) => {
-              console.log('oldValue ', oldValue);
               const formGroupValue =
                 this.formGroupControl().getRawValue() as ISelectFormGroup;
 
@@ -183,7 +180,9 @@ export class LogWorkComponent
                   });
                   return EMPTY;
                 }),
-                finalize(() => this.isLoading.set(false)),
+                finalize(() => {
+                  this.timeTrackingStore.setLoading(false);
+                }),
               );
           }),
         )
@@ -192,6 +191,7 @@ export class LogWorkComponent
           this.formArray.clear();
 
           listData.forEach((rowData) => {
+            console.log('rowData', rowData);
             const formGroup = this.formBuilder.group({
               ...rowData,
               mode: EMode.VIEW,
@@ -218,6 +218,10 @@ export class LogWorkComponent
           this.callAPIGetTableData();
         }),
     );
+
+    this.issueDependentScreenOptions$.subscribe((value) => {
+      console.log('value', value);
+    });
   }
 
   addCreateRowForm() {
@@ -347,22 +351,25 @@ export class LogWorkComponent
   }
 
   onSaveCreate() {
+    const outsideValue = this.issueId()
+      ? {
+          issueId: this.issueId(),
+        }
+      : {};
     const data: ILogWorkRowData = {
       ...this.createFormGroup.value,
       ...this.getCommonValue(),
-      issueId: this.issueId,
+      ...outsideValue,
       createdDate: new Date(),
+      updatedDate: null,
     };
 
-    console.log('1111111111 ', data);
     this.timeTrackingStore.setLoading(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
       data: [data],
     }));
-
-    console.log('222222222222 ', this.doPostRequestDTO());
 
     this.timeTrackingService
       .createItemAsync(this.doPostRequestDTO())
@@ -383,11 +390,19 @@ export class LogWorkComponent
           summary: 'Thành công',
           detail: res?.message,
         });
+
+        this.onResetCreateForm();
         this.callAPIGetTableData();
       });
   }
 
   onResetCreateForm() {
     this.createFormGroup.reset();
+  }
+
+  onDuplicateExistingItem(rowData: ILogWorkRowData) {
+    console.log('rowData', rowData);
+    console.log('formGroup', this.createFormGroup.value);
+    this.createFormGroup.patchValue(rowData);
   }
 }

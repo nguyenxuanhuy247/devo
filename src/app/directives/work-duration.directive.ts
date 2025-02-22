@@ -1,46 +1,54 @@
 import { Directive, Injector, Input, OnInit } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { ControlContainer, FormGroup } from '@angular/forms';
 import { TimeTrackingCalculateService } from '../features/time-tracking/time-tracking-calculate.service';
-import { combineLatest, of, startWith } from 'rxjs';
-import { LOG_WORK_CHILD_FORM_GROUP_KEYS } from '../features/time-tracking/log-work/log-work.model';
+import { distinctUntilChanged, map } from 'rxjs';
 
 @Directive({
   selector: '[appWorkDuration]',
   standalone: true, // Nếu dùng Angular 15+ và muốn directive hoạt động độc lập
 })
 export class WorkDurationDirective implements OnInit {
-  @Input() formGroup!: FormGroup;
   @Input() formControlName!: string; // Trả về kết quả
-  @Input() isLunchBreak: boolean = true; // Mặc định có nghỉ trưa
 
+  formGroup!: FormGroup;
   timeTrackingCalculateService = this.injector.get(
     TimeTrackingCalculateService,
   );
 
+  private controlContainer = this.injector.get(ControlContainer);
+
   constructor(private injector: Injector) {}
 
   ngOnInit() {
+    this.formGroup = this.controlContainer.control as FormGroup;
     if (this.formGroup) {
-      combineLatest(
-        this.formGroup.get(LOG_WORK_CHILD_FORM_GROUP_KEYS.startTime)
-          .valueChanges,
-        this.formGroup.get(LOG_WORK_CHILD_FORM_GROUP_KEYS.endTime).valueChanges,
-        this.formGroup
-          .get(LOG_WORK_CHILD_FORM_GROUP_KEYS.isLunchBreak)
-          ?.valueChanges.pipe(startWith(true)) || of(true),
-      ).subscribe(([startTime, endTime, isLunchBreak]) => {
-        const duration = this.timeTrackingCalculateService.calculateWorkHours(
-          startTime,
-          endTime,
-          isLunchBreak,
-        );
+      this.formGroup.valueChanges
+        .pipe(
+          // Chỉ lấy giá trị của 3 trường cần theo dõi
+          map((value) => ({
+            startTime: value.startTime,
+            endTime: value.endTime,
+            isLunchBreak: value.isLunchBreak,
+          })),
+          // Loại bỏ các giá trị trùng lặp liên tiếp
+          distinctUntilChanged(
+            (prev, curr) =>
+              prev.startTime === curr.startTime &&
+              prev.endTime === curr.endTime &&
+              prev.isLunchBreak === curr.isLunchBreak,
+          ),
+        )
+        .subscribe(({ startTime, endTime, isLunchBreak }) => {
+          const duration = this.timeTrackingCalculateService.calculateWorkHours(
+            startTime,
+            endTime,
+            isLunchBreak,
+          );
 
-        if (startTime && endTime) {
           this.formGroup
             .get(this.formControlName)
-            .setValue(duration.toFixed(2));
-        }
-      });
+            .setValue(duration > 0 ? duration.toFixed(2) : 0);
+        });
     }
   }
 }

@@ -23,6 +23,7 @@ export interface IIssuesRowData {
   employeeMakeId: ID;
   interruptionReasonId: ID;
   deadlineId: ID;
+  isBlockProgress: boolean;
   statusId: ID;
   startTime: string;
   endTime: string;
@@ -46,6 +47,7 @@ export const nullableIssuesObj: IIssuesRowData = {
   employeeMakeId: null,
   interruptionReasonId: null,
   deadlineId: null,
+  isBlockProgress: null,
   statusId: null,
   startTime: null,
   endTime: null,
@@ -66,7 +68,7 @@ export const issuesHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   {
     label: 'STT',
     field: ISSUES_COLUMN_FIELD.no,
-    minWidth: 70,
+    minWidth: 80,
   },
   {
     label: 'Module',
@@ -131,6 +133,11 @@ export const issuesHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   {
     label: 'Hiện trạng',
     field: ISSUES_COLUMN_FIELD.statusId,
+    minWidth: 200,
+  },
+  {
+    label: 'Block tiến độ',
+    field: ISSUES_COLUMN_FIELD.isBlockProgress,
     minWidth: 200,
   },
   {

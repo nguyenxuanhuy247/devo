@@ -10,6 +10,7 @@ import {
   EGetApiMode,
   ICategoryResponseDTO,
   IEmployeeResponseDTO,
+  IStatuseResponseDTO,
 } from './time-tracking.dto';
 import { finalize, tap } from 'rxjs/operators';
 import { message } from '../../contants/api.contant';
@@ -30,13 +31,16 @@ interface ITimeTrackingState {
   employeeDependentOptions: Record<ID, IOption[]>;
   projectDependentOptions: Record<ID, IOption[]>;
   moduleDependentOptions: Record<ID, IOption[]>;
+  deadlineDependentModuleOptions: Record<ID, IOption[]>;
   menuDependentOptions: Record<ID, IOption[]>;
   screenDependentOptions: Record<ID, IOption[]>;
+  issueDependentScreenOptions: Record<ID, IOption[]>;
   featureDependentOptions: Record<ID, IOption[]>;
   categoryOptions: IOption[];
   departmentOptions: IOption[];
   employeeDependentDepartmentOptions: Record<ID, IOption[]>;
   interruptionReasonDependentOptions: Record<ID, IOption[]>;
+  statusOptions: IOption[];
   dayOffs: IOption[];
 }
 
@@ -57,6 +61,8 @@ const initState: ITimeTrackingState = {
     stages: [],
     statuses: [],
     dayOffs: [],
+    moduleDeadlines: [],
+    screenIssues: [],
   },
   common: {
     employeeLevelId: null,
@@ -68,13 +74,16 @@ const initState: ITimeTrackingState = {
   employeeDependentOptions: null,
   projectDependentOptions: null,
   moduleDependentOptions: null,
+  deadlineDependentModuleOptions: null,
   menuDependentOptions: null,
   screenDependentOptions: null,
+  issueDependentScreenOptions: null,
   featureDependentOptions: null,
   categoryOptions: null,
   departmentOptions: null,
   employeeDependentDepartmentOptions: null,
   interruptionReasonDependentOptions: null,
+  statusOptions: null,
   dayOffs: null,
 };
 
@@ -146,11 +155,17 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
   readonly moduleDependentOptions$ = this.select(
     (state) => state.moduleDependentOptions,
   );
+  readonly deadlineDependentModuleOptions$ = this.select(
+    (state) => state.deadlineDependentModuleOptions,
+  );
   readonly menuDependentOptions$ = this.select(
     (state) => state.menuDependentOptions,
   );
   readonly screenDependentOptions$ = this.select(
     (state) => state.screenDependentOptions,
+  );
+  readonly issueDependentScreenOptions$ = this.select(
+    (state) => state.issueDependentScreenOptions,
   );
   readonly featureDependentOptions$ = this.select(
     (state) => state.featureDependentOptions,
@@ -163,6 +178,7 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
   readonly interruptionReasonDependentOptions = this.select(
     (state) => state.interruptionReasonDependentOptions,
   );
+  readonly statusOptions = this.select((state) => state.statusOptions);
 
   readonly getAllDropdownData = this.effect((trigger$: Observable<void>) => {
     return trigger$.pipe(
@@ -179,7 +195,7 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
               // Level nhân viên
               const employeeLevelList = res.employeeLevels;
               let employeeLevelOptions: IOption[] = [];
-              let employeeDependentOptions: IOption[] = [];
+              let employeeDependentOptions: Record<ID, IOption[]>;
               if (employeeLevelList && employeeLevelList.length > 0) {
                 employeeLevelOptions = employeeLevelList.map(
                   (employeeLevel) => ({
@@ -200,7 +216,7 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
 
               //  Dự án Options
               const employeeList = res.employees;
-              let projectDependentOptions: IOption[] = [];
+              let projectDependentOptions: Record<ID, IOption[]>;
               if (employeeList && employeeList.length > 0) {
                 projectDependentOptions =
                   this.commonService.convertToDependentDropdown(
@@ -213,7 +229,7 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
 
               // Module Options
               const projectList = res.projects;
-              let moduleDependentOptions: IOption[] = [];
+              let moduleDependentOptions: Record<ID, IOption[]>;
               if (projectList && projectList.length > 0) {
                 moduleDependentOptions =
                   this.commonService.convertToDependentDropdown(
@@ -226,7 +242,7 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
 
               // Menu Options
               const moduleList = res.modules;
-              let menuDependentOptions: IOption[] = [];
+              let menuDependentOptions: Record<ID, IOption[]>;
               if (moduleList && moduleList.length > 0) {
                 menuDependentOptions =
                   this.commonService.convertToDependentDropdown(
@@ -237,9 +253,22 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
                   );
               }
 
+              // Deadline phụ thuộc Module
+              const moduleDeadlines = res.moduleDeadlines;
+              let deadlineDependentModuleOptions: Record<ID, IOption[]>;
+              if (moduleDeadlines && moduleDeadlines.length > 0) {
+                deadlineDependentModuleOptions =
+                  this.commonService.convertToDependentDropdown(
+                    moduleDeadlines,
+                    'id',
+                    'deadlines',
+                    'deadlineTime',
+                  );
+              }
+
               // Màn hình Options
               const menuList = res.menus;
-              let screenDependentOptions: IOption[] = [];
+              let screenDependentOptions: Record<ID, IOption[]>;
               if (menuList && menuList.length > 0) {
                 screenDependentOptions =
                   this.commonService.convertToDependentDropdown(
@@ -250,9 +279,9 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
                   );
               }
 
-              // Tính năng Options
+              // Dropdown Tính năng phụ thuộc vào Dropdown Màn hình
               const screenList = res.screens;
-              let featureDependentOptions: IOption[] = [];
+              let featureDependentOptions: Record<ID, IOption[]>;
               if (screenList && screenList.length > 0) {
                 featureDependentOptions =
                   this.commonService.convertToDependentDropdown(
@@ -263,11 +292,23 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
                   );
               }
 
+              // Dropdown Vấn đề phụ thuộc vào Dropdown Màn hình
+              const screenIssues = res.screenIssues;
+              let issueDependentScreenOptions: Record<ID, IOption[]>;
+              if (screenIssues && screenIssues.length > 0) {
+                issueDependentScreenOptions =
+                  this.commonService.convertToDependentDropdown(
+                    screenIssues,
+                    'id',
+                    'issues',
+                    'issueName',
+                  );
+              }
+
               // Bộ phận làm việc Options và Lý do gián đoạn Options
               const departments = res.departments;
               let departmentOptions: IOption[] = [];
-              let interruptionReasonDependentOptions: IOption[] = [];
-              let employeeDependentDepartmentOptions: IOption[] = [];
+              let interruptionReasonDependentOptions: Record<ID, IOption[]>;
               if (departments && departments.length > 0) {
                 departmentOptions = departments.map((department) => ({
                   label: department.departmentName,
@@ -277,16 +318,20 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
                 interruptionReasonDependentOptions =
                   this.commonService.convertToDependentDropdown(
                     departments,
-                    'departmentName',
+                    'id',
                     'interruptionReasons',
                     'interruptionReasonName',
                   );
+              }
 
-                // Nhân viên trong phòng ban
+              // Nhân viên trong phòng ban
+              const departmentEmployees = res.departmentEmployees;
+              let employeeDependentDepartmentOptions: Record<ID, IOption[]>;
+              if (departmentEmployees && departmentEmployees.length > 0) {
                 employeeDependentDepartmentOptions =
                   this.commonService.convertToDependentDropdown(
-                    departments,
-                    'departmentName',
+                    departmentEmployees,
+                    'id',
                     'employees',
                     'username',
                   );
@@ -304,30 +349,46 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
                 );
               }
 
+              // Phân loại
+              const statuses = res.statuses;
+              let statusOptions: IOption[] = [];
+              if (statuses && statuses.length > 0) {
+                statusOptions = statuses.map((status: IStatuseResponseDTO) => ({
+                  label: status.statusName,
+                  value: status.id,
+                }));
+              }
+
               const data = {
                 isLoading: false,
                 employeeLevelOptions,
-                employeeDependentOptions: employeeDependentOptions,
-                projectDependentOptions: projectDependentOptions,
-                moduleDependentOptions: moduleDependentOptions,
-                menuDependentOptions: menuDependentOptions,
-                screenDependentOptions: screenDependentOptions,
-                featureDependentOptions: featureDependentOptions,
+                employeeDependentOptions,
+                projectDependentOptions,
+                moduleDependentOptions,
+                deadlineDependentModuleOptions,
+                menuDependentOptions,
+                screenDependentOptions,
+                issueDependentScreenOptions,
+                featureDependentOptions,
                 departmentOptions,
                 employeeDependentDepartmentOptions,
                 interruptionReasonDependentOptions,
                 categoryOptions,
+                statusOptions,
               };
 
               this.setAllDependentDropdownOptions(data);
             }),
             catchError((error: any) => {
+              console.error(error);
+              console.error(
+                'Lỗi tại hàm getAllDropdownData và file time-tracking.store.ts',
+              );
               this.messageService.add({
                 severity: 'error',
                 summary: 'Thất bại',
                 detail: message.serverError,
               });
-
               return EMPTY;
             }),
             finalize(() => {

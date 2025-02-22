@@ -5,27 +5,27 @@ import {
   ID,
 } from 'src/app/shared/interface/common.interface';
 
+// export interface IBugImprovementRowData {
+//   mode: EMode;
+//   id: ID;
+//   moduleId: ID;
+//   menuId: ID;
+//   screenId: ID;
+//   featureId: ID;
+//   categoryId: ID;
+//   workContent: string;
+//   deadlineId: ID;
+//   startTime: string;
+//   endTime: string;
+//   duration: number;
+//   createdDate: Date;
+//   updatedDate: Date;
+// }
+
 export const BUG_IMPROVEMENT_FORM_GROUP_KEYS =
-  CommonService.generateEnumFromInterface<IBugImprovementRowData>();
+  CommonService.generateEnumFromInterface<IBugImprovementListRowData>();
 
-export interface IBugImprovementRowData {
-  mode: EMode;
-  id: ID;
-  moduleId: ID;
-  menuId: ID;
-  screenId: ID;
-  featureId: ID;
-  categoryId: ID;
-  workContent: string;
-  deadlineId: ID;
-  startTime: string;
-  endTime: string;
-  duration: number;
-  createdDate: Date;
-  updatedDate: Date;
-}
-
-export const nullableBugImprovementObj: IBugImprovementRowData = {
+export const nullableBugImprovementObj: IBugImprovementListRowData = {
   mode: EMode.VIEW,
   id: null,
   moduleId: null,
@@ -33,11 +33,11 @@ export const nullableBugImprovementObj: IBugImprovementRowData = {
   screenId: null,
   featureId: null,
   categoryId: null,
-  workContent: null,
-  deadlineId: null,
+  code: null,
   startTime: null,
   endTime: null,
   duration: null,
+  isLunchBreak: true,
   createdDate: null,
   updatedDate: null,
 };
@@ -57,12 +57,12 @@ export interface IBugImprovementListRowData {
   menuId: ID;
   screenId: ID;
   featureId: ID;
-  tabId: ID;
   categoryId: ID;
-  workContent: string;
+  code: string;
   startTime: string;
   endTime: string;
   duration: number;
+  isLunchBreak: boolean;
   createdDate: Date;
   updatedDate: Date;
 }
@@ -96,27 +96,32 @@ export const bugImprovementListHeaderColumns: IColumnHeaderConfigs[] = [
   {
     label: 'Phân loại',
     field: BUG_IMPROVEMENT_LIST_COLUMN_FIELD.categoryId,
-    minWidth: 200,
+    minWidth: 140,
   },
   {
     label: 'Mã bug & improvement',
-    field: BUG_IMPROVEMENT_LIST_COLUMN_FIELD.workContent,
+    field: BUG_IMPROVEMENT_LIST_COLUMN_FIELD.code,
     minWidth: 120,
   },
   {
     label: 'Thời gian bắt đầu',
     field: BUG_IMPROVEMENT_LIST_COLUMN_FIELD.startTime,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Thời gian hoàn thành',
     field: BUG_IMPROVEMENT_LIST_COLUMN_FIELD.endTime,
-    minWidth: 120,
+    minWidth: 200,
   },
   {
     label: 'Thời lượng',
     field: BUG_IMPROVEMENT_LIST_COLUMN_FIELD.duration,
-    minWidth: 120,
+    minWidth: 100,
+  },
+  {
+    label: 'Nghỉ trưa',
+    field: BUG_IMPROVEMENT_LIST_COLUMN_FIELD.isLunchBreak,
+    minWidth: 100,
   },
   {
     label: 'Hành động',
