@@ -18,14 +18,13 @@ import {
 } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
 import { IOption } from 'src/app/shared/interface/common.interface';
-import { FormatDatePipe } from '../../pipes';
 import { DevTemplateDirective } from '../../directives';
 import { CommonService } from '../../services';
 import { Nullable } from 'primeng/ts-helpers';
 
 @Component({
   selector: 'lib-form-select',
-  imports: [CommonModule, FormsModule, SelectModule, FormatDatePipe],
+  imports: [CommonModule, FormsModule, SelectModule],
   templateUrl: './lib-form-select.component.html',
   styleUrl: './lib-form-select.component.scss',
 })

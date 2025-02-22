@@ -63,6 +63,8 @@ const initState: ITimeTrackingState = {
     dayOffs: [],
     moduleDeadlines: [],
     screenIssues: [],
+    issues: [],
+    deadlines: [],
   },
   common: {
     employeeLevelId: null,

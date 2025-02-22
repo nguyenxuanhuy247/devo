@@ -157,6 +157,8 @@ export interface IDeadlineChildListResponseDTO {
   updatedDate: string;
 }
 
+export type IDeadlineResponseDTO = IDeadlineChildListResponseDTO;
+
 export interface IMenuResponseDTO {
   id: ID;
   menuName: string;

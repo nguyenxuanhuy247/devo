@@ -290,18 +290,27 @@
                       : 'categoryName'
                 }}
               </td>
+            } @else if (col.field === COLUMN_FIELD.issueId) {
+              <td>
+                {{
+                  rowData[col.field]
+                    | convertIdToName
+                    : (allDropdownData$ | async)?.issues
+                      : 'issueName'
+                }}
+              </td>
             } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
             COLUMN_FIELD.endTime) {
               <td>{{ rowData[col.field] | formatDate }}</td>
-            } @else if (col.field === COLUMN_FIELD.categoryId) {
+            } @else if (col.field === COLUMN_FIELD.duration) {
+              <td>{{ rowData[col.field] | roundNumber }}</td>
+            } @else if (col.field === COLUMN_FIELD.isLunchBreak) {
               <td>
                 <p-tag
-                  [severity]="rowData[col.field] ? 'danger' : 'success'"
+                  [severity]="rowData[col.field] ?  'success': 'danger'"
                   [value]="rowData[col.field] ? 'Có' : 'Không'"
                 />
               </td>
-            } @else if (col.field === COLUMN_FIELD.duration) {
-              <td>{{ rowData[col.field] | roundNumber }}</td>
             } @else if (col.field === COLUMN_FIELD.actions) {
               <td>
                 <div class="flex align-items-center justify-content-center gap-1">

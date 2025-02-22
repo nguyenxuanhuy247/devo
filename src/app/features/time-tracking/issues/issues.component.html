@@ -378,10 +378,55 @@
                         : 'categoryName'
                   }}
                 </td>
+              } @else if (col.field === COLUMN_FIELD.departmentMakeId) {
+                <td>
+                  {{
+                    rowData[col.field]
+                      | convertIdToName
+                      : (allDropdownData$ | async)?.departments
+                        : 'departmentName'
+                  }}
+                </td>
+              } @else if (col.field === COLUMN_FIELD.employeeMakeId) {
+                <td>
+                  {{
+                    rowData[col.field]
+                      | convertIdToName
+                      : (allDropdownData$ | async)?.employees
+                        : 'username'
+                  }}
+                </td>
+              } @else if (col.field === COLUMN_FIELD.interruptionReasonId) {
+                <td>
+                  {{
+                    rowData[col.field]
+                      | convertIdToName
+                      : (allDropdownData$ | async)?.interruptionReasons
+                        : 'interruptionReasonName'
+                  }}
+                </td>
+              } @else if (col.field === COLUMN_FIELD.deadlineId) {
+                <td>
+                  {{
+                    rowData[col.field]
+                      | convertIdToName
+                      : (allDropdownData$ | async)?.deadlines
+                        : 'deadlineTime' | formatDate: DATE_FORMAT.CUSTOM_DATE_TIME
+                  }}
+                </td>
+              } @else if (col.field === COLUMN_FIELD.statusId) {
+                <td>
+                  {{
+                    rowData[col.field]
+                      | convertIdToName
+                      : (allDropdownData$ | async)?.statuses
+                        : 'statusName'
+                  }}
+                </td>
               } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
               COLUMN_FIELD.endTime) {
                 <td>{{ rowData[col.field] | formatDate }}</td>
-              } @else if (col.field === COLUMN_FIELD.categoryId) {
+              } @else if (col.field === COLUMN_FIELD.isBlockProgress) {
                 <td>
                   <p-tag
                     [severity]="rowData[col.field] ? 'danger' : 'success'"
@@ -401,7 +446,7 @@
                       aria-label="Đánh dấu đã xong"
                       pTooltip="Đánh dấu đã xong"
                       tooltipPosition="bottom"
-                      (click)="onMarkFinish()"
+                      (click)="onMarkFinish(index)"
                     />
                     <p-button
                       variant="outlined"
@@ -593,6 +638,15 @@
             </td>
 
             <td>
+              <div>
+                <p-check-box
+                  [formControlName]="FORM_GROUP_KEYS.isBlockProgress"
+                  [binary]="true"
+                ></p-check-box>
+              </div>
+            </td>
+
+            <td>
               <div class="flex align-items-center justify-content-center gap-1">
                 <p-button
                   variant="outlined"
@@ -652,7 +706,6 @@
                   pInputText
                   appWorkDuration
                   [formControlName]="FORM_GROUP_KEYS.duration"
-                  [formGroup]="createFormGroup"
                 />
               </div>
             </td>
@@ -691,12 +744,12 @@
         let-rowData
       >
         <tr>
-          <td colspan="12">
+          <td [attr.colspan]="headerColumnConfigs?.length || 1">
             <app-log-work
               #logWorkComponent
               [formGroupControl]="formGroupControl()"
               [projectFormControl]="projectFormControl()"
-              [issueId]="rowData.id"
+              [issueRowData]="rowData"
             >
             </app-log-work>
           </td>

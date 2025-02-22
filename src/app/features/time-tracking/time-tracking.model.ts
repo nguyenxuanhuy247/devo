@@ -3,6 +3,7 @@ import { FormArray } from '@angular/forms';
 import {
   ICategoryResponseDTO,
   IDayOffResponseDTO,
+  IDeadlineResponseDTO,
   IDepartmentEmployeeResponseDTO,
   IDepartmentResponseDTO,
   IEmployeeLevelResponseDTO,
@@ -18,6 +19,7 @@ import {
   IStageResponseDTO,
   IStatuseResponseDTO,
 } from './time-tracking.dto';
+import { IIssueResponseDTO } from './issues/issues.dto.model';
 
 export const LOCAL_STORAGE_KEY = 'defaultValue';
 
@@ -62,6 +64,8 @@ export interface IAllDropDownResponseDTO {
   departments: IDepartmentResponseDTO[];
   departmentEmployees: IDepartmentEmployeeResponseDTO[];
   interruptionReasons: IInterruptionReasonResponseDTO[];
+  issues: IIssueResponseDTO[];
+  deadlines: IDeadlineResponseDTO[];
   dayOffs: IDayOffResponseDTO[];
   stages: IStageResponseDTO[];
   statuses: IStatuseResponseDTO[];

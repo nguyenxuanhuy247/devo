@@ -72,6 +72,7 @@ import { message } from 'src/app/contants/api.contant';
 import { IIssueResponseDTO } from './issues.dto.model';
 import * as _ from 'lodash';
 import { Checkbox } from 'primeng/checkbox';
+import { getValue } from '../../../utils/function';
 
 @Component({
   selector: 'app-issues',
@@ -319,8 +320,24 @@ export class IssuesComponent
       });
   }
 
-  onMarkFinish() {
-    this.createFormGroup.reset();
+  onMarkFinish(index: number) {
+    const value = this.formArray?.at(index)?.value;
+    const completeStatusId = getValue(this.statusOptions$)?.find(
+      (status) => status.label === 'Đã giải quyết',
+    )?.value;
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.PUT,
+      data: [
+        {
+          ...value,
+          statusId: completeStatusId,
+          endTime: new Date(),
+          updatedDate: new Date(),
+        },
+      ],
+    }));
+    this.callAPIUpdateIssue();
   }
 
   private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
@@ -396,7 +413,6 @@ export class IssuesComponent
   }
 
   onSaveUpdate(index: number) {
-    this.timeTrackingStore.setLoading(true);
     const value = this.formArray?.at(index)?.value;
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
@@ -409,6 +425,11 @@ export class IssuesComponent
       ],
     }));
 
+    this.callAPIUpdateIssue();
+  }
+
+  callAPIUpdateIssue() {
+    this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .updateItemAsync(this.doPostRequestDTO())
       .pipe(

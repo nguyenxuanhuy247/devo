@@ -91,7 +91,7 @@ import { BugImprovementComponent } from './bug-improvement/bug-improvement.compo
   styleUrl: './time-tracking.component.scss',
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.LOG_WORK);
+  activeTab = signal<ETabName>(ETabName.ISSUE);
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,

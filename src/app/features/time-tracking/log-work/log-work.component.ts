@@ -1,4 +1,11 @@
-import { Component, Injector, input, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  Injector,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import {
   FormArray,
   FormControl,
@@ -57,6 +64,7 @@ import { WorkDurationDirective } from '../../../directives';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { ILogWorkTableDataResponseDTO } from './log-work.dto.model';
+import { IIssuesRowData } from '../issues/issues.model';
 
 @Component({
   selector: 'app-log-work',
@@ -85,9 +93,24 @@ export class LogWorkComponent
   extends FormBaseComponent
   implements OnInit, ITabComponent
 {
-  formGroupControl = input<FormGroup>();
-  projectFormControl = input<LibFormSelectComponent>();
-  issueId = input<ID>(null);
+  formGroupControl = input.required<FormGroup>();
+  projectFormControl = input.required<LibFormSelectComponent>();
+  /*
+   * @usage Có 2 trường hợp : Log work độc lập và Log work của vấn đề
+   */
+  issueRowData = input<IIssuesRowData>(null);
+  issueId = computed<ID>(() => {
+    return this.issueRowData()?.id;
+  });
+  issueCommonData = computed(() => {
+    return {
+      moduleId: this.issueRowData()?.moduleId,
+      menuId: this.issueRowData()?.menuId,
+      screenId: this.issueRowData()?.screenId,
+      featureId: this.issueRowData()?.featureId,
+      categoryId: this.issueRowData()?.categoryId,
+    };
+  });
 
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
   headerColumnConfigs: IColumnHeaderConfigs[] = logWorkHeaderColumnConfigs;
@@ -136,8 +159,11 @@ export class LogWorkComponent
 
   override ngOnInit() {
     super.ngOnInit();
+    const formValue = this.formGroupControl().value;
     this.createFormGroup = this.formBuilder.group({
       ...nullableLogWorkObj,
+      ...this.issueCommonData(),
+      ...formValue,
       isLunchBreak: true,
       mode: EMode.CREATE,
       createdDate: new Date(),
@@ -164,8 +190,13 @@ export class LogWorkComponent
                 employeeLevelId: formGroupValue.employeeLevelId,
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
-                startTime: formGroupValue.dateRange[0].toISOString(),
-                endTime: formGroupValue.dateRange[1].toISOString(),
+                startTime: this.issueId()
+                  ? null
+                  : formGroupValue.dateRange[0].toISOString(),
+                endTime: this.issueId()
+                  ? null
+                  : formGroupValue.dateRange[1].toISOString(),
+                issueId: this.issueId(),
               };
             });
 
@@ -213,15 +244,11 @@ export class LogWorkComponent
         this.formGroupControl(),
       )
         .pipe(filter((dataRange) => !!dataRange))
-        .subscribe((_) => {
+        .subscribe(() => {
           // Sau khi thiết lập các giá trị chung như Level, Nhân viên, dự án, thời gian mới gọi API lấy danh sách
           this.callAPIGetTableData();
         }),
     );
-
-    this.issueDependentScreenOptions$.subscribe((value) => {
-      console.log('value', value);
-    });
   }
 
   addCreateRowForm() {
@@ -260,6 +287,7 @@ export class LogWorkComponent
       ],
     }));
 
+    this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .updateItemAsync(this.doPostRequestDTO())
       .pipe(
@@ -267,13 +295,11 @@ export class LogWorkComponent
           this.messageService.add({
             severity: 'error',
             summary: 'Thất bại',
-            detail: message.serverError,
+            detail: `Cập nhật Log work thất bại, kiểm tra hàm onSaveUpdate`,
           });
 
+          this.timeTrackingStore.setLoading(false);
           return EMPTY;
-        }),
-        finalize(() => {
-          this.isLoading.set(false);
         }),
       )
       .subscribe((res) => {
@@ -313,22 +339,27 @@ export class LogWorkComponent
   }
 
   onDelete(rowData: ILogWorkRowData) {
-    this.isLoading.set(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       ids: [rowData.id],
       method: EApiMethod.DELETE,
     }));
 
+    this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .deleteItemAsync(this.doPostRequestDTO())
       .pipe(
         catchError(() => {
-          this.isLoading.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: `Xóa Log work thất bại, kiểm tra hàm onDelete`,
+          });
+          this.timeTrackingStore.setLoading(false);
           return EMPTY;
         }),
       )
-      .subscribe((_) => {
+      .subscribe(() => {
         this.callAPIGetTableData();
       });
   }
@@ -360,17 +391,18 @@ export class LogWorkComponent
       ...this.createFormGroup.value,
       ...this.getCommonValue(),
       ...outsideValue,
+      issueId: this.issueId(),
       createdDate: new Date(),
       updatedDate: null,
     };
 
-    this.timeTrackingStore.setLoading(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
       data: [data],
     }));
 
+    this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .createItemAsync(this.doPostRequestDTO())
       .pipe(
@@ -378,7 +410,7 @@ export class LogWorkComponent
           this.messageService.add({
             severity: 'error',
             summary: 'Thất bại',
-            detail: message.serverError,
+            detail: `Thêm mới Log work thất bại, kiểm tra hàm onSaveCreate`,
           });
           this.timeTrackingStore.setLoading(false);
           return EMPTY;
@@ -401,8 +433,6 @@ export class LogWorkComponent
   }
 
   onDuplicateExistingItem(rowData: ILogWorkRowData) {
-    console.log('rowData', rowData);
-    console.log('formGroup', this.createFormGroup.value);
     this.createFormGroup.patchValue(rowData);
   }
 }
