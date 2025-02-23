@@ -50,7 +50,8 @@ import { LogWorkComponent } from './log-work/log-work.component';
 import { TimeTrackingStore } from './time-tracking.store';
 import { getValue } from 'src/app/utils/function';
 import { IssuesComponent } from './issues/issues.component';
-import { BugImprovementComponent } from './bug-improvement/bug-improvement.component';
+import { BugComponent } from './bug/bug.component';
+import { ImprovementComponent } from './improvement/improvement.component';
 
 @Component({
   selector: 'app-time-tracking',
@@ -85,7 +86,8 @@ import { BugImprovementComponent } from './bug-improvement/bug-improvement.compo
     FixBugDoImprovementComponent,
     LogWorkComponent,
     IssuesComponent,
-    BugImprovementComponent,
+    BugComponent,
+    ImprovementComponent,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',

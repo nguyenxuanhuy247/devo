@@ -1,11 +1,4 @@
-import {
-  Component,
-  computed,
-  Injector,
-  input,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { Component, Injector, input, OnInit, signal } from '@angular/core';
 import {
   FormArray,
   FormControl,
@@ -28,16 +21,13 @@ import { EApiMethod, EMode } from '../../../contants/common.constant';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
-import {
-  IColumnHeaderConfigs,
-  ID,
-} from 'src/app/shared/interface/common.interface';
+import { IColumnHeaderConfigs } from 'src/app/shared/interface/common.interface';
 import {
   ILogWorkRowData,
   LOG_WORK_CHILD_FORM_GROUP_KEYS,
   LOG_WORK_COLUMN_FIELD,
   logWorkHeaderColumnConfigs,
-  nullableLogWorkObj,
+  logWorkNullableObj,
 } from './log-work.model';
 import { FormBaseComponent } from 'src/app/shared';
 import { TimeTrackingApiService } from '../time-tracking-api.service';
@@ -56,15 +46,14 @@ import { LibFormSelectComponent } from 'src/app/components';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DatePickerModule } from 'primeng/datepicker';
-import { ConvertIdToNamePipe, FormatDatePipe, RoundPipe } from '../../../pipes';
+import { ConvertIdToNamePipe, FormatDatePipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
 import { TimeTrackingStore } from '../time-tracking.store';
 import * as _ from 'lodash';
 import { WorkDurationDirective } from '../../../directives';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { ILogWorkTableDataResponseDTO } from './log-work.dto.model';
-import { IIssuesRowData } from '../issues/issues.model';
+import { ILogWorkResponseDTO } from './log-work.dto.model';
 
 @Component({
   selector: 'app-log-work',
@@ -78,7 +67,6 @@ import { IIssuesRowData } from '../issues/issues.model';
     ButtonModule,
     CheckboxModule,
     DatePickerModule,
-    RoundPipe,
     TagModule,
     FormatDatePipe,
     ConvertIdToNamePipe,
@@ -98,19 +86,19 @@ export class LogWorkComponent
   /*
    * @usage Có 2 trường hợp : Log work độc lập và Log work của vấn đề
    */
-  issueRowData = input<IIssuesRowData>(null);
-  issueId = computed<ID>(() => {
-    return this.issueRowData()?.id;
-  });
-  issueCommonData = computed(() => {
-    return {
-      moduleId: this.issueRowData()?.moduleId,
-      menuId: this.issueRowData()?.menuId,
-      screenId: this.issueRowData()?.screenId,
-      featureId: this.issueRowData()?.featureId,
-      categoryId: this.issueRowData()?.categoryId,
-    };
-  });
+  // issueRowData = input<IIssuesRowData>(null);
+  // issueId = computed<ID>(() => {
+  //   return this.issueRowData()?.id;
+  // });
+  // issueCommonData = computed(() => {
+  //   return {
+  //     moduleId: this.issueRowData()?.moduleId,
+  //     menuId: this.issueRowData()?.menuId,
+  //     screenId: this.issueRowData()?.screenId,
+  //     featureId: this.issueRowData()?.featureId,
+  //     categoryId: this.issueRowData()?.categoryId,
+  //   };
+  // });
 
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
   headerColumnConfigs: IColumnHeaderConfigs[] = logWorkHeaderColumnConfigs;
@@ -128,7 +116,7 @@ export class LogWorkComponent
     employeeLevelId: null,
     employeeId: null,
     projectId: null,
-    issueId: this.issueId(),
+    issueId: null,
     sheetName: null,
     startTime: null,
     endTime: null,
@@ -163,16 +151,12 @@ export class LogWorkComponent
     const formValue = this.formGroupControl().value;
     this.addCreateRowForm();
     this.createFormGroup = this.formBuilder.group({
-      ...nullableLogWorkObj,
-      ...this.issueCommonData(),
+      ...logWorkNullableObj,
+      // ...this.issueCommonData(),
       ...formValue,
       isLunchBreak: true,
       mode: EMode.CREATE,
       createdDate: new Date(),
-    });
-    console.log('aaaaaaaaa ', this.createFormGroup.value);
-    this.createFormGroup.get('isLunchBreak').valueChanges.subscribe((value) => {
-      console.log('isLunchBreak ', value);
     });
 
     this.initSubscriptions();
@@ -194,13 +178,15 @@ export class LogWorkComponent
                 employeeLevelId: formGroupValue.employeeLevelId,
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
-                startTime: this.issueId()
-                  ? null
-                  : formGroupValue.dateRange[0].toISOString(),
-                endTime: this.issueId()
-                  ? null
-                  : formGroupValue.dateRange[1].toISOString(),
-                issueId: this.issueId(),
+                // startTime: this.issueId()
+                //   ? null
+                //   : formGroupValue.dateRange[0].toISOString(),
+                // endTime: this.issueId()
+                //   ? null
+                //   : formGroupValue.dateRange[1].toISOString(),
+                // issueId: this.issueId(),
+                startTime: formGroupValue.dateRange[0].toISOString(),
+                endTime: formGroupValue.dateRange[1].toISOString(),
                 sheetName: ETabName.LOG_WORK,
               };
             });
@@ -222,7 +208,7 @@ export class LogWorkComponent
               );
           }),
         )
-        .subscribe((listData: ILogWorkTableDataResponseDTO[]) => {
+        .subscribe((listData: ILogWorkResponseDTO[]) => {
           this.mode.set(EMode.VIEW);
           this.formArray.clear();
 
@@ -257,7 +243,7 @@ export class LogWorkComponent
   addCreateRowForm() {
     this.fixedRowData = [
       {
-        ...nullableLogWorkObj,
+        ...logWorkNullableObj,
         mode: EMode.CREATE,
         isLunchBreak: true,
         createdDate: new Date(),
@@ -385,16 +371,16 @@ export class LogWorkComponent
   }
 
   onSaveCreate() {
-    const outsideValue = this.issueId()
-      ? {
-          issueId: this.issueId(),
-        }
-      : {};
+    // const outsideValue = this.issueId()
+    //   ? {
+    //       issueId: this.issueId(),
+    //     }
+    //   : {};
     const data: ILogWorkRowData = {
       ...this.createFormGroup.value,
       ...this.getCommonValue(),
-      ...outsideValue,
-      issueId: this.issueId(),
+      // ...outsideValue,
+      // issueId: this.issueId(),
       createdDate: new Date(),
       updatedDate: null,
     };
@@ -402,7 +388,7 @@ export class LogWorkComponent
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
-      sheetName: this.issueId() ? ETabName.IMPROVEMENT : ETabName.LOG_WORK,
+      sheetName: ETabName.LOG_WORK,
       data: [data],
     }));
 

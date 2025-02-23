@@ -121,17 +121,15 @@
             ></textarea>
           </div>
         </td>
-        
-        @if (this.issueId()) {
-          <td>
-            <div>
-              <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.issueId"
-                [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
-              ></lib-form-select>
-            </div>
-          </td>
-        }
+
+        <!--        <td>-->
+        <!--          <div>-->
+        <!--            <lib-form-select-->
+        <!--              [formControlName]="FORM_GROUP_KEYS.issueId"-->
+        <!--              [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"-->
+        <!--            ></lib-form-select>-->
+        <!--          </div>-->
+        <!--        </td>-->
 
         <td>
           <!-- Thời gian bắt đầu -->
@@ -289,20 +287,11 @@
                       : 'categoryName'
                 }}
               </td>
-            } @else if (col.field === COLUMN_FIELD.issueId) {
-              <td>
-                {{
-                  rowData[col.field]
-                    | convertIdToName
-                    : (allDropdownData$ | async)?.issues
-                      : 'issueName'
-                }}
-              </td>
             } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
             COLUMN_FIELD.endTime) {
               <td>{{ rowData[col.field] | formatDate }}</td>
             } @else if (col.field === COLUMN_FIELD.duration) {
-              <td>{{ rowData[col.field] | roundNumber }}</td>
+              <td>{{ rowData[col.field] | number:'1.2-2' }}</td>
             } @else if (col.field === COLUMN_FIELD.isLunchBreak) {
               <td>
                 <p-tag
@@ -421,17 +410,6 @@
             ></textarea>
             </div>
           </td>
-
-          @if (this.issueId()) {
-            <td>
-              <div>
-                <lib-form-select
-                  [formControlName]="FORM_GROUP_KEYS.issueId"
-                  [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
-                ></lib-form-select>
-              </div>
-            </td>
-          }
 
           <!-- Thời gian bắt đầu -->
           <td>

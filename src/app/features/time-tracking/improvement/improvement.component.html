@@ -1,6 +1,7 @@
 <div class="bug-improvement">
   <div class="huynx15-table">
     <p-table
+      [frozenValue]="mode() === EMode.VIEW ? fixedRowData : []"
       [value]="tableData"
       scrollHeight="800px"
       [resizableColumns]="true"
@@ -42,6 +43,196 @@
               </th>
             }
           }
+        </tr>
+      </ng-template>
+
+      <!--  TABLE : DÒNG THÊM MỚI -->
+      <ng-template
+        pTemplate="frozenbody"
+        let-rowData
+        let-index="rowIndex"
+      >
+        <tr [formGroup]="createFormGroup">
+          <td>
+            <div class="flex align-items-center justify-content-between gap-1">
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-save"
+                aria-label="Lưu"
+                pTooltip="Lưu"
+                tooltipPosition="bottom"
+                (click)="onSaveCreate()"
+              />
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <lib-form-select
+                #moduleId
+                [formControlName]="FORM_GROUP_KEYS.moduleId"
+                [options]="(moduleDependentOptions$ | async)?.[projectFormControl().value]"
+              ></lib-form-select>
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <lib-form-select
+                #menuId
+                [formControlName]="FORM_GROUP_KEYS.menuId"
+                [options]="(menuDependentOptions$ | async)?.[moduleId.value]"
+              ></lib-form-select>
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <lib-form-select
+                #screenId
+                [formControlName]="FORM_GROUP_KEYS.screenId"
+                [options]="(screenDependentOptions$ | async)?.[menuId.value]"
+              ></lib-form-select>
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <lib-form-select
+                [formControlName]="FORM_GROUP_KEYS.featureId"
+                [options]="(featureDependentOptions$ | async)?.[screenId.value]"
+              ></lib-form-select>
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <lib-form-select
+                [formControlName]="FORM_GROUP_KEYS.categoryId"
+                [options]="(categoryOptions$ | async) || []"
+              ></lib-form-select>
+            </div>
+          </td>
+
+          <td>
+            <div>
+            <textarea
+              pTextarea
+              [formControlName]="FORM_GROUP_KEYS.code"
+              rows="1"
+              cols="30"
+            ></textarea>
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <lib-form-select
+                [formControlName]="FORM_GROUP_KEYS.issueId"
+                [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
+              ></lib-form-select>
+            </div>
+          </td>
+
+          <td>
+            <!-- Thời gian bắt đầu -->
+            <div class="flex align-items-center justify-content-center gap-1">
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-clock"
+                aria-label="Thời gian hiện tại"
+                pTooltip="Thời gian hiện tại"
+                tooltipPosition="bottom"
+                (click)="
+                onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.startTime)
+              "
+              />
+              <p-datepicker
+                [formControlName]="FORM_GROUP_KEYS.startTime"
+                [showTime]="true"
+                hourFormat="24"
+                dateFormat="dd/mm"
+                appendTo="body"
+              >
+              </p-datepicker>
+            </div>
+          </td>
+
+          <td>
+            <!-- Thời gian hoàn thành -->
+            <div class="flex align-items-center justify-content-center gap-1">
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-clock"
+                aria-label="Thời gian hiện tại"
+                pTooltip="Thời gian hiện tại"
+                tooltipPosition="bottom"
+                (click)="
+                onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.endTime)
+              "
+              />
+
+              <p-datepicker
+                [formControlName]="FORM_GROUP_KEYS.endTime"
+                [showTime]="true"
+                hourFormat="24"
+                dateFormat="dd/mm"
+                appendTo="body"
+              >
+              </p-datepicker>
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <input
+                pInputText
+                appWorkDuration
+                [formControlName]="FORM_GROUP_KEYS.duration"
+              />
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <p-checkbox
+                [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
+                [binary]="true"
+              />
+            </div>
+          </td>
+
+          <!-- Danh sách nút hành động của Thêm mới -->
+          <td>
+            <div class="flex align-items-center justify-content-center gap-1">
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-times"
+                aria-label="Hủy"
+                pTooltip="Hủy"
+                tooltipPosition="bottom"
+                (click)="onResetCreateForm()"
+              />
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-save"
+                aria-label="Lưu"
+                pTooltip="Lưu"
+                tooltipPosition="bottom"
+                (click)="onSaveCreate()"
+              />
+            </div>
+          </td>
         </tr>
       </ng-template>
 
@@ -101,6 +292,15 @@
                         : 'categoryName'
                   }}
                 </td>
+              } @else if (col.field === COLUMN_FIELD.issueId) {
+                <td>
+                  {{
+                    rowData[col.field]
+                      | convertIdToName
+                      : (allDropdownData$ | async)?.issues
+                        : 'issueName'
+                  }}
+                </td>
               } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
               COLUMN_FIELD.endTime) {
                 <td>{{ rowData[col.field] | formatDate }}</td>
@@ -112,10 +312,10 @@
                   />
                 </td>
               } @else if (col.field === COLUMN_FIELD.duration) {
-                <td>{{ rowData[col.field] | roundNumber }}</td>
+                <td>{{ rowData[col.field] | number:'1.2-2' }}</td>
               } @else if (col.field === COLUMN_FIELD.actions) {
                 <td>
-                  <div class="flex align-items-center justify-content-between gap-1">
+                  <div class="flex align-items-center justify-content-center gap-1">
 
                     <p-button
                       variant="outlined"
@@ -216,6 +416,16 @@
               </div>
             </td>
 
+            <td>
+              <div>
+                <lib-form-select
+                  [formControlName]="FORM_GROUP_KEYS.issueId"
+                  [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
+                ></lib-form-select>
+              </div>
+            </td>
+
+
             <!-- Thời gian bắt đầu -->
             <td>
               <div class="flex align-items-center justify-content-center gap-1">
@@ -290,7 +500,7 @@
             </td>
 
             <td>
-              <div class="flex align-items-center justify-content-between gap-1">
+              <div class="flex align-items-center justify-content-center gap-1">
                 <p-button
                   variant="outlined"
                   severity="secondary"

@@ -73,6 +73,7 @@ import { IIssueResponseDTO } from './issues.dto.model';
 import * as _ from 'lodash';
 import { Checkbox } from 'primeng/checkbox';
 import { getValue } from '../../../utils/function';
+import { ImprovementComponent } from '../improvement/improvement.component';
 
 @Component({
   selector: 'app-issues',
@@ -93,9 +94,9 @@ import { getValue } from '../../../utils/function';
     RoundPipe,
     TagModule,
     RippleModule,
-    LogWorkComponent,
     DevTemplateDirective,
     Checkbox,
+    ImprovementComponent,
   ],
   templateUrl: './issues.component.html',
   styleUrl: './issues.component.scss',

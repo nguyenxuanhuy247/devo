@@ -20,7 +20,7 @@ export interface ILogWorkRequestDTO {
   updatedDate: Date;
 }
 
-export interface ILogWorkTableDataResponseDTO {
+export interface ILogWorkResponseDTO {
   id: ID;
   employeeLevelId: ID;
   employeeId: ID;
@@ -31,8 +31,6 @@ export interface ILogWorkTableDataResponseDTO {
   featureId: ID;
   categoryId: ID;
   workContent: string;
-  issueId: ID;
-  deadlineId: ID;
   startTime: string;
   endTime: string;
   duration: number;

@@ -1,10 +1,19 @@
-import { Component, Injector, input, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  Injector,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  BUG_IMPROVEMENT_FORM_GROUP_KEYS,
-  BUG_IMPROVEMENT_LIST_COLUMN_FIELD,
-  bugImprovementListHeaderColumns,
-} from './bug-improvement.model';
+  IImprovementRowData,
+  IMPROVEMENT_COLUMN_FIELD,
+  IMPROVEMENT_FORM_GROUP_KEYS,
+  improvementHeaderColumnConfigs,
+  improvementNullableObj,
+} from './improvement.model';
 import { EApiMethod, EMode } from 'src/app/contants/common.constant';
 import {
   EGetApiMode,
@@ -13,7 +22,10 @@ import {
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
 import { TableModule } from 'primeng/table';
-import { IColumnHeaderConfigs } from '../../../shared/interface/common.interface';
+import {
+  IColumnHeaderConfigs,
+  ID,
+} from '../../../shared/interface/common.interface';
 import {
   FormArray,
   FormControl,
@@ -23,11 +35,14 @@ import {
 } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
-import { ConvertIdToNamePipe, FormatDatePipe, RoundPipe } from '../../../pipes';
+import { ConvertIdToNamePipe, FormatDatePipe } from '../../../pipes';
 import { FormBaseComponent } from '../../../shared';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { TagModule } from 'primeng/tag';
-import { ILogWorkRowData } from '../log-work/log-work.model';
+import {
+  ILogWorkRowData,
+  logWorkNullableObj,
+} from '../log-work/log-work.model';
 import {
   catchError,
   debounceTime,
@@ -44,17 +59,18 @@ import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
 import { WorkDurationDirective } from '../../../directives';
-import { message } from '../../../contants/api.contant';
 import {
   ISelectFormGroup,
   ITabComponent,
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
-import { IBugImprovementListResponseDTO } from './bug-improvement.dto.model';
+import { IImprovementResponseDTO } from './improvement.dto.model';
 import { Checkbox } from 'primeng/checkbox';
+import { IIssuesRowData } from '../issues/issues.model';
+import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-bug-improvement',
+  selector: 'app-improvement',
   imports: [
     CommonModule,
     FormsModule,
@@ -65,7 +81,6 @@ import { Checkbox } from 'primeng/checkbox';
     ConvertIdToNamePipe,
     FormatDatePipe,
     TagModule,
-    RoundPipe,
     LibFormSelectComponent,
     DatePicker,
     InputText,
@@ -73,19 +88,41 @@ import { Checkbox } from 'primeng/checkbox';
     WorkDurationDirective,
     Checkbox,
   ],
-  templateUrl: './bug-improvement.component.html',
-  styleUrl: './bug-improvement.component.scss',
+  templateUrl: './improvement.component.html',
+  styleUrl: './improvement.component.scss',
 })
-export class BugImprovementComponent
+export class ImprovementComponent
   extends FormBaseComponent
   implements OnInit, ITabComponent
 {
   formGroupControl = input<FormGroup>();
   projectFormControl = input<LibFormSelectComponent>();
+  issueRowData = input<IIssuesRowData>(null);
 
-  protected readonly FORM_GROUP_KEYS = BUG_IMPROVEMENT_FORM_GROUP_KEYS;
+  issueId = computed<ID>(() => {
+    return this.issueRowData()?.id;
+  });
+  issueCommonData = computed(() => {
+    return {
+      moduleId: this.issueRowData()?.moduleId,
+      menuId: this.issueRowData()?.menuId,
+      screenId: this.issueRowData()?.screenId,
+      featureId: this.issueRowData()?.featureId,
+      categoryId: this.issueRowData()?.categoryId,
+    };
+  });
+
+  commonFormGroupValue = computed(() => {
+    const commonValue = _.cloneDeep(this.formGroupControl().value);
+    delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
+    delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
+    delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
+
+    return commonValue;
+  });
+  protected readonly FORM_GROUP_KEYS = IMPROVEMENT_FORM_GROUP_KEYS;
   protected readonly ETabName = ETabName;
-  protected readonly COLUMN_FIELD = BUG_IMPROVEMENT_LIST_COLUMN_FIELD;
+  protected readonly COLUMN_FIELD = IMPROVEMENT_COLUMN_FIELD;
   protected readonly EMode = EMode;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
   timeTrackingService = this.injector.get(TimeTrackingApiService);
@@ -96,15 +133,19 @@ export class BugImprovementComponent
   screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
   featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
+  issueDependentScreenOptions$ =
+    this.timeTrackingStore.issueDependentScreenOptions$;
 
   tableData: any[];
-  headerColumnConfigs: IColumnHeaderConfigs[] = bugImprovementListHeaderColumns;
+  headerColumnConfigs: IColumnHeaderConfigs[] = improvementHeaderColumnConfigs;
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
-    sheetName: ETabName.BUG,
+    sheetName: ETabName.IMPROVEMENT,
     ids: null,
     data: null,
   });
+  createFormGroup!: FormGroup;
+  fixedRowData: ILogWorkRowData[] = [];
   formArray: FormArray = new FormArray([]);
   subscription: Subscription = new Subscription();
   private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
@@ -114,11 +155,12 @@ export class BugImprovementComponent
     employeeLevelId: null,
     employeeId: null,
     projectId: null,
-    issueId: null,
-    sheetName: ETabName.BUG,
+    issueId: this.issueId(),
+    sheetName: ETabName.IMPROVEMENT,
     startTime: null,
     endTime: null,
   });
+  mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
 
   constructor(override injector: Injector) {
     super(injector);
@@ -126,6 +168,17 @@ export class BugImprovementComponent
 
   override ngOnInit() {
     super.ngOnInit();
+    const formValue = this.formGroupControl().value;
+    this.addCreateRowForm();
+    this.createFormGroup = this.formBuilder.group({
+      ...improvementNullableObj,
+      ...this.issueCommonData(),
+      ...formValue,
+      isLunchBreak: true,
+      mode: EMode.CREATE,
+      createdDate: new Date(),
+    });
+
     this.initSubscriptions();
   }
 
@@ -144,9 +197,14 @@ export class BugImprovementComponent
                 employeeLevelId: formGroupValue.employeeLevelId,
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
-                sheetName: ETabName.BUG,
-                startTime: formGroupValue.dateRange[0].toISOString(),
-                endTime: formGroupValue.dateRange[1].toISOString(),
+                sheetName: ETabName.IMPROVEMENT,
+                startTime: this.issueId()
+                  ? null
+                  : formGroupValue.dateRange[0].toISOString(),
+                endTime: this.issueId()
+                  ? null
+                  : formGroupValue.dateRange[1].toISOString(),
+                issueId: this.issueId(),
               };
             });
 
@@ -158,8 +216,9 @@ export class BugImprovementComponent
                   this.messageService.add({
                     severity: 'error',
                     summary: 'Thất bại',
-                    detail: message.serverError,
+                    detail: `Thêm mới improvement thất bại, kiểm tra hàm onSaveUpdate`,
                   });
+                  this.timeTrackingStore.setLoading(false);
                   return EMPTY;
                 }),
                 finalize(() => {
@@ -168,7 +227,8 @@ export class BugImprovementComponent
               );
           }),
         )
-        .subscribe((listData: IBugImprovementListResponseDTO[]) => {
+        .subscribe((listData: IImprovementResponseDTO[]) => {
+          this.mode.set(EMode.VIEW);
           this.formArray.clear();
 
           listData.forEach((rowData) => {
@@ -199,7 +259,20 @@ export class BugImprovementComponent
     );
   }
 
+  addCreateRowForm() {
+    this.fixedRowData = [
+      {
+        ...logWorkNullableObj,
+        mode: EMode.CREATE,
+        isLunchBreak: true,
+        createdDate: new Date(),
+      },
+    ];
+  }
+
   onChangeToUpdateMode(index: number) {
+    this.mode.set(EMode.UPDATE);
+
     const formGroup = this.getFormGroup(index);
     formGroup.patchValue({ mode: EMode.UPDATE });
     this.tableData = this.formArray.value;
@@ -212,10 +285,17 @@ export class BugImprovementComponent
       method: EApiMethod.DELETE,
     }));
 
+    this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .deleteItemAsync(this.doPostRequestDTO())
       .pipe(
         catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: `Xóa improvement thất bại, kiểm tra hàm onDelete`,
+          });
+          this.timeTrackingStore.setLoading(false);
           return EMPTY;
         }),
       )
@@ -229,7 +309,15 @@ export class BugImprovementComponent
   }
 
   onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
-    const control = this.getFormControl(index, formControlName);
+    let control: FormControl;
+    if (this.mode() === EMode.UPDATE) {
+      control = this.getFormControl(index, formControlName);
+    } else {
+      control = this.getControl(
+        formControlName,
+        this.createFormGroup,
+      ) as FormControl;
+    }
     control.setValue(new Date());
   }
 
@@ -237,7 +325,55 @@ export class BugImprovementComponent
     return this.formArray?.at(index)?.get(formControlName) as FormControl;
   }
 
+  onSaveCreate() {
+    const outsideValue = this.issueId()
+      ? {
+          issueId: this.issueId(),
+        }
+      : {};
+    const data: IImprovementRowData = {
+      ...this.createFormGroup.value,
+      ...this.commonFormGroupValue(),
+      ...outsideValue,
+      createdDate: new Date(),
+      updatedDate: null,
+    };
+
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.POST,
+      sheetName: ETabName.IMPROVEMENT,
+      data: [data],
+    }));
+
+    this.timeTrackingStore.setLoading(true);
+    this.timeTrackingService
+      .createItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: `Thêm mới Log work thất bại, kiểm tra hàm onSaveCreate`,
+          });
+          this.timeTrackingStore.setLoading(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+
+        this.onResetCreateForm();
+        this.callAPIGetTableData();
+      });
+  }
+
   onCancelUpdateMode(index: number) {
+    this.mode.set(EMode.VIEW);
     this.getFormGroupInFormArray(this.formArray, index).patchValue({
       mode: EMode.VIEW,
     });
@@ -268,7 +404,7 @@ export class BugImprovementComponent
           this.messageService.add({
             severity: 'error',
             summary: 'Thất bại',
-            detail: message.serverError,
+            detail: `Cập nhật improvement thất bại, kiểm tra hàm onSaveUpdate`,
           });
 
           this.timeTrackingStore.setLoading(false);
@@ -281,8 +417,14 @@ export class BugImprovementComponent
           summary: 'Thành công',
           detail: res?.message,
         });
+        this.mode.set(EMode.VIEW);
+
         this.callAPIGetTableData();
       });
+  }
+
+  onResetCreateForm() {
+    this.createFormGroup.reset();
   }
 
   callAPIGetTableData(): void {

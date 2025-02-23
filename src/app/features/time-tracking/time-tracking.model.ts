@@ -20,6 +20,11 @@ import {
   IStatuseResponseDTO,
 } from './time-tracking.dto';
 import { IIssueResponseDTO } from './issues/issues.dto.model';
+import { EMode } from '../../contants/common.constant';
+import {
+  IColumnHeaderConfigs,
+  ID,
+} from '../../shared/interface/common.interface';
 
 export const LOCAL_STORAGE_KEY = 'defaultValue';
 
@@ -74,3 +79,86 @@ export interface IAllDropDownResponseDTO {
 export interface ITabComponent {
   callAPIGetTableData(): void;
 }
+
+export const COMMON_COLUMN_FIELD = Object.assign(
+  CommonService.generateEnumFromInterface<ICommonTimeTrackingRowData>(),
+  {
+    no: 'no',
+    actions: 'actions',
+  },
+);
+
+export interface ICommonTimeTrackingRowData {
+  mode: EMode;
+  id: ID;
+  moduleId: ID;
+  menuId: ID;
+  screenId: ID;
+  featureId: ID;
+  categoryId: ID;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  createdDate: Date;
+  updatedDate: Date;
+}
+
+export const getHeaderColumnConfigsFactory = (
+  configs01: IColumnHeaderConfigs[],
+  configs02: IColumnHeaderConfigs[] = [],
+): IColumnHeaderConfigs[] => {
+  return [
+    {
+      label: 'STT',
+      field: COMMON_COLUMN_FIELD.no,
+      minWidth: 80,
+    },
+    {
+      label: 'Module',
+      field: COMMON_COLUMN_FIELD.moduleId,
+      minWidth: 200,
+    },
+    {
+      label: 'Menu',
+      field: COMMON_COLUMN_FIELD.menuId,
+      minWidth: 200,
+    },
+    {
+      label: 'Màn hình',
+      field: COMMON_COLUMN_FIELD.screenId,
+      minWidth: 200,
+    },
+    {
+      label: 'Tính năng',
+      field: COMMON_COLUMN_FIELD.featureId,
+      minWidth: 200,
+    },
+    {
+      label: 'Phân loại',
+      field: COMMON_COLUMN_FIELD.categoryId,
+      minWidth: 200,
+    },
+    ...configs01,
+    {
+      label: 'Thời gian bắt đầu',
+      field: COMMON_COLUMN_FIELD.startTime,
+      minWidth: 200,
+    },
+    {
+      label: 'Thời gian hoàn thành',
+      field: COMMON_COLUMN_FIELD.endTime,
+      minWidth: 200,
+    },
+    {
+      label: 'Thời lượng',
+      field: COMMON_COLUMN_FIELD.duration,
+      minWidth: 60,
+    },
+    ...configs02,
+    {
+      label: 'Hành động',
+      field: COMMON_COLUMN_FIELD.actions,
+      minWidth: 120,
+    },
+  ];
+};

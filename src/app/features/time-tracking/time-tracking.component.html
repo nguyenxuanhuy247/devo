@@ -171,23 +171,23 @@
         <!-- Tab Bug -->
         @if (activeTab() === ETabName.BUG) {
           <p-tabpanel [value]="ETabName.BUG">
-            <app-bug-improvement
+            <app-bug
               #tab
               [formGroupControl]="formGroup"
               [projectFormControl]="projectId"
             >
-            </app-bug-improvement>
+            </app-bug>
           </p-tabpanel>
         }
         <!-- Tab Improvement -->
         @if (activeTab() === ETabName.IMPROVEMENT) {
           <p-tabpanel [value]="ETabName.IMPROVEMENT">
-            <app-bug-improvement
+            <app-improvement
               #tab
               [formGroupControl]="formGroup"
               [projectFormControl]="projectId"
             >
-            </app-bug-improvement>
+            </app-improvement>
           </p-tabpanel>
         }
 
