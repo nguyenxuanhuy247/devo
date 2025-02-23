@@ -163,7 +163,7 @@ export class IssuesComponent
       screenId: null,
       featureId: null,
       categoryId: null,
-      issueCode: null,
+      issueCode: `VOFFICE-${this.getRandom8DigitNumber()}`,
       issueName: null,
       issueContent: null,
       departmentMakeId: null,
@@ -239,7 +239,6 @@ export class IssuesComponent
           });
 
           this.tableData = this.formArray.value;
-          this.createFormGroup.reset();
         }),
     );
 
@@ -254,6 +253,12 @@ export class IssuesComponent
           this.callAPIGetTableData();
         }),
     );
+  }
+
+  getRandom8DigitNumber() {
+    const min = 10000000; // Số nhỏ nhất có 8 chữ số
+    const max = 99999999; // Số lớn nhất có 8 chữ số
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
@@ -401,6 +406,7 @@ export class IssuesComponent
           detail: res?.message,
         });
         this.callAPIGetTableData();
+        this.createFormGroup.reset();
       });
   }
 

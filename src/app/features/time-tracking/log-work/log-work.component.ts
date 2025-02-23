@@ -159,7 +159,9 @@ export class LogWorkComponent
 
   override ngOnInit() {
     super.ngOnInit();
+
     const formValue = this.formGroupControl().value;
+    this.addCreateRowForm();
     this.createFormGroup = this.formBuilder.group({
       ...nullableLogWorkObj,
       ...this.issueCommonData(),
@@ -168,8 +170,10 @@ export class LogWorkComponent
       mode: EMode.CREATE,
       createdDate: new Date(),
     });
-
-    this.addCreateRowForm();
+    console.log('aaaaaaaaa ', this.createFormGroup.value);
+    this.createFormGroup.get('isLunchBreak').valueChanges.subscribe((value) => {
+      console.log('isLunchBreak ', value);
+    });
 
     this.initSubscriptions();
   }
@@ -197,6 +201,7 @@ export class LogWorkComponent
                   ? null
                   : formGroupValue.dateRange[1].toISOString(),
                 issueId: this.issueId(),
+                sheetName: ETabName.LOG_WORK,
               };
             });
 
@@ -222,7 +227,6 @@ export class LogWorkComponent
           this.formArray.clear();
 
           listData.forEach((rowData) => {
-            console.log('rowData', rowData);
             const formGroup = this.formBuilder.group({
               ...rowData,
               mode: EMode.VIEW,
@@ -234,7 +238,6 @@ export class LogWorkComponent
           });
 
           this.tableData = this.formArray.value;
-          this.createFormGroup.reset();
         }),
     );
 
@@ -399,6 +402,7 @@ export class LogWorkComponent
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
+      sheetName: this.issueId() ? ETabName.IMPROVEMENT : ETabName.LOG_WORK,
       data: [data],
     }));
 

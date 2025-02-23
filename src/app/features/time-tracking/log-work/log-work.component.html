@@ -2,9 +2,6 @@
   <p-table
     [frozenValue]="mode() === EMode.VIEW ? fixedRowData : []"
     [value]="tableData"
-    [scrollable]="true"
-    styleClass="p-datatable-gridlines"
-    scrollHeight="800px"
     [resizableColumns]="true"
     columnResizeMode="expand"
   >
@@ -124,15 +121,17 @@
             ></textarea>
           </div>
         </td>
-
-        <td>
-          <div>
-            <lib-form-select
-              [formControlName]="FORM_GROUP_KEYS.issueId"
-              [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
-            ></lib-form-select>
-          </div>
-        </td>
+        
+        @if (this.issueId()) {
+          <td>
+            <div>
+              <lib-form-select
+                [formControlName]="FORM_GROUP_KEYS.issueId"
+                [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
+              ></lib-form-select>
+            </div>
+          </td>
+        }
 
         <td>
           <!-- Thời gian bắt đầu -->
@@ -423,14 +422,16 @@
             </div>
           </td>
 
-          <td>
-            <div>
-              <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.issueId"
-                [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
-              ></lib-form-select>
-            </div>
-          </td>
+          @if (this.issueId()) {
+            <td>
+              <div>
+                <lib-form-select
+                  [formControlName]="FORM_GROUP_KEYS.issueId"
+                  [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
+                ></lib-form-select>
+              </div>
+            </td>
+          }
 
           <!-- Thời gian bắt đầu -->
           <td>

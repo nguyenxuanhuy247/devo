@@ -41,8 +41,10 @@ import { catchError, EMPTY, filter, finalize } from 'rxjs';
 import { TimeTrackingApiService } from '../time-tracking-api.service';
 import { message } from '../../../contants/api.contant';
 import * as _ from 'lodash';
-import { IFixBugDoImprovementResponseDTO } from './fix-bug-do-improvement.dto.model';
-import { ILogWorkRequestDTO } from '../log-work/log-work.dto.model';
+import {
+  IFixBugDoImprovementRequestDTO,
+  IFixBugDoImprovementResponseDTO,
+} from './fix-bug-do-improvement.dto.model';
 import { LOG_WORK_COLUMN_FIELD } from '../log-work/log-work.model';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { getValue } from 'src/app/utils/function';
@@ -81,7 +83,9 @@ export class FixBugDoImprovementComponent
   tableData: IFixBugDoImprovementRowData[] = [];
   timeTrackingService = this.injector.get(TimeTrackingApiService);
   isLoading = signal(false);
-  doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<ILogWorkRequestDTO>>({
+  doPostRequestDTO = signal<
+    ITimeTrackingDoPostRequestDTO<IFixBugDoImprovementRequestDTO>
+  >({
     method: EApiMethod.POST,
     sheetName: ETabName.BUG,
     ids: null,
@@ -189,7 +193,6 @@ export class FixBugDoImprovementComponent
       let menuId: ID;
       let screenId: ID;
       let featureId: ID;
-      let tabId: ID;
 
       if (rowData.moduleName) {
         moduleId = allDropdownData.modules?.find(
@@ -221,17 +224,17 @@ export class FixBugDoImprovementComponent
         menuId,
         screenId,
         featureId,
-        workContent: rowData.workContent,
+        code: rowData.code,
         startTime: rowData.startTime,
         endTime: rowData.endTime,
         duration: rowData.duration,
         createdDate: new Date(),
-      } as ILogWorkRequestDTO;
+      } as IFixBugDoImprovementRequestDTO;
     });
   }
 
   onBulkCreate() {
-    const listData: ILogWorkRequestDTO[] =
+    const listData: IFixBugDoImprovementRequestDTO[] =
       this.convertListBugOrImprovementBeforeSave();
 
     this.isLoading.set(true);

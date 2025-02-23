@@ -14,7 +14,7 @@
       <!-- TABLE HEADER -->
       <ng-template pTemplate="header">
         <tr>
-          <td>ssss</td>
+          <td></td>
           @for (col of headerColumnConfigs; track col.field) {
             @if (col.field === COLUMN_FIELD.actions) {
               <th
@@ -137,6 +137,7 @@
                 [formControlName]="FORM_GROUP_KEYS.issueName"
                 rows="1"
                 cols="30"
+                maxlength="200"
               ></textarea>
             </div>
           </td>

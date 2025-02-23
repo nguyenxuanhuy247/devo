@@ -17,7 +17,7 @@ export const fixBugDoImprovementNullableObj: IFixBugDoImprovementRowData = {
   screenName: '',
   featureName: '',
   tabName: '',
-  workContent: '',
+  code: '',
   bugName: '',
   startTime: '',
   endTime: '',
@@ -60,7 +60,7 @@ export const fixBugDoImprovementHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   },
   {
     label: 'Mã bug & improvement',
-    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.workContent,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.code,
     minWidth: 120,
   },
   {
