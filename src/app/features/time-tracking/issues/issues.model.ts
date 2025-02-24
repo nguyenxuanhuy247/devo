@@ -4,6 +4,9 @@ import {
   IColumnHeaderConfigs,
   ID,
 } from 'src/app/shared/interface/common.interface';
+import { IIssueResponseDTO } from './issues.dto.model';
+
+export type IIssueCreateFormGroup = IIssueResponseDTO;
 
 export const ISSUES_FORM_GROUP_KEYS =
   CommonService.generateEnumFromInterface<IIssuesRowData>();

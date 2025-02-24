@@ -19,6 +19,7 @@ import {
 import { TableModule } from 'primeng/table';
 import { LibFormSelectComponent } from 'src/app/components';
 import {
+  IIssueCreateFormGroup,
   IIssuesRowData,
   ISSUES_COLUMN_FIELD,
   ISSUES_FORM_GROUP_KEYS,
@@ -374,9 +375,14 @@ export class IssuesComponent
       this.createFormGroup.updateValueAndValidity();
       return;
     }
+
+    const formCreateValue =
+      this.createFormGroup.getRawValue() as IIssueCreateFormGroup;
+    const isBlockProgress = formCreateValue.isBlockProgress;
     const data: IIssuesRowData = {
       ...this.createFormGroup.value,
       ...this.getCommonValue(),
+      startTime: isBlockProgress ? new Date() : null,
       createdDate: new Date(),
     };
 

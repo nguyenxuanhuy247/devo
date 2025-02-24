@@ -17,6 +17,7 @@ export interface IIssueResponseDTO {
   employeeMakeId: ID;
   interruptionReasonId: ID;
   deadlineId: ID;
+  isBlockProgress: boolean;
   statusId: ID;
   startTime: string;
   endTime: string;
