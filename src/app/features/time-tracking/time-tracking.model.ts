@@ -136,7 +136,7 @@ export const getHeaderColumnConfigsFactory = (
     {
       label: 'Phân loại',
       field: COMMON_COLUMN_FIELD.categoryId,
-      minWidth: 200,
+      minWidth: 140,
     },
     ...configs01,
     {

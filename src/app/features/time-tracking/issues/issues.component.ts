@@ -75,6 +75,7 @@ import * as _ from 'lodash';
 import { Checkbox } from 'primeng/checkbox';
 import { getValue } from '../../../utils/function';
 import { ImprovementComponent } from '../improvement/improvement.component';
+import { ILogWorkRowData } from '../log-work/log-work.model';
 
 @Component({
   selector: 'app-issues',
@@ -255,6 +256,27 @@ export class IssuesComponent
           this.callAPIGetTableData();
         }),
     );
+
+    this.subscription.add(
+      this.getControlValueChanges(
+        this.FORM_GROUP_KEYS.isBlockProgress,
+        this.createFormGroup,
+      ).subscribe((isbool: boolean) => {
+        if (isbool) {
+          this.onSetCurrentTimeForDatepicker(
+            -1,
+            this.FORM_GROUP_KEYS.startTime,
+          );
+        } else {
+          const control = this.getControl(
+            this.FORM_GROUP_KEYS.startTime,
+            this.createFormGroup,
+          ) as FormControl;
+
+          control.setValue(null);
+        }
+      }),
+    );
   }
 
   getRandom8DigitNumber() {
@@ -332,18 +354,29 @@ export class IssuesComponent
     const completeStatusId = getValue(this.statusOptions$)?.find(
       (status) => status.label === 'Đã giải quyết',
     )?.value;
-    this.doPostRequestDTO.update((oldValue) => ({
-      ...oldValue,
-      method: EApiMethod.PUT,
-      data: [
-        {
-          ...value,
-          statusId: completeStatusId,
-          endTime: new Date(),
-          updatedDate: new Date(),
-        },
-      ],
-    }));
+    this.doPostRequestDTO.update((oldValue) => {
+      const startTime = value.startTime ? new Date(value.startTime) : null;
+      const endTime = new Date(value.endTime);
+      const duration = this.timeTrackingCalculateService.calculateWorkHours(
+        startTime,
+        endTime,
+        true,
+      );
+
+      return {
+        ...oldValue,
+        method: EApiMethod.PUT,
+        data: [
+          {
+            ...value,
+            statusId: completeStatusId,
+            duration,
+            endTime: new Date(),
+            updatedDate: new Date(),
+          },
+        ],
+      };
+    });
     this.callAPIUpdateIssue();
   }
 
@@ -480,6 +513,10 @@ export class IssuesComponent
         }
       });
     });
+  }
+
+  onDuplicateExistingItem(rowData: ILogWorkRowData) {
+    this.createFormGroup.patchValue(rowData);
   }
 
   protected readonly DATE_FORMAT = DATE_FORMAT;

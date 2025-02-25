@@ -9,9 +9,18 @@
     <ng-template pTemplate="header">
       <tr>
         @for (col of headerColumnConfigs; track col.field) {
-          @if (col.field === COLUMN_FIELD.actions) {
+          @if (col.field === COLUMN_FIELD.no) {
             <th
-              [pSortableColumn]="col.field"
+              [style.min-width.px]="col.minWidth"
+            >
+              <div class="flex">
+                <div class="flex-1 line-clamp line-clamp-2">
+                  {{ col.label }}
+                </div>
+              </div>
+            </th>
+          } @else if (col.field === COLUMN_FIELD.actions) {
+            <th
               [style.min-width.px]="col.minWidth"
             >
               <div class="flex">
@@ -122,15 +131,6 @@
           </div>
         </td>
 
-        <!--        <td>-->
-        <!--          <div>-->
-        <!--            <lib-form-select-->
-        <!--              [formControlName]="FORM_GROUP_KEYS.issueId"-->
-        <!--              [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"-->
-        <!--            ></lib-form-select>-->
-        <!--          </div>-->
-        <!--        </td>-->
-
         <td>
           <!-- Thời gian bắt đầu -->
           <div class="flex align-items-center justify-content-center gap-1">
@@ -190,6 +190,7 @@
               pInputText
               appWorkDuration
               [formControlName]="FORM_GROUP_KEYS.duration"
+              style="width: 100px"
             />
           </div>
         </td>
