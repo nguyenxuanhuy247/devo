@@ -8,9 +8,10 @@
     <!-- TABLE HEADER -->
     <ng-template pTemplate="header">
       <tr>
-<<<<<<< HEAD
-        @for (col of headerColumnConfigs; track col.field) { @if (col.field ===
-        COLUMN_FIELD.actions) {
+        <td></td>
+        @for (col of headerColumnConfigs; track col.field) {
+        <!--  -->
+        @if (col.field === COLUMN_FIELD.actions) {
         <th
           [pSortableColumn]="col.field"
           [style.min-width.px]="col.minWidth"
@@ -31,22 +32,6 @@
             <div
               class="flex-1 line-clamp line-clamp-2"
               [pTooltip]="col.label"
-=======
-        @for (col of headerColumnConfigs; track col.field) {
-          @if (col.field === COLUMN_FIELD.no) {
-            <th
-              [style.min-width.px]="col.minWidth"
-            >
-              <div class="flex">
-                <div class="flex-1 line-clamp line-clamp-2">
-                  {{ col.label }}
-                </div>
-              </div>
-            </th>
-          } @else if (col.field === COLUMN_FIELD.actions) {
-            <th
-              [style.min-width.px]="col.minWidth"
->>>>>>> 34149d66d6f18f179103ad33e530b4350941614d
             >
               {{ col.label }}
             </div>
