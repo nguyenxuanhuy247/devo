@@ -15,8 +15,13 @@ import {
 } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { DrawerService, LocalStorageService } from '../../services';
+import {
+  CommonService,
+  DrawerService,
+  LocalStorageService,
+} from '../../services';
 import { DomSanitizer } from '@angular/platform-browser';
+import { TimeTrackingCalculateService } from '../../features/time-tracking/time-tracking-calculate.service';
 
 @Component({
   template: ``,
@@ -34,6 +39,10 @@ export abstract class FormBaseComponent implements OnInit, OnDestroy {
   sanitizer = this.injector.get(DomSanitizer);
   confirmationService = this.injector.get(ConfirmationService);
   localStorageService = this.injector.get(LocalStorageService);
+  commonService = this.injector.get(CommonService);
+  timeTrackingCalculateService = this.injector.get(
+    TimeTrackingCalculateService,
+  );
 
   onDestroy$: Subject<any> = new Subject<any>();
   private blinkInterval: any;

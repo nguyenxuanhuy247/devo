@@ -30,7 +30,6 @@ export const logWorkNullableObj: ILogWorkRowData = {
   featureId: null,
   categoryId: null,
   workContent: null,
-  // issueId: null,
   startTime: null,
   endTime: null,
   duration: null,
@@ -52,7 +51,7 @@ export const logWorkHeaderColumnConfigs: IColumnHeaderConfigs[] =
       {
         label: 'Nghỉ trưa',
         field: LOG_WORK_COLUMN_FIELD.isLunchBreak,
-        minWidth: 100,
+        minWidth: 120,
       },
     ],
   );
