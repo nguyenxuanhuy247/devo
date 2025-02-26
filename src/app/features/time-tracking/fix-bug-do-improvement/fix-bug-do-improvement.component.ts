@@ -56,7 +56,6 @@ import { getValue } from 'src/app/utils/function';
     CommonModule,
     ReactiveFormsModule,
     TableModule,
-    FormatDatePipe,
     TagModule,
     RoundPipe,
     TooltipModule,

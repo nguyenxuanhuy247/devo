@@ -250,7 +250,7 @@ export class IssuesComponent
         this.formGroupControl(),
       )
         .pipe(filter((dataRange) => !!dataRange))
-        .subscribe((_) => {
+        .subscribe((dataRange: any) => {
           // Sau khi thiết lập các giá trị chung như Level, Nhân viên, dự án, thời gian mới gọi API lấy danh sách
           this.callAPIGetTableData();
         }),

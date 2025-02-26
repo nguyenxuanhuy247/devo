@@ -25,3 +25,16 @@ p-select {
   -webkit-line-clamp: var(--line-clamp, 2) !important;
 }
 
+p-table {
+  display:block;
+  height: 100%;
+
+  .p-datatable {
+    height: 100%;
+
+    .p-datatable-table-container {
+      
+    height: 100%;
+    }
+  }
+}

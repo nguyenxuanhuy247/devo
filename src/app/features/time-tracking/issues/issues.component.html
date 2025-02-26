@@ -423,7 +423,7 @@
                 | convertIdToName
                   : (allDropdownData$ | async)?.deadlines
                   : 'deadlineTime'
-                | formatDate : DATE_FORMAT.CUSTOM_DATE_TIME
+                | date : 'HH:mm - dd/MM'
             }}
           </td>
           } @else if (col.field === COLUMN_FIELD.statusId) {
@@ -437,7 +437,7 @@
           </td>
           } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
           COLUMN_FIELD.endTime) {
-          <td>{{ rowData[col.field] | formatDate }}</td>
+          <td>{{ rowData[col.field] | date : 'HH:mm - dd/MM' }}</td>
           } @else if (col.field === COLUMN_FIELD.isBlockProgress) {
           <td>
             <p-tag

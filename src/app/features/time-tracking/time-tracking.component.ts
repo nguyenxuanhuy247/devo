@@ -91,20 +91,12 @@ import { ImprovementComponent } from './improvement/improvement.component';
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
+  host: {
+    class: 'block h-screen',
+  },
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
   activeTab = signal<ETabName>(ETabName.ISSUE);
-  doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
-    method: EApiMethod.GET,
-    mode: EGetApiMode.TABLE_DATA,
-    employeeLevelId: null,
-    employeeId: null,
-    projectId: null,
-    issueId: null,
-    sheetName: null,
-    startTime: null,
-    endTime: null,
-  });
   subscription: Subscription = new Subscription();
   SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
   ETabName = ETabName;
@@ -171,27 +163,14 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         this.getControlValueChanges(SELECT_FORM_GROUP_KEY.dateRange).pipe(
           filter((range) => range.every((date: Date) => !!date)),
         ),
-      ).subscribe(([employeeLevelId, employeeId, projectId, dateRange]) => {
-        this.doGetRequestDTO.update((oldValue) => ({
-          ...oldValue,
-          employeeLevelId: employeeLevelId,
-          employeeId: employeeId,
-          projectId: projectId,
-          startTime: dateRange[0].toISOString(),
-          endTime: dateRange[1].toISOString(),
-        }));
+      ).subscribe(() => {
+        this.tabComponent?.callAPIGetTableData();
       }),
     );
 
     this.subscription.add(
       this.getControlValueChanges(SELECT_FORM_GROUP_KEY.projectId).subscribe(
-        (_: string) => {
-          // Thiết lập giờ cho ô Tùy chỉnh sau khi chọn dự án
-          this.getControl(SELECT_FORM_GROUP_KEY.dateRange).setValue([
-            startOfDay(new Date()),
-            endOfDay(new Date()),
-          ]);
-
+        () => {
           // Lưu những thông tin chung vào store và local storage
           const employeeId = this.getControlValue(
             SELECT_FORM_GROUP_KEY.employeeId,
@@ -251,6 +230,11 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
               this.getControl(SELECT_FORM_GROUP_KEY.dateRange).enable({
                 emitEvent: false,
               });
+
+              console.log(
+                'AAAAAAAA 2222222',
+                this.getControl(SELECT_FORM_GROUP_KEY.dateRange).value,
+              );
           }
         },
       ),
@@ -278,7 +262,10 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   onChangeTab(event: ID) {
     this.activeTab.set(event as ETabName);
-    setTimeout(() => this.tabComponent.callAPIGetTableData());
+    setTimeout(() => {
+      console.log('onChangeTab ', this.tabComponent);
+      this.tabComponent.callAPIGetTableData();
+    }, 400);
   }
 
   onReload() {

@@ -9,6 +9,6 @@ export class RoundPipe implements PipeTransform {
     if (isNaN(value) || isNaN(decimalPlaces)) {
       return value;
     }
-    return parseFloat(value.toFixed(decimalPlaces));
+    return parseFloat(value?.toFixed(decimalPlaces));
   }
 }
