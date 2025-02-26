@@ -68,7 +68,6 @@ import { ILogWorkResponseDTO } from './log-work.dto.model';
     CheckboxModule,
     DatePickerModule,
     TagModule,
-    FormatDatePipe,
     ConvertIdToNamePipe,
     WorkDurationDirective,
     InputTextModule,

@@ -262,6 +262,16 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
 
   onChangeTab(event: ID) {
     this.activeTab.set(event as ETabName);
+    if (this.activeTab() === ETabName.ISSUE) {
+      this.getControl(this.SELECT_FORM_GROUP_KEY.quickDate).setValue(
+        EStatsBy.ALL,
+      );
+    } else {
+      this.getControl(this.SELECT_FORM_GROUP_KEY.quickDate).setValue(
+        EStatsBy.TODAY,
+      );
+    }
+
     setTimeout(() => {
       console.log('onChangeTab ', this.tabComponent);
       this.tabComponent.callAPIGetTableData();

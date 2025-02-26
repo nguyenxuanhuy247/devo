@@ -79,7 +79,6 @@ import * as _ from 'lodash';
     TooltipModule,
     ButtonModule,
     ConvertIdToNamePipe,
-    FormatDatePipe,
     TagModule,
     LibFormSelectComponent,
     DatePicker,

@@ -63,7 +63,6 @@ import { Checkbox } from 'primeng/checkbox';
     TooltipModule,
     ButtonModule,
     ConvertIdToNamePipe,
-    FormatDatePipe,
     TagModule,
     LibFormSelectComponent,
     DatePicker,
