@@ -1,6 +1,5 @@
 import { IColumnHeaderConfigs } from '../../../shared/interface/common.interface';
 import { CommonService } from '../../../services';
-import { IFixBugDoImprovementResponseDTO } from './fix-bug-do-improvement.dto.model';
 
 export const FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD =
   CommonService.generateEnumFromInterface<IFixBugDoImprovementRowData>();
@@ -17,7 +16,7 @@ export interface IBugImprovementRowData {
   categoryId: null;
   tabName: string;
   code: string;
-  bugName: string;
+  name: string;
   startTime: string;
   endTime: string;
   duration: number;
@@ -35,7 +34,7 @@ export const fixBugDoImprovementNullableObj: IFixBugDoImprovementRowData = {
   categoryId: null,
   tabName: '',
   code: '',
-  bugName: '',
+  name: '',
   startTime: '',
   endTime: '',
   duration: 0,
@@ -82,7 +81,7 @@ export const fixBugDoImprovementHeaderColumnConfigs: IColumnHeaderConfigs[] = [
   },
   {
     label: 'Tên bug & improvement',
-    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.bugName,
+    field: FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD.name,
     minWidth: 120,
   },
   {

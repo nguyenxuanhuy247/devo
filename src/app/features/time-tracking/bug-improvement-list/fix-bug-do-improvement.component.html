@@ -1,44 +1,78 @@
 <div class="fix-bug-do-improvement">
-  <!-- Danh sách nút bấm -->
-  <div class="flex justify-content-end gap-3">
-    <p-button
-      label="Import CSV"
-      icon="pi pi-file-import"
-      (click)="importCSV.click()"
-    />
-    <input
-      #importCSV
-      type="file"
-      hidden
-      (change)="onFileChange($event)"
-      accept=".csv"
-    />
+  <div class="flex gap-4 justify-content-between">
+    <div class="flex flex-wrap gap-4">
+      <span>Lọc theo : </span>
+      <div class="flex items-center">
+        <p-radiobutton
+          name="filter"
+          value="ALL"
+          [(ngModel)]="ingredient"
+          inputId="ingredient2"
+        ></p-radiobutton>
+        <label for="ingredient2" class="ml-2">Cả 2</label>
+      </div>
 
-    <p-button
-      [outlined]="true"
-      severity="secondary"
-      icon="pi pi-external-link"
-      pTooltip="Mở rộng trang tính"
-      label="Mở trang tính"
-      (click)="openGoogleSheets()"
-    />
+      <div class="flex items-center">
+        <p-radiobutton
+          name="filter"
+          value="BUG"
+          [(ngModel)]="ingredient"
+          inputId="ingredient3"
+        ></p-radiobutton>
+        <label for="ingredient3" class="ml-2">Bug</label>
+      </div>
 
-    <p-button
-      [outlined]="true"
-      severity="secondary"
-      icon="pi pi-sync"
-      pTooltip="Tải lại danh sách"
-      label="Tải lại danh sách"
-      (click)="checkForFixBugAndImprovementUpdates()"
-    />
+      <div class="flex items-center">
+        <p-radiobutton
+          name="filter"
+          value="IMPROVEMENT"
+          [(ngModel)]="ingredient"
+          inputId="ingredient4"
+        ></p-radiobutton>
+        <label for="ingredient4" class="ml-2">Improvement</label>
+      </div>
+    </div>
 
-    <p-button
-      icon="pi pi-plus"
-      label="Thêm mới"
-      (click)="onBulkCreate()"
-    />
+    <!-- Danh sách nút bấm -->
+    <div class="flex justify-content-end gap-3">
+      <p-button
+        label="Import CSV"
+        icon="pi pi-file-import"
+        (click)="importCSV.click()"
+      />
+      <input
+        #importCSV
+        type="file"
+        hidden
+        (change)="onFileChange($event)"
+        accept=".csv"
+      />
+
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-external-link"
+        pTooltip="Mở rộng trang tính"
+        label="Mở trang tính"
+        (click)="openGoogleSheets()"
+      />
+
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-sync"
+        pTooltip="Tải lại danh sách"
+        label="Tải lại danh sách"
+        (click)="checkForFixBugAndImprovementUpdates()"
+      />
+
+      <p-button
+        icon="pi pi-plus"
+        label="Thêm mới"
+        (click)="onBulkCreate()"
+      />
+    </div>
   </div>
-
   <!-- Bảng danh sách Bug và Improvement đang fix -->
   <p-table
     [value]="tableData"
@@ -51,38 +85,39 @@
     <ng-template pTemplate="header">
       <tr>
         @for (col of headerColumnConfigs; track col.field) {
-        <!--  -->
-        @if (col.field === COLUMN_FIELD.categoryId) {
-        <th
-          [pSortableColumn]="col.field"
-          pResizableColumn
-          pFrozenColumn
-          [style.min-width.px]="col.minWidth"
-        >
-          <div class="flex">
-            <div class="flex-1 line-clamp line-clamp-2">
-              {{ col.label }}
-            </div>
-            <p-sortIcon [field]="col.field" />
-          </div>
-        </th>
-        } @else {
-        <th
-          [pSortableColumn]="col.field"
-          pResizableColumn
-          [style.min-width.px]="col.minWidth"
-        >
-          <div class="flex">
-            <div
-              class="flex-1 line-clamp line-clamp-2"
-              [pTooltip]="col.label"
+          <!--  -->
+          @if (col.field === COLUMN_FIELD.categoryId) {
+            <th
+              [pSortableColumn]="col.field"
+              pResizableColumn
+              pFrozenColumn
+              [style.min-width.px]="col.minWidth"
             >
-              {{ col.label }}
-            </div>
-            <p-sortIcon [field]="col.field" />
-          </div>
-        </th>
-        } }
+              <div class="flex">
+                <div class="flex-1 line-clamp line-clamp-2">
+                  {{ col.label }}
+                </div>
+                <p-sortIcon [field]="col.field" />
+              </div>
+            </th>
+          } @else {
+            <th
+              [pSortableColumn]="col.field"
+              pResizableColumn
+              [style.min-width.px]="col.minWidth"
+            >
+              <div class="flex">
+                <div
+                  class="flex-1 line-clamp line-clamp-2"
+                  [pTooltip]="col.label"
+                >
+                  {{ col.label }}
+                </div>
+                <p-sortIcon [field]="col.field" />
+              </div>
+            </th>
+          }
+        }
       </tr>
     </ng-template>
 
@@ -146,12 +181,13 @@
 
         <td>
           <div>
-            <textarea
-              pTextarea
-              [formControlName]="FORM_GROUP_KEYS.code"
-              rows="1"
-              cols="30"
-            ></textarea>
+            {{ rowData[COLUMN_FIELD.code] }}
+          </div>
+        </td>
+
+        <td>
+          <div>
+            {{ rowData[COLUMN_FIELD.name] }}
           </div>
         </td>
 

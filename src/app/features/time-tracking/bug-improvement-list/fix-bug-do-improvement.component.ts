@@ -10,34 +10,25 @@ import {
   FormArray,
   FormControl,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
 import {
   ETabName,
   IEmployeeResponseDTO,
-  IFeatureResponseDTO,
-  IMenuResponseDTO,
-  IModuleResponseDTO,
-  IScreenResponseDTO,
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
-import {
-  ISelectFormGroup,
-  SELECT_FORM_GROUP_KEY,
-} from '../time-tracking.model';
 import { EApiMethod } from '../../../contants/common.constant';
 import { CommonModule } from '@angular/common';
+import { IColumnHeaderConfigs } from '../../../shared/interface/common.interface';
 import {
-  IColumnHeaderConfigs,
-  ID,
-} from '../../../shared/interface/common.interface';
-import {
+  FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD,
   fixBugDoImprovementHeaderColumnConfigs,
   fixBugDoImprovementNullableObj,
   IFixBugDoImprovementRowData,
 } from './fix-bug-do-improvement.model';
 import { TableModule } from 'primeng/table';
-import { FormatDatePipe, RoundPipe } from '../../../pipes';
+import { RoundPipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
 import { FormBaseComponent } from '../../../shared';
 import { TooltipModule } from 'primeng/tooltip';
@@ -45,24 +36,23 @@ import { Button } from 'primeng/button';
 import { catchError, EMPTY, filter, finalize } from 'rxjs';
 import { TimeTrackingApiService } from '../time-tracking-api.service';
 import { message } from '../../../contants/api.contant';
-import * as _ from 'lodash';
-import {
-  IFixBugDoImprovementRequestDTO,
-  IFixBugDoImprovementResponseDTO,
-} from './fix-bug-do-improvement.dto.model';
-import { LOG_WORK_COLUMN_FIELD } from '../log-work/log-work.model';
+import { IFixBugDoImprovementRequestDTO } from './fix-bug-do-improvement.dto.model';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { getValue } from 'src/app/utils/function';
 import * as Papa from 'papaparse';
 import { BUG_IMPROVEMENT_FORM_GROUP_KEYS } from '../bug/bug.model';
 import { DatePickerModule } from 'primeng/datepicker';
 import { LibFormSelectComponent } from 'src/app/components';
+import { TextareaModule } from 'primeng/textarea';
+import { InputTextModule } from 'primeng/inputtext';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 @Component({
   standalone: true,
   selector: 'app-fix-bug-do-improvement-1',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     TableModule,
     TagModule,
@@ -71,6 +61,9 @@ import { LibFormSelectComponent } from 'src/app/components';
     Button,
     DatePickerModule,
     LibFormSelectComponent,
+    TextareaModule,
+    InputTextModule,
+    RadioButtonModule,
   ],
   templateUrl: './fix-bug-do-improvement.component.html',
   styleUrl: './fix-bug-do-improvement.component.scss',
@@ -85,7 +78,7 @@ export class FixBugDoImprovement1Component
 
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
 
-  protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
+  protected readonly COLUMN_FIELD = FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD;
   protected readonly FORM_GROUP_KEYS = BUG_IMPROVEMENT_FORM_GROUP_KEYS;
 
   headerColumnConfigs: IColumnHeaderConfigs[] =
@@ -364,6 +357,7 @@ export class FixBugDoImprovement1Component
   }
 
   formArray: FormArray = new FormArray([]);
+
   getFormControl(index: number, formControlName: string): FormControl {
     return this.formArray?.at(index)?.get(formControlName) as FormControl;
   }
@@ -371,8 +365,11 @@ export class FixBugDoImprovement1Component
   getFormGroup(index: number): FormGroup {
     return this.getFormGroupInFormArray(this.formArray, index);
   }
+
   onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
     const control = this.getFormControl(index, formControlName);
     control.setValue(new Date());
   }
+
+  ingredient: 'ALL' | 'BUG' | 'IMPROVEMENT' = 'ALL';
 }
