@@ -213,6 +213,18 @@
           ></app-fix-bug-do-improvement>
         </p-tabpanel>
         }
+
+        <!-- Tab Fix Bug & Do Improvement thử nghiệm-->
+        @if (activeTab() === ETabName.REPORT) {
+        <p-tabpanel [value]="ETabName.REPORT">
+          <app-fix-bug-do-improvement-1
+            #tab
+            [formGroupControl]="formGroup"
+            [commonFormGroupKey]="SELECT_FORM_GROUP_KEY"
+            [projectFormControl]="projectId"
+          ></app-fix-bug-do-improvement-1>
+        </p-tabpanel>
+        }
       </p-tabpanels>
     </p-tabs>
   </div>

@@ -2,6 +2,19 @@
   <!-- Danh sách nút bấm -->
   <div class="flex justify-content-end gap-3">
     <p-button
+      label="Import CSV"
+      icon="pi ppi-file-import"
+      (click)="importCSV.click()"
+    />
+    <input
+      #importCSV
+      type="file"
+      hidden
+      (change)="onFileChange($event)"
+      accept=".csv"
+    />
+    
+    <p-button
       [outlined]="true"
       severity="secondary"
       icon="pi pi-external-link"

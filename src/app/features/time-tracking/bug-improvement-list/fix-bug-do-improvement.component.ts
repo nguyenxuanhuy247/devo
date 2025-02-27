@@ -6,7 +6,12 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import {
   ETabName,
   IEmployeeResponseDTO,
@@ -49,10 +54,13 @@ import { LOG_WORK_COLUMN_FIELD } from '../log-work/log-work.model';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { getValue } from 'src/app/utils/function';
 import * as Papa from 'papaparse';
+import { BUG_IMPROVEMENT_FORM_GROUP_KEYS } from '../bug/bug.model';
+import { DatePickerModule } from 'primeng/datepicker';
+import { LibFormSelectComponent } from 'src/app/components';
 
 @Component({
   standalone: true,
-  selector: 'app-fix-bug-do-improvement',
+  selector: 'app-fix-bug-do-improvement-1',
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -61,21 +69,24 @@ import * as Papa from 'papaparse';
     RoundPipe,
     TooltipModule,
     Button,
+    DatePickerModule,
+    LibFormSelectComponent,
   ],
   templateUrl: './fix-bug-do-improvement.component.html',
   styleUrl: './fix-bug-do-improvement.component.scss',
 })
-export class FixBugDoImprovementComponent
+export class FixBugDoImprovement1Component
   extends FormBaseComponent
   implements OnInit
 {
   formGroupControl = input.required<FormGroup>();
   commonFormGroupKey = input.required<any>();
+  projectFormControl = input<LibFormSelectComponent>();
 
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
-  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
 
   protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
+  protected readonly FORM_GROUP_KEYS = BUG_IMPROVEMENT_FORM_GROUP_KEYS;
 
   headerColumnConfigs: IColumnHeaderConfigs[] =
     fixBugDoImprovementHeaderColumnConfigs;
@@ -93,6 +104,13 @@ export class FixBugDoImprovementComponent
   });
   intervalId: any;
   selectedEmployee$ = this.timeTrackingStore.selectedEmployee$;
+
+  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
+  moduleDependentOptions$ = this.timeTrackingStore.moduleDependentOptions$;
+  menuDependentOptions$ = this.timeTrackingStore.menuDependentOptions$;
+  screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
+  featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
+  categoryOptions$ = this.timeTrackingStore.categoryOptions$;
 
   constructor(override injector: Injector) {
     super(injector);
@@ -128,6 +146,7 @@ export class FixBugDoImprovementComponent
   }
 
   checkForFixBugAndImprovementUpdates() {
+    if (true) return;
     const currentEmployee = getValue(this.selectedEmployee$);
     if (!currentEmployee?.bugImprovementApi) return;
 
@@ -180,68 +199,70 @@ export class FixBugDoImprovementComponent
     ); // Mở trong tab mới
   }
 
-  convertListBugOrImprovementBeforeSave() {
-    const commonValue: ISelectFormGroup = _.cloneDeep(
-      this.formGroupControl().value,
-    );
-    delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
-    delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
-    delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
-    const allDropdownData = getValue(this.allDropdownData$);
-    return this.tableData.map((rowData: IFixBugDoImprovementResponseDTO) => {
-      let moduleId: ID;
-      let menuId: ID;
-      let screenId: ID;
-      let featureId: ID;
+  // convertListBugOrImprovementBeforeSave() {
+  //   const commonValue: ISelectFormGroup = _.cloneDeep(
+  //     this.formGroupControl().value,
+  //   );
+  //   delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
+  //   delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
+  //   delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
+  //   const allDropdownData = getValue(this.allDropdownData$);
 
-      if (rowData.moduleName) {
-        moduleId = allDropdownData.modules?.find(
-          (item: IModuleResponseDTO) => item.moduleName === rowData.moduleName,
-        )?.id;
-      }
-      if (rowData.menuName) {
-        menuId = allDropdownData.menus?.find(
-          (item: IMenuResponseDTO) => item.menuName === rowData.menuName,
-        )?.id;
-      }
-      if (rowData.screenName) {
-        screenId = allDropdownData.screens?.find(
-          (item: IScreenResponseDTO) => item.screenName === rowData.screenName,
-        )?.id;
-      }
-      if (rowData.featureName) {
-        featureId = allDropdownData.features?.find(
-          (item: IFeatureResponseDTO) =>
-            item.featureName === rowData.featureName,
-        )?.id;
-      }
+  //   return this.tableData.map((rowData: IFixBugDoImprovementResponseDTO) => {
+  //     let moduleId: ID;
+  //     let menuId: ID;
+  //     let screenId: ID;
+  //     let featureId: ID;
 
-      return {
-        employeeLevelId: commonValue.employeeLevelId,
-        employeeId: commonValue.employeeId,
-        projectId: commonValue.projectId,
-        moduleId,
-        menuId,
-        screenId,
-        featureId,
-        code: rowData.code,
-        startTime: rowData.startTime,
-        endTime: rowData.endTime,
-        duration: rowData.duration,
-        createdDate: new Date(),
-      } as IFixBugDoImprovementRequestDTO;
-    });
-  }
+  //     if (rowData.moduleName) {
+  //       moduleId = allDropdownData.modules?.find(
+  //         (item: IModuleResponseDTO) => item.moduleName === rowData.moduleName,
+  //       )?.id;
+  //     }
+  //     if (rowData.menuName) {
+  //       menuId = allDropdownData.menus?.find(
+  //         (item: IMenuResponseDTO) => item.menuName === rowData.menuName,
+  //       )?.id;
+  //     }
+  //     if (rowData.screenName) {
+  //       screenId = allDropdownData.screens?.find(
+  //         (item: IScreenResponseDTO) => item.screenName === rowData.screenName,
+  //       )?.id;
+  //     }
+  //     if (rowData.featureName) {
+  //       featureId = allDropdownData.features?.find(
+  //         (item: IFeatureResponseDTO) =>
+  //           item.featureName === rowData.featureName,
+  //       )?.id;
+  //     }
+
+  //     return {
+  //       employeeLevelId: commonValue.employeeLevelId,
+  //       employeeId: commonValue.employeeId,
+  //       projectId: commonValue.projectId,
+  //       moduleId,
+  //       menuId,
+  //       screenId,
+  //       featureId,
+  //       code: rowData.code,
+  //       startTime: rowData.startTime,
+  //       endTime: rowData.endTime,
+  //       duration: rowData.duration,
+  //       createdDate: new Date(),
+  //     } as IFixBugDoImprovementRequestDTO;
+  //   });
+  // }
 
   onBulkCreate() {
-    const listData: IFixBugDoImprovementRequestDTO[] =
-      this.convertListBugOrImprovementBeforeSave();
+    // const listData: IFixBugDoImprovementRequestDTO[] =
+    // this.convertListBugOrImprovementBeforeSave();
 
     this.isLoading.set(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
-      data: listData,
+      // data: listData,
+      data: [],
     }));
 
     this.timeTrackingService
@@ -317,13 +338,41 @@ export class FixBugDoImprovementComponent
             return newRow;
           });
 
-          this.headers = Object.values(columnMapping); // Lấy danh sách key mới
-          console.log('headers ', this.headers);
-          console.log('csvData ', this.csvData);
+          this.formArray.clear();
+          this.csvData.forEach((rowData: any) => {
+            const formGroup = this.formBuilder.group({
+              ...fixBugDoImprovementNullableObj,
+              isLunchBreak: true,
+              startTime: rowData.startTime ? new Date(rowData.startTime) : null,
+              endTime: rowData.endTime ? new Date(rowData.endTime) : null,
+              ...rowData,
+            });
+            this.formArray.push(formGroup);
+          });
+
+          console.log('formArray ', this.formArray);
+          this.tableData = this.formArray.value;
+
+          // this.headers = Object.values(columnMapping); // Lấy danh sách key mới
+          console.log('result.data ', result.data);
+          console.log('tableData ', this.tableData);
         },
       });
     };
 
     reader.readAsText(file);
+  }
+
+  formArray: FormArray = new FormArray([]);
+  getFormControl(index: number, formControlName: string): FormControl {
+    return this.formArray?.at(index)?.get(formControlName) as FormControl;
+  }
+
+  getFormGroup(index: number): FormGroup {
+    return this.getFormGroupInFormArray(this.formArray, index);
+  }
+  onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
+    const control = this.getFormControl(index, formControlName);
+    control.setValue(new Date());
   }
 }

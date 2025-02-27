@@ -15,12 +15,18 @@
       <ng-template pTemplate="header">
         <tr>
           <td></td>
-          @for (col of headerColumnConfigs; track col.field) { @if (col.field
-          === COLUMN_FIELD.actions) {
-          <th
-            [pSortableColumn]="col.field"
-            [style.min-width.px]="col.minWidth"
-          >
+          @for (col of headerColumnConfigs; track col.field) {
+          <!--  -->
+          @if (col.field === COLUMN_FIELD.no) {
+          <th [style.min-width.px]="col.minWidth">
+            <div class="flex">
+              <div class="flex-1 line-clamp line-clamp-2">
+                {{ col.label }}
+              </div>
+            </div>
+          </th>
+          } @if (col.field === COLUMN_FIELD.actions) {
+          <th [style.min-width.px]="col.minWidth">
             <div class="flex">
               <div class="flex-1 line-clamp line-clamp-2">
                 {{ col.label }}
