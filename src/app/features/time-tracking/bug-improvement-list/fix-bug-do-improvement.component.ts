@@ -40,7 +40,7 @@ import { IFixBugDoImprovementRequestDTO } from './fix-bug-do-improvement.dto.mod
 import { TimeTrackingStore } from '../time-tracking.store';
 import { getValue } from 'src/app/utils/function';
 import * as Papa from 'papaparse';
-import { BUG_IMPROVEMENT_FORM_GROUP_KEYS } from '../bug/bug.model';
+import { BUG_FORM_GROUP_KEY } from '../bug/bug.model';
 import { DatePickerModule } from 'primeng/datepicker';
 import { LibFormSelectComponent } from 'src/app/components';
 import { TextareaModule } from 'primeng/textarea';
@@ -80,7 +80,7 @@ export class FixBugDoImprovement1Component
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
 
   protected readonly COLUMN_FIELD = FIX_BUG_DO_IMPROVEMENT_COLUMN_FIELD;
-  protected readonly FORM_GROUP_KEYS = BUG_IMPROVEMENT_FORM_GROUP_KEYS;
+  protected readonly FORM_GROUP_KEYS = BUG_FORM_GROUP_KEY;
 
   headerColumnConfigs: IColumnHeaderConfigs[] =
     fixBugDoImprovementHeaderColumnConfigs;
@@ -107,7 +107,9 @@ export class FixBugDoImprovement1Component
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
   statusDependentTabOptions$ =
     this.timeTrackingStore.statusDependentTabOptions$;
+
   ETabName = ETabName;
+
   constructor(override injector: Injector) {
     super(injector);
 
@@ -377,7 +379,10 @@ export class FixBugDoImprovement1Component
 
   ingredient: 'ALL' | 'BUG' | 'IMPROVEMENT' = 'ALL';
   protected readonly EMode = EMode;
+
   onContinueFix(rowData: any) {}
+
   onUpdate(rowData: any) {}
+
   onDelete(rowData: any) {}
 }

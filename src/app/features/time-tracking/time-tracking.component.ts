@@ -8,11 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TableModule } from 'primeng/table';
 import { FormBaseComponent } from '../../shared';
-import {
-  EGetApiMode,
-  ETabName,
-  ITimeTrackingDoGetRequestDTO,
-} from './time-tracking.dto';
+import { ETabName } from './time-tracking.dto';
 import { PaginatorModule } from 'primeng/paginator';
 import { combineLatest, filter, Subscription } from 'rxjs';
 import { SelectModule } from 'primeng/select';
@@ -26,7 +22,7 @@ import {
 } from './time-tracking.model';
 import { TabsModule } from 'primeng/tabs';
 import { TooltipModule } from 'primeng/tooltip';
-import { EApiMethod, EMode } from '../../contants/common.constant';
+import { EMode } from '../../contants/common.constant';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { BlockUIModule } from 'primeng/blockui';
@@ -98,7 +94,7 @@ import { FixBugDoImprovement1Component } from './bug-improvement-list/fix-bug-do
   },
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.REPORT);
+  activeTab = signal<ETabName>(ETabName.BUG);
   subscription: Subscription = new Subscription();
   SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
   ETabName = ETabName;

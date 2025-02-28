@@ -153,13 +153,13 @@ export const getHeaderColumnConfigsFactory = (
     {
       label: 'Thời lượng',
       field: COMMON_COLUMN_FIELD.duration,
-      minWidth: 60,
+      minWidth: 100,
     },
     ...configs02,
     {
       label: 'Hành động',
       field: COMMON_COLUMN_FIELD.actions,
-      minWidth: 120,
+      minWidth: 200,
     },
   ];
 };

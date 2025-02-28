@@ -1,9 +1,11 @@
 import { Component, Injector, input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  BUG_IMPROVEMENT_FORM_GROUP_KEYS,
-  BUG_IMPROVEMENT_LIST_COLUMN_FIELD,
+  BUG_COLUMN_FIELD,
+  BUG_FORM_GROUP_KEY,
   bugHeaderColumnConfigs,
+  bugNullableObj,
+  IBugRowData,
 } from './bug.model';
 import { EApiMethod, EMode } from 'src/app/contants/common.constant';
 import {
@@ -23,7 +25,7 @@ import {
 } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
-import { ConvertIdToNamePipe, FormatDatePipe } from '../../../pipes';
+import { ConvertIdToNamePipe } from '../../../pipes';
 import { FormBaseComponent } from '../../../shared';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { TagModule } from 'primeng/tag';
@@ -50,7 +52,7 @@ import {
   ITabComponent,
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
-import { IBugImprovementListResponseDTO } from './bug.dto.model';
+import { IBugResponseDTO } from './bug.dto.model';
 import { Checkbox } from 'primeng/checkbox';
 
 @Component({
@@ -81,9 +83,9 @@ export class BugComponent
   formGroupControl = input<FormGroup>();
   projectFormControl = input<LibFormSelectComponent>();
 
-  protected readonly FORM_GROUP_KEYS = BUG_IMPROVEMENT_FORM_GROUP_KEYS;
+  protected readonly FORM_GROUP_KEYS = BUG_FORM_GROUP_KEY;
   protected readonly ETabName = ETabName;
-  protected readonly COLUMN_FIELD = BUG_IMPROVEMENT_LIST_COLUMN_FIELD;
+  protected readonly COLUMN_FIELD = BUG_COLUMN_FIELD;
   protected readonly EMode = EMode;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
   timeTrackingService = this.injector.get(TimeTrackingApiService);
@@ -94,8 +96,17 @@ export class BugComponent
   screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
   featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
+  statusDependentTabOptions$ =
+    this.timeTrackingStore.statusDependentTabOptions$;
 
-  tableData: any[];
+  createTableData: IBugRowData[] = [
+    {
+      ...bugNullableObj,
+      mode: EMode.CREATE,
+    },
+  ];
+  viewUpdateTableData: IBugRowData[];
+
   headerColumnConfigs: IColumnHeaderConfigs[] = bugHeaderColumnConfigs;
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
@@ -103,7 +114,9 @@ export class BugComponent
     ids: null,
     data: null,
   });
-  formArray: FormArray = new FormArray([]);
+  createFormArray: FormArray = new FormArray([]);
+  viewUpdateFormArray: FormArray = new FormArray([]);
+
   subscription: Subscription = new Subscription();
   private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
@@ -125,6 +138,12 @@ export class BugComponent
   override ngOnInit() {
     super.ngOnInit();
     this.initSubscriptions();
+
+    const formGroup = this.formBuilder.group({
+      ...bugNullableObj,
+      mode: EMode.CREATE,
+    });
+    this.createFormArray.push(formGroup);
   }
 
   initSubscriptions() {
@@ -166,8 +185,8 @@ export class BugComponent
               );
           }),
         )
-        .subscribe((listData: IBugImprovementListResponseDTO[]) => {
-          this.formArray.clear();
+        .subscribe((listData: IBugResponseDTO[]) => {
+          this.viewUpdateFormArray.clear();
 
           listData.forEach((rowData) => {
             const formGroup = this.formBuilder.group({
@@ -177,10 +196,10 @@ export class BugComponent
               startTime: rowData.startTime ? new Date(rowData.startTime) : null,
               endTime: rowData.endTime ? new Date(rowData.endTime) : null,
             });
-            this.formArray.push(formGroup);
+            this.viewUpdateFormArray.push(formGroup);
           });
 
-          this.tableData = this.formArray.value;
+          this.viewUpdateTableData = this.viewUpdateFormArray.value;
         }),
     );
 
@@ -198,9 +217,9 @@ export class BugComponent
   }
 
   onChangeToUpdateMode(index: number) {
-    const formGroup = this.getFormGroup(index);
+    const formGroup = this.getFormGroup(index, this.viewUpdateFormArray);
     formGroup.patchValue({ mode: EMode.UPDATE });
-    this.tableData = this.formArray.value;
+    this.viewUpdateTableData = this.viewUpdateFormArray.value;
   }
 
   onDelete(rowData: ILogWorkRowData) {
@@ -222,8 +241,8 @@ export class BugComponent
       });
   }
 
-  getFormGroup(index: number): FormGroup {
-    return this.getFormGroupInFormArray(this.formArray, index);
+  getFormGroup(index: number, formArray: FormArray): FormGroup {
+    return this.getFormGroupInFormArray(formArray, index);
   }
 
   onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
@@ -232,21 +251,23 @@ export class BugComponent
   }
 
   getFormControl(index: number, formControlName: string): FormControl {
-    return this.formArray?.at(index)?.get(formControlName) as FormControl;
+    return this.viewUpdateFormArray
+      ?.at(index)
+      ?.get(formControlName) as FormControl;
   }
 
   onCancelUpdateMode(index: number) {
-    this.getFormGroupInFormArray(this.formArray, index).patchValue({
+    this.getFormGroupInFormArray(this.viewUpdateFormArray, index).patchValue({
       mode: EMode.VIEW,
     });
-    this.tableData = this.formArray.value;
+    this.viewUpdateTableData = this.viewUpdateFormArray.value;
   }
 
   /**
    * @usage Cập nhật bản ghi
    */
   onSaveUpdate(index: number) {
-    const value = this.formArray?.at(index)?.value;
+    const value = this.viewUpdateFormArray?.at(index)?.value;
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.PUT,

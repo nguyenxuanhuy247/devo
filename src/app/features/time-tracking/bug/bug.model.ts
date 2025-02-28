@@ -5,27 +5,10 @@ import {
   ICommonTimeTrackingRowData,
 } from '../time-tracking.model';
 
-// export interface IBugImprovementRowData {
-//   mode: EMode;
-//   id: ID;
-//   moduleId: ID;
-//   menuId: ID;
-//   screenId: ID;
-//   featureId: ID;
-//   categoryId: ID;
-//   workContent: string;
-//   deadlineId: ID;
-//   startTime: string;
-//   endTime: string;
-//   duration: number;
-//   createdDate: Date;
-//   updatedDate: Date;
-// }
+export const BUG_FORM_GROUP_KEY =
+  CommonService.generateEnumFromInterface<IBugRowData>();
 
-export const BUG_IMPROVEMENT_FORM_GROUP_KEYS =
-  CommonService.generateEnumFromInterface<IBugImprovementListRowData>();
-
-export const nullableBugImprovementObj: IBugImprovementListRowData = {
+export const bugNullableObj: IBugRowData = {
   mode: EMode.VIEW,
   id: null,
   moduleId: null,
@@ -34,6 +17,8 @@ export const nullableBugImprovementObj: IBugImprovementListRowData = {
   featureId: null,
   categoryId: null,
   code: null,
+  name: null,
+  status: null,
   startTime: null,
   endTime: null,
   duration: null,
@@ -42,31 +27,43 @@ export const nullableBugImprovementObj: IBugImprovementListRowData = {
   updatedDate: null,
 };
 
-export const BUG_IMPROVEMENT_LIST_COLUMN_FIELD = Object.assign(
-  CommonService.generateEnumFromInterface<IBugImprovementListRowData>(),
+export const BUG_COLUMN_FIELD = Object.assign(
+  CommonService.generateEnumFromInterface<IBugRowData>(),
   {
-    no: 'no',
+    order: 'order',
     actions: 'actions',
   },
 );
 
-export interface IBugImprovementListRowData extends ICommonTimeTrackingRowData {
+export interface IBugRowData extends ICommonTimeTrackingRowData {
   code: string;
   isLunchBreak: boolean;
+  name: 'name';
+  status: 'status';
 }
 
 export const bugHeaderColumnConfigs = getHeaderColumnConfigsFactory(
   [
     {
       label: 'Mã bug',
-      field: BUG_IMPROVEMENT_LIST_COLUMN_FIELD.code,
+      field: BUG_COLUMN_FIELD.code,
       minWidth: 120,
+    },
+    {
+      label: 'Tên bug & improvement',
+      field: BUG_COLUMN_FIELD.name,
+      minWidth: 300,
+    },
+    {
+      label: 'Hiện trạng',
+      field: BUG_COLUMN_FIELD.status,
+      minWidth: 200,
     },
   ],
   [
     {
       label: 'Nghỉ trưa',
-      field: BUG_IMPROVEMENT_LIST_COLUMN_FIELD.isLunchBreak,
+      field: BUG_COLUMN_FIELD.isLunchBreak,
       minWidth: 100,
     },
   ],

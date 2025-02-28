@@ -46,7 +46,7 @@ import { LibFormSelectComponent } from 'src/app/components';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DatePickerModule } from 'primeng/datepicker';
-import { ConvertIdToNamePipe, FormatDatePipe } from '../../../pipes';
+import { ConvertIdToNamePipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
 import { TimeTrackingStore } from '../time-tracking.store';
 import * as _ from 'lodash';
@@ -241,6 +241,18 @@ export class LogWorkComponent
 
   addCreateRowForm() {
     this.fixedRowData = [
+      {
+        ...logWorkNullableObj,
+        mode: EMode.CREATE,
+        isLunchBreak: true,
+        createdDate: new Date(),
+      },
+      {
+        ...logWorkNullableObj,
+        mode: EMode.CREATE,
+        isLunchBreak: true,
+        createdDate: new Date(),
+      },
       {
         ...logWorkNullableObj,
         mode: EMode.CREATE,

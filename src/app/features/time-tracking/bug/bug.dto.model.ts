@@ -1,7 +1,7 @@
 import { ID } from '../../../shared/interface/common.interface';
 import { EMode } from '../../../contants/common.constant';
 
-export interface IBugImprovementListResponseDTO {
+export interface IBugResponseDTO {
   mode: EMode;
   id: ID;
   moduleId: ID;
