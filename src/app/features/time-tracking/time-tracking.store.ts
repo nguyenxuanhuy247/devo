@@ -42,6 +42,7 @@ interface ITimeTrackingState {
   interruptionReasonDependentOptions: Record<ID, IOption[]>;
   statusOptions: IOption[];
   dayOffs: IOption[];
+  statusDependentTabOptions: Record<ID, IOption[]>;
 }
 
 const initState: ITimeTrackingState = {
@@ -65,6 +66,7 @@ const initState: ITimeTrackingState = {
     screenIssues: [],
     issues: [],
     deadlines: [],
+    tabStatuses: [],
   },
   common: {
     employeeLevelId: null,
@@ -87,6 +89,7 @@ const initState: ITimeTrackingState = {
   interruptionReasonDependentOptions: null,
   statusOptions: null,
   dayOffs: null,
+  statusDependentTabOptions: null,
 };
 
 @Injectable({
@@ -181,6 +184,9 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
     (state) => state.interruptionReasonDependentOptions,
   );
   readonly statusOptions = this.select((state) => state.statusOptions);
+  readonly statusDependentTabOptions$ = this.select(
+    (state) => state.statusDependentTabOptions,
+  );
 
   readonly getAllDropdownData = this.effect((trigger$: Observable<void>) => {
     return trigger$.pipe(
@@ -361,6 +367,19 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
                 }));
               }
 
+              // Phân loại
+              const tabStatuses = res.tabStatuses;
+              let statusDependentTabOptions: Record<ID, IOption[]>;
+              if (tabStatuses && tabStatuses.length > 0) {
+                statusDependentTabOptions =
+                  this.commonService.convertToDependentDropdown(
+                    tabStatuses,
+                    'tabName',
+                    'statuses',
+                    'statusName',
+                  );
+              }
+
               const data = {
                 isLoading: false,
                 employeeLevelOptions,
@@ -377,6 +396,7 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
                 interruptionReasonDependentOptions,
                 categoryOptions,
                 statusOptions,
+                statusDependentTabOptions,
               };
 
               this.setAllDependentDropdownOptions(data);

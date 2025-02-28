@@ -9,7 +9,11 @@
           [(ngModel)]="ingredient"
           inputId="ingredient2"
         ></p-radiobutton>
-        <label for="ingredient2" class="ml-2">Cả 2</label>
+        <label
+          for="ingredient2"
+          class="ml-2"
+          >Cả 2</label
+        >
       </div>
 
       <div class="flex items-center">
@@ -19,7 +23,11 @@
           [(ngModel)]="ingredient"
           inputId="ingredient3"
         ></p-radiobutton>
-        <label for="ingredient3" class="ml-2">Bug</label>
+        <label
+          for="ingredient3"
+          class="ml-2"
+          >Bug</label
+        >
       </div>
 
       <div class="flex items-center">
@@ -29,7 +37,11 @@
           [(ngModel)]="ingredient"
           inputId="ingredient4"
         ></p-radiobutton>
-        <label for="ingredient4" class="ml-2">Improvement</label>
+        <label
+          for="ingredient4"
+          class="ml-2"
+          >Improvement</label
+        >
       </div>
     </div>
 
@@ -73,6 +85,7 @@
       />
     </div>
   </div>
+
   <!-- Bảng danh sách Bug và Improvement đang fix -->
   <p-table
     [value]="tableData"
@@ -85,39 +98,38 @@
     <ng-template pTemplate="header">
       <tr>
         @for (col of headerColumnConfigs; track col.field) {
-          <!--  -->
-          @if (col.field === COLUMN_FIELD.categoryId) {
-            <th
-              [pSortableColumn]="col.field"
-              pResizableColumn
-              pFrozenColumn
-              [style.min-width.px]="col.minWidth"
+        <!--  -->
+        @if (col.field === COLUMN_FIELD.categoryId) {
+        <th
+          [pSortableColumn]="col.field"
+          pResizableColumn
+          pFrozenColumn
+          [style.min-width.px]="col.minWidth"
+        >
+          <div class="flex">
+            <div class="flex-1 line-clamp line-clamp-2">
+              {{ col.label }}
+            </div>
+            <p-sortIcon [field]="col.field" />
+          </div>
+        </th>
+        } @else {
+        <th
+          [pSortableColumn]="col.field"
+          pResizableColumn
+          [style.min-width.px]="col.minWidth"
+        >
+          <div class="flex">
+            <div
+              class="flex-1 line-clamp line-clamp-2"
+              [pTooltip]="col.label"
             >
-              <div class="flex">
-                <div class="flex-1 line-clamp line-clamp-2">
-                  {{ col.label }}
-                </div>
-                <p-sortIcon [field]="col.field" />
-              </div>
-            </th>
-          } @else {
-            <th
-              [pSortableColumn]="col.field"
-              pResizableColumn
-              [style.min-width.px]="col.minWidth"
-            >
-              <div class="flex">
-                <div
-                  class="flex-1 line-clamp line-clamp-2"
-                  [pTooltip]="col.label"
-                >
-                  {{ col.label }}
-                </div>
-                <p-sortIcon [field]="col.field" />
-              </div>
-            </th>
-          }
-        }
+              {{ col.label }}
+            </div>
+            <p-sortIcon [field]="col.field" />
+          </div>
+        </th>
+        } }
       </tr>
     </ng-template>
 
@@ -127,6 +139,94 @@
       let-rowData
       let-index="rowIndex"
     >
+      @if (rowData.mode === EMode.VIEW) {
+      <!-- Chế độ VIEW chỉ hiển thị text -->
+      <tr>
+        @for (col of headerColumnConfigs; track col.field) { @if (col.field ===
+        COLUMN_FIELD.no) {
+        <td>{{ index + 1 }}</td>
+        } @else if (col.field === COLUMN_FIELD.moduleId) {
+        <td>
+          {{
+            rowData[col.field]
+              | convertIdToName
+                : (allDropdownData$ | async)?.modules
+                : 'moduleName'
+          }}
+        </td>
+        } @else if (col.field === COLUMN_FIELD.menuId) {
+        <td>
+          {{
+            rowData[col.field]
+              | convertIdToName : (allDropdownData$ | async)?.menus : 'menuName'
+          }}
+        </td>
+        } @else if (col.field === COLUMN_FIELD.screenId) {
+        <td>
+          {{
+            rowData[col.field]
+              | convertIdToName
+                : (allDropdownData$ | async)?.screens
+                : 'screenName'
+          }}
+        </td>
+        } @else if (col.field === COLUMN_FIELD.featureId) {
+        <td>
+          {{
+            rowData[col.field]
+              | convertIdToName
+                : (allDropdownData$ | async)?.features
+                : 'featureName'
+          }}
+        </td>
+        } @else if (col.field === COLUMN_FIELD.categoryId) {
+        <td>
+          {{
+            rowData[col.field]
+              | convertIdToName
+                : (allDropdownData$ | async)?.categories
+                : 'categoryName'
+          }}
+        </td>
+        } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
+        COLUMN_FIELD.endTime) {
+        <td>{{ rowData[col.field] | date : 'HH:mm - dd/MM' }}</td>
+        } @else if (col.field === COLUMN_FIELD.categoryId) {
+        <td>
+          <p-tag
+            [severity]="rowData[col.field] ? 'danger' : 'success'"
+            [value]="rowData[col.field] ? 'Có' : 'Không'"
+          />
+        </td>
+        } @else if (col.field === COLUMN_FIELD.duration) {
+        <td>{{ rowData[col.field] | number : '1.2-2' }}</td>
+        } @else if (col.field === COLUMN_FIELD.actions) {
+        <td>
+          <div class="flex align-items-center justify-content-center gap-1">
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-file-edit"
+              aria-label="Chỉnh sửa"
+              pTooltip="Chỉnh sửa"
+              tooltipPosition="bottom"
+              (click)="onUpdate(rowData)"
+            />
+          </div>
+        </td>
+        } @else {
+        <td>
+          <div
+            class="line-clamp line-clamp-1"
+            [pTooltip]="rowData[col.field]"
+          >
+            {{ rowData[col.field] }}
+          </div>
+        </td>
+        } }
+      </tr>
+      } @else {
       <tr [formGroup]="getFormGroup(index)">
         <td>
           <div>{{ index + 1 }}</div>
@@ -188,6 +288,15 @@
         <td>
           <div>
             {{ rowData[COLUMN_FIELD.name] }}
+          </div>
+        </td>
+
+        <td>
+          <div>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.categoryId"
+              [options]="(statusDependentTabOptions$ | async)?.[ETabName.FIX_BUG_DO_IMPROVEMENT]"
+            ></lib-form-select>
           </div>
         </td>
 
@@ -254,7 +363,53 @@
             />
           </div>
         </td>
+
+        <td>
+          <div class="flex align-items-center justify-content-center gap-1">
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-clone"
+              aria-label="Sao chép"
+              pTooltip="Sao chép dòng bên trên"
+              tooltipPosition="bottom"
+              (click)="onContinueFix(rowData)"
+            />
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-copy"
+              aria-label="Sao chép"
+              pTooltip="Sao chép dòng bên dưới"
+              tooltipPosition="bottom"
+              (click)="onContinueFix(rowData)"
+            />
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-file-edit"
+              aria-label="Chỉnh sửa"
+              pTooltip="Chỉnh sửa"
+              tooltipPosition="bottom"
+              (click)="onUpdate(rowData)"
+            />
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-trash"
+              aria-label="Xóa"
+              pTooltip="Xóa"
+              tooltipPosition="bottom"
+              (click)="onDelete(rowData)"
+            />
+          </div>
+        </td>
       </tr>
+      }
     </ng-template>
 
     <!--  TABLE ROW DATA -->

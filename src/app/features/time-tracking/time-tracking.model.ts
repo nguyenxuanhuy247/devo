@@ -74,6 +74,7 @@ export interface IAllDropDownResponseDTO {
   dayOffs: IDayOffResponseDTO[];
   stages: IStageResponseDTO[];
   statuses: IStatuseResponseDTO[];
+  tabStatuses: IInterruptionReasonResponseDTO[];
 }
 
 export interface ITabComponent {

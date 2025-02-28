@@ -260,4 +260,14 @@ export interface IStatuseResponseDTO {
   updatedDate: string;
 }
 
+export interface ITabStatusResponseDTO {
+  id: ID;
+  tabName: string;
+  createdDate: string;
+  updatedDate: string;
+  statuses: IStatusChildListResponseDTO[];
+}
+
+export type IStatusChildListResponseDTO = IStatuseResponseDTO;
+
 // 🡩🡩🡩🡩🡩 END REGION : Response DTO 🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩🡩

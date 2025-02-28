@@ -18,7 +18,7 @@ import {
   IEmployeeResponseDTO,
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
-import { EApiMethod } from '../../../contants/common.constant';
+import { EApiMethod, EMode } from '../../../contants/common.constant';
 import { CommonModule } from '@angular/common';
 import { IColumnHeaderConfigs } from '../../../shared/interface/common.interface';
 import {
@@ -28,7 +28,7 @@ import {
   IFixBugDoImprovementRowData,
 } from './fix-bug-do-improvement.model';
 import { TableModule } from 'primeng/table';
-import { RoundPipe } from '../../../pipes';
+import { ConvertIdToNamePipe, RoundPipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
 import { FormBaseComponent } from '../../../shared';
 import { TooltipModule } from 'primeng/tooltip';
@@ -64,6 +64,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
     TextareaModule,
     InputTextModule,
     RadioButtonModule,
+    ConvertIdToNamePipe,
   ],
   templateUrl: './fix-bug-do-improvement.component.html',
   styleUrl: './fix-bug-do-improvement.component.scss',
@@ -104,7 +105,9 @@ export class FixBugDoImprovement1Component
   screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
   featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
-
+  statusDependentTabOptions$ =
+    this.timeTrackingStore.statusDependentTabOptions$;
+  ETabName = ETabName;
   constructor(override injector: Injector) {
     super(injector);
 
@@ -335,6 +338,7 @@ export class FixBugDoImprovement1Component
           this.csvData.forEach((rowData: any) => {
             const formGroup = this.formBuilder.group({
               ...fixBugDoImprovementNullableObj,
+              mode: this.EMode.UPDATE,
               isLunchBreak: true,
               startTime: rowData.startTime ? new Date(rowData.startTime) : null,
               endTime: rowData.endTime ? new Date(rowData.endTime) : null,
@@ -372,4 +376,8 @@ export class FixBugDoImprovement1Component
   }
 
   ingredient: 'ALL' | 'BUG' | 'IMPROVEMENT' = 'ALL';
+  protected readonly EMode = EMode;
+  onContinueFix(rowData: any) {}
+  onUpdate(rowData: any) {}
+  onDelete(rowData: any) {}
 }
