@@ -17,7 +17,7 @@ import {
 import { EApiMethod, EMode } from 'src/app/contants/common.constant';
 import {
   EGetApiMode,
-  ETabName,
+  ESheetName,
   ITimeTrackingDoGetRequestDTO,
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
@@ -35,7 +35,7 @@ import {
 } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
-import { ConvertIdToNamePipe, FormatDatePipe } from '../../../pipes';
+import { ConvertIdToNamePipe } from '../../../pipes';
 import { FormBaseComponent } from '../../../shared';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { TagModule } from 'primeng/tag';
@@ -89,6 +89,9 @@ import * as _ from 'lodash';
   ],
   templateUrl: './improvement.component.html',
   styleUrl: './improvement.component.scss',
+  host: {
+    style: 'display: block; height: 100%;',
+  },
 })
 export class ImprovementComponent
   extends FormBaseComponent
@@ -120,7 +123,7 @@ export class ImprovementComponent
     return commonValue;
   });
   protected readonly FORM_GROUP_KEYS = IMPROVEMENT_FORM_GROUP_KEYS;
-  protected readonly ETabName = ETabName;
+  protected readonly ETabName = ESheetName;
   protected readonly COLUMN_FIELD = IMPROVEMENT_COLUMN_FIELD;
   protected readonly EMode = EMode;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
@@ -139,7 +142,7 @@ export class ImprovementComponent
   headerColumnConfigs: IColumnHeaderConfigs[] = improvementHeaderColumnConfigs;
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
-    sheetName: ETabName.IMPROVEMENT,
+    sheetName: ESheetName.IMPROVEMENT,
     ids: null,
     data: null,
   });
@@ -155,7 +158,7 @@ export class ImprovementComponent
     employeeId: null,
     projectId: null,
     issueId: this.issueId(),
-    sheetName: ETabName.IMPROVEMENT,
+    sheetName: ESheetName.IMPROVEMENT,
     startTime: null,
     endTime: null,
   });
@@ -196,7 +199,7 @@ export class ImprovementComponent
                 employeeLevelId: formGroupValue.employeeLevelId,
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
-                sheetName: ETabName.IMPROVEMENT,
+                sheetName: ESheetName.IMPROVEMENT,
                 startTime: this.issueId()
                   ? null
                   : formGroupValue.dateRange[0].toISOString(),
@@ -304,7 +307,7 @@ export class ImprovementComponent
   }
 
   getFormGroup(index: number): FormGroup {
-    return this.getFormGroupInFormArray(this.formArray, index);
+    return this.getSubFormGroupInFormArray(this.formArray, index);
   }
 
   onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
@@ -341,7 +344,7 @@ export class ImprovementComponent
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
-      sheetName: ETabName.IMPROVEMENT,
+      sheetName: ESheetName.IMPROVEMENT,
       data: [data],
     }));
 
@@ -373,7 +376,7 @@ export class ImprovementComponent
 
   onCancelUpdateMode(index: number) {
     this.mode.set(EMode.VIEW);
-    this.getFormGroupInFormArray(this.formArray, index).patchValue({
+    this.getSubFormGroupInFormArray(this.formArray, index).patchValue({
       mode: EMode.VIEW,
     });
     this.tableData = this.formArray.value;

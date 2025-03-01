@@ -1,24 +1,28 @@
 import { Component, Injector, input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  BUG_COLUMN_FIELD,
   BUG_FORM_GROUP_KEY,
   bugHeaderColumnConfigs,
   bugNullableObj,
+  IBugFormGroup,
   IBugRowData,
 } from './bug.model';
 import { EApiMethod, EMode } from 'src/app/contants/common.constant';
 import {
   EGetApiMode,
+  ESheetName,
   ETabName,
   ITimeTrackingDoGetRequestDTO,
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
 import { TableModule } from 'primeng/table';
-import { IColumnHeaderConfigs } from '../../../shared/interface/common.interface';
+import {
+  IColumnHeaderConfigs,
+  ID,
+  IOption,
+} from '../../../shared/interface/common.interface';
 import {
   FormArray,
-  FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
@@ -46,14 +50,17 @@ import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
 import { WorkDurationDirective } from '../../../directives';
-import { message } from '../../../contants/api.contant';
 import {
+  COMMON_COLUMN_FIELD,
   ISelectFormGroup,
   ITabComponent,
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
 import { IBugResponseDTO } from './bug.dto.model';
 import { Checkbox } from 'primeng/checkbox';
+import * as Papa from 'papaparse';
+import * as _ from 'lodash';
+import { ExtendedFormBase } from '../../../utils/function';
 
 @Component({
   selector: 'app-bug',
@@ -75,17 +82,20 @@ import { Checkbox } from 'primeng/checkbox';
   ],
   templateUrl: './bug.component.html',
   styleUrl: './bug.component.scss',
+  host: {
+    style: 'display: block; height: 100%;',
+  },
 })
 export class BugComponent
-  extends FormBaseComponent
+  extends ExtendedFormBase<IBugRowData>(FormBaseComponent)
   implements OnInit, ITabComponent
 {
-  formGroupControl = input<FormGroup>();
   projectFormControl = input<LibFormSelectComponent>();
 
   protected readonly FORM_GROUP_KEYS = BUG_FORM_GROUP_KEY;
-  protected readonly ETabName = ETabName;
-  protected readonly COLUMN_FIELD = BUG_COLUMN_FIELD;
+  protected readonly ETabName = ESheetName;
+  // protected readonly COLUMN_FIELD = BUG_COLUMN_FIELD;
+  protected readonly COLUMN_FIELD = COMMON_COLUMN_FIELD;
   protected readonly EMode = EMode;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
   timeTrackingService = this.injector.get(TimeTrackingApiService);
@@ -99,18 +109,13 @@ export class BugComponent
   statusDependentTabOptions$ =
     this.timeTrackingStore.statusDependentTabOptions$;
 
-  createTableData: IBugRowData[] = [
-    {
-      ...bugNullableObj,
-      mode: EMode.CREATE,
-    },
-  ];
+  // createTableData: IBugRowData[] = [];
   viewUpdateTableData: IBugRowData[];
 
   headerColumnConfigs: IColumnHeaderConfigs[] = bugHeaderColumnConfigs;
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
-    sheetName: ETabName.BUG,
+    sheetName: ESheetName.BUG,
     ids: null,
     data: null,
   });
@@ -126,7 +131,7 @@ export class BugComponent
     employeeId: null,
     projectId: null,
     issueId: null,
-    sheetName: ETabName.BUG,
+    sheetName: ESheetName.BUG,
     startTime: null,
     endTime: null,
   });
@@ -138,12 +143,6 @@ export class BugComponent
   override ngOnInit() {
     super.ngOnInit();
     this.initSubscriptions();
-
-    const formGroup = this.formBuilder.group({
-      ...bugNullableObj,
-      mode: EMode.CREATE,
-    });
-    this.createFormArray.push(formGroup);
   }
 
   initSubscriptions() {
@@ -154,14 +153,14 @@ export class BugComponent
           switchMap(() => {
             this.doGetRequestDTO.update((oldValue: any) => {
               const formGroupValue =
-                this.formGroupControl().getRawValue() as ISelectFormGroup;
+                this.formGroupControl.getRawValue() as ISelectFormGroup;
 
               return {
                 ...oldValue,
                 employeeLevelId: formGroupValue.employeeLevelId,
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
-                sheetName: ETabName.BUG,
+                sheetName: ESheetName.BUG,
                 startTime: formGroupValue.dateRange[0].toISOString(),
                 endTime: formGroupValue.dateRange[1].toISOString(),
               };
@@ -175,7 +174,7 @@ export class BugComponent
                   this.messageService.add({
                     severity: 'error',
                     summary: 'Thất bại',
-                    detail: message.serverError,
+                    detail: `Tải danh sách bug thất bại, kiểm tra hàm getTableDataApiRequest$`,
                   });
                   return EMPTY;
                 }),
@@ -206,15 +205,30 @@ export class BugComponent
     this.subscription.add(
       this.getControlValueChanges(
         SELECT_FORM_GROUP_KEY.dateRange,
-        this.formGroupControl(),
+        this.formGroupControl,
       )
         .pipe(filter((dataRange) => !!dataRange))
-        .subscribe((_) => {
+        .subscribe(() => {
           // Sau khi thiết lập các giá trị chung như Level, Nhân viên, dự án, thời gian mới gọi API lấy danh sách
           this.callAPIGetTableData();
         }),
     );
+
+    this.subscription.add(
+      this.statusDependentTabOptions$
+        .pipe(filter((statusOption) => !!statusOption))
+        .subscribe((status) => {
+          const bugTabName = ETabName.BUG;
+          const statusOption = status[bugTabName];
+          this.statusOption.set(statusOption);
+
+          this.onAddNewCreateRow();
+          console.log(' this.statusOption', this.statusOption());
+        }),
+    );
   }
+
+  statusOption = signal<IOption[]>(null);
 
   onChangeToUpdateMode(index: number) {
     const formGroup = this.getFormGroup(index, this.viewUpdateFormArray);
@@ -222,7 +236,11 @@ export class BugComponent
     this.viewUpdateTableData = this.viewUpdateFormArray.value;
   }
 
+  /*
+   * @usage Xóa
+   */
   onDelete(rowData: ILogWorkRowData) {
+    this.timeTrackingStore.setLoading(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       ids: [rowData.id],
@@ -233,6 +251,13 @@ export class BugComponent
       .deleteItemAsync(this.doPostRequestDTO())
       .pipe(
         catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: `Xóa bug thất bại, kiểm tra hàm onDelete`,
+          });
+
+          this.timeTrackingStore.setLoading(false);
           return EMPTY;
         }),
       )
@@ -242,25 +267,78 @@ export class BugComponent
   }
 
   getFormGroup(index: number, formArray: FormArray): FormGroup {
-    return this.getFormGroupInFormArray(formArray, index);
-  }
-
-  onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
-    const control = this.getFormControl(index, formControlName);
-    control.setValue(new Date());
-  }
-
-  getFormControl(index: number, formControlName: string): FormControl {
-    return this.viewUpdateFormArray
-      ?.at(index)
-      ?.get(formControlName) as FormControl;
+    return this.getSubFormGroupInFormArray(formArray, index);
   }
 
   onCancelUpdateMode(index: number) {
-    this.getFormGroupInFormArray(this.viewUpdateFormArray, index).patchValue({
-      mode: EMode.VIEW,
-    });
+    this.getSubFormGroupInFormArray(this.viewUpdateFormArray, index).patchValue(
+      {
+        mode: EMode.VIEW,
+      },
+    );
     this.viewUpdateTableData = this.viewUpdateFormArray.value;
+  }
+
+  /**
+   * @usage Thêm mới
+   */
+  onSaveCreate(index: number) {
+    const formValue = this.createFormArray?.at(index)?.value;
+    const cloneFormValue = _.cloneDeep(formValue) as IBugFormGroup;
+    delete cloneFormValue.mode;
+    delete cloneFormValue.name;
+
+    console.log('onSaveCreate 111111', this.doPostRequestDTO());
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.POST,
+      data: [
+        {
+          ...cloneFormValue,
+          ...this.getCommonValue(),
+          createdDate: new Date(),
+        },
+      ],
+    }));
+
+    console.log('onSaveCreate 22222', this.doPostRequestDTO());
+    this.timeTrackingStore.setLoading(true);
+    this.timeTrackingService
+      .createItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: `Thêm mới bug thất bại, kiểm tra hàm onSaveCreate`,
+          });
+
+          this.timeTrackingStore.setLoading(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+
+        if (this.createFormArray.controls.length > 1) {
+          this.createFormArray.removeAt(index);
+        } else {
+          const EStatusNameId = this.convertOptionToEnum(this.statusOption());
+          this.createFormArray.setValue([
+            {
+              ...bugNullableObj,
+              status: EStatusNameId['CHUA_FIX'],
+              mode: EMode.CREATE,
+            },
+          ]);
+        }
+        // this.createTableData = this.createFormArray.value;
+        this.callAPIGetTableData();
+      });
   }
 
   /**
@@ -287,7 +365,7 @@ export class BugComponent
           this.messageService.add({
             severity: 'error',
             summary: 'Thất bại',
-            detail: message.serverError,
+            detail: `Cập nhật bug thất bại, kiểm tra hàm onSaveUpdate`,
           });
 
           this.timeTrackingStore.setLoading(false);
@@ -300,11 +378,187 @@ export class BugComponent
           summary: 'Thành công',
           detail: res?.message,
         });
+
         this.callAPIGetTableData();
       });
   }
 
   callAPIGetTableData(): void {
     this.getTableDataApiRequest$.next();
+  }
+
+  csvData: any[] = [];
+
+  /*
+   * @usage Import CSV
+   */
+  onFileChange(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    this.timeTrackingStore.setLoading(true);
+    reader.onload = () => {
+      const csv = reader.result as string;
+      Papa.parse(csv, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (result) => {
+          const columnMapping: { [key: string]: string } = {
+            Summary: 'name',
+            'Issue key': 'code',
+            'Issue Type': 'tabName',
+          };
+
+          this.csvData = result.data.map((row: any) => {
+            const newRow: any = {};
+            Object.keys(columnMapping).forEach((oldKey) => {
+              if (Object.prototype.hasOwnProperty.call(row, oldKey)) {
+                const newKey = columnMapping[oldKey];
+                newRow[newKey] = row[oldKey];
+              }
+            });
+            return newRow;
+          });
+
+          const createTableData = this.createFormArray.value;
+          const isInputDataMode = createTableData.some(
+            (rowData: IBugRowData) => !!rowData.startTime,
+          );
+          if (!isInputDataMode) {
+            this.createFormArray.clear();
+          }
+
+          this.csvData.forEach((rowData: any) => {
+            const formGroup = this.formBuilder.group({
+              ...bugNullableObj,
+              mode: this.EMode.UPDATE,
+              isLunchBreak: true,
+              startTime: rowData.startTime ? new Date(rowData.startTime) : null,
+              endTime: rowData.endTime ? new Date(rowData.endTime) : null,
+              ...rowData,
+            });
+            this.createFormArray.push(formGroup);
+          });
+
+          this.timeTrackingStore.setLoading(false);
+        },
+      });
+    };
+
+    reader.readAsText(file);
+  }
+
+  onBulkCreate() {
+    const createTableData = this.createFormArray.value;
+    const listData = createTableData.map((rowData: IBugFormGroup) => {
+      return {
+        ...rowData,
+        ...this.getCommonValue(),
+        createdDate: new Date(),
+      };
+    });
+    this.timeTrackingStore.setLoading(true);
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.POST,
+      data: listData,
+    }));
+
+    this.timeTrackingService
+      .createItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: `Thêm mới hàng loạt bug thất bại, kiểm tra hàm onBulkCreate`,
+          });
+          this.timeTrackingStore.setLoading(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+
+        this.createFormArray.clear();
+        this.onAddNewCreateRow();
+        this.callAPIGetTableData();
+      });
+  }
+
+  onSelectStatus(optionId: ID, index: number) {
+    const EStatusNameId = this.convertOptionToEnum(this.statusOption());
+    console.log('onSelectStatus ', EStatusNameId);
+    if (optionId === EStatusNameId['DANG_FIX']) {
+      this.onSetCurrentTimeForDatepicker(
+        this.createFormArray,
+        index,
+        this.FORM_GROUP_KEYS.startTime,
+      );
+    } else if (optionId === EStatusNameId['DA_FIX']) {
+      this.getFormGroup(index, this.createFormArray).patchValue({
+        mode: EMode.VIEW,
+      });
+      this.getFormControlInSubFormGroup(
+        this.createFormArray,
+        index,
+        this.FORM_GROUP_KEYS.endTime,
+      ).setValue(new Date());
+      this.onSaveCreate(index);
+    } else {
+      this.getFormControlInSubFormGroup(
+        this.createFormArray,
+        index,
+        this.FORM_GROUP_KEYS.startTime,
+      ).setValue(null);
+    }
+  }
+
+  onAddNewCreateRow() {
+    const EStatusNameId = this.convertOptionToEnum(this.statusOption());
+    const formGroup = this.formBuilder.group({
+      ...bugNullableObj,
+      status: EStatusNameId['CHUA_FIX'],
+      mode: EMode.CREATE,
+    });
+    this.createFormArray.push(formGroup);
+    // this.createTableData = this.createFormArray.value;
+  }
+
+  onRemoveCreateRow(index: number) {
+    this.createFormArray.removeAt(index);
+    // this.createTableData = this.createFormArray.value;
+  }
+
+  onClearRowData(index: number) {
+    this.getSubFormGroupInFormArray(this.createFormArray, index).reset({
+      isLunchBreak: true,
+      mode: EMode.CREATE,
+    });
+  }
+
+  onCopyUpperRow(index: number) {
+    const upperRowValue = this.getSubFormGroupInFormArray(
+      this.createFormArray,
+      index - 1,
+    ).value;
+    this.getSubFormGroupInFormArray(this.createFormArray, index).setValue(
+      upperRowValue,
+    );
+  }
+
+  onCopyLowerRow(index: number) {
+    const lowerRowValue = this.getSubFormGroupInFormArray(
+      this.createFormArray,
+      index + 1,
+    ).value;
+    this.getSubFormGroupInFormArray(this.createFormArray, index).setValue(
+      lowerRowValue,
+    );
   }
 }

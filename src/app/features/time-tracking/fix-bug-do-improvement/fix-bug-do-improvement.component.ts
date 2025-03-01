@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
-  ETabName,
+  ESheetName,
   IEmployeeResponseDTO,
   IFeatureResponseDTO,
   IMenuResponseDTO,
@@ -32,7 +32,7 @@ import {
   IFixBugDoImprovementRowData,
 } from './fix-bug-do-improvement.model';
 import { TableModule } from 'primeng/table';
-import { FormatDatePipe, RoundPipe } from '../../../pipes';
+import { RoundPipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
 import { FormBaseComponent } from '../../../shared';
 import { TooltipModule } from 'primeng/tooltip';
@@ -87,7 +87,7 @@ export class FixBugDoImprovementComponent
     ITimeTrackingDoPostRequestDTO<IFixBugDoImprovementRequestDTO>
   >({
     method: EApiMethod.POST,
-    sheetName: ETabName.BUG,
+    sheetName: ESheetName.BUG,
     ids: null,
     data: null,
   });

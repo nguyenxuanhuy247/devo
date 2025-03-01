@@ -235,7 +235,7 @@
         <tr>
           @for (col of headerColumnConfigs; track col.field) {
             @if (col.field ===
-            COLUMN_FIELD.no) {
+            COLUMN_FIELD.order) {
               <td>{{ index + 1 }}</td>
             } @else if (col.field === COLUMN_FIELD.moduleId) {
               <td>
@@ -464,7 +464,7 @@
                 [formControlName]="FORM_GROUP_KEYS.duration"
                 id="duration"
                 pInputText
-                [formGroup]="getFormGroupInFormArray(formArray, index)"
+                [formGroup]="getSubFormGroupInFormArray(formArray, index)"
               />
             </div>
           </td>

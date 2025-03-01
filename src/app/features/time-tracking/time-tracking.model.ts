@@ -84,7 +84,7 @@ export interface ITabComponent {
 export const COMMON_COLUMN_FIELD = Object.assign(
   CommonService.generateEnumFromInterface<ICommonTimeTrackingRowData>(),
   {
-    no: 'no',
+    order: 'order',
     actions: 'actions',
   },
 );
@@ -111,7 +111,7 @@ export const getHeaderColumnConfigsFactory = (
   return [
     {
       label: 'STT',
-      field: COMMON_COLUMN_FIELD.no,
+      field: COMMON_COLUMN_FIELD.order,
       minWidth: 80,
     },
     {

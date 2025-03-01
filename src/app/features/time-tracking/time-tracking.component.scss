@@ -1,0 +1,16 @@
+.time-tracking {
+  ::ng-deep p-tabs {
+    height: 100%;
+
+    p-tabpanels {
+      flex: 1;
+      display: block;
+      overflow: hidden;
+
+      p-tabpanel {
+        height: 100%;
+        display: block;
+      }
+    }
+  }
+}

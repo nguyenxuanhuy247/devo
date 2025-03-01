@@ -64,7 +64,7 @@ import {
 } from '../time-tracking.model';
 import {
   EGetApiMode,
-  ETabName,
+  ESheetName,
   ITimeTrackingDoGetRequestDTO,
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
@@ -145,7 +145,7 @@ export class IssuesComponent
     employeeId: null,
     projectId: null,
     issueId: null,
-    sheetName: ETabName.LOG_WORK,
+    sheetName: ESheetName.LOG_WORK,
     startTime: null,
     endTime: null,
   });
@@ -203,7 +203,7 @@ export class IssuesComponent
                 employeeLevelId: formGroupValue.employeeLevelId,
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
-                sheetName: ETabName.ISSUE,
+                sheetName: ESheetName.ISSUE,
                 startTime: formGroupValue.dateRange[0].toISOString(),
                 endTime: formGroupValue.dateRange[1].toISOString(),
               };
@@ -325,7 +325,7 @@ export class IssuesComponent
   }
 
   getFormGroup(index: number): FormGroup {
-    return this.getFormGroupInFormArray(this.formArray, index);
+    return this.getSubFormGroupInFormArray(this.formArray, index);
   }
 
   onDelete(rowData: IIssuesRowData) {
@@ -387,7 +387,7 @@ export class IssuesComponent
 
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
-    sheetName: ETabName.ISSUE,
+    sheetName: ESheetName.ISSUE,
     ids: null,
     data: null,
   });
@@ -452,7 +452,7 @@ export class IssuesComponent
 
   onCancelUpdateMode(index: number) {
     this.mode.set(EMode.VIEW);
-    this.getFormGroupInFormArray(this.formArray, index).patchValue({
+    this.getSubFormGroupInFormArray(this.formArray, index).patchValue({
       mode: EMode.VIEW,
     });
     this.tableData = this.formArray.value;

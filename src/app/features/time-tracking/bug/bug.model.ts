@@ -8,6 +8,8 @@ import {
 export const BUG_FORM_GROUP_KEY =
   CommonService.generateEnumFromInterface<IBugRowData>();
 
+export type IBugFormGroup = IBugRowData;
+
 export const bugNullableObj: IBugRowData = {
   mode: EMode.VIEW,
   id: null,

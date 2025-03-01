@@ -13,7 +13,7 @@ import {
 } from '../time-tracking.model';
 import {
   EGetApiMode,
-  ETabName,
+  ESheetName,
   ITimeTrackingDoGetRequestDTO,
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
@@ -82,22 +82,6 @@ export class LogWorkComponent
 {
   formGroupControl = input.required<FormGroup>();
   projectFormControl = input.required<LibFormSelectComponent>();
-  /*
-   * @usage Có 2 trường hợp : Log work độc lập và Log work của vấn đề
-   */
-  // issueRowData = input<IIssuesRowData>(null);
-  // issueId = computed<ID>(() => {
-  //   return this.issueRowData()?.id;
-  // });
-  // issueCommonData = computed(() => {
-  //   return {
-  //     moduleId: this.issueRowData()?.moduleId,
-  //     menuId: this.issueRowData()?.menuId,
-  //     screenId: this.issueRowData()?.screenId,
-  //     featureId: this.issueRowData()?.featureId,
-  //     categoryId: this.issueRowData()?.categoryId,
-  //   };
-  // });
 
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
   headerColumnConfigs: IColumnHeaderConfigs[] = logWorkHeaderColumnConfigs;
@@ -105,7 +89,7 @@ export class LogWorkComponent
   formArray: FormArray = new FormArray([]);
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
-    sheetName: ETabName.LOG_WORK,
+    sheetName: ESheetName.LOG_WORK,
     ids: null,
     data: null,
   });
@@ -151,7 +135,6 @@ export class LogWorkComponent
     this.addCreateRowForm();
     this.createFormGroup = this.formBuilder.group({
       ...logWorkNullableObj,
-      // ...this.issueCommonData(),
       ...formValue,
       isLunchBreak: true,
       mode: EMode.CREATE,
@@ -177,16 +160,9 @@ export class LogWorkComponent
                 employeeLevelId: formGroupValue.employeeLevelId,
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
-                // startTime: this.issueId()
-                //   ? null
-                //   : formGroupValue.dateRange[0].toISOString(),
-                // endTime: this.issueId()
-                //   ? null
-                //   : formGroupValue.dateRange[1].toISOString(),
-                // issueId: this.issueId(),
                 startTime: formGroupValue.dateRange[0].toISOString(),
                 endTime: formGroupValue.dateRange[1].toISOString(),
-                sheetName: ETabName.LOG_WORK,
+                sheetName: ESheetName.LOG_WORK,
               };
             });
 
@@ -264,7 +240,7 @@ export class LogWorkComponent
 
   onCancelUpdateMode(index: number) {
     this.mode.set(EMode.VIEW);
-    this.getFormGroupInFormArray(this.formArray, index).patchValue({
+    this.getSubFormGroupInFormArray(this.formArray, index).patchValue({
       mode: EMode.VIEW,
     });
     this.tableData = this.formArray.value;
@@ -318,7 +294,7 @@ export class LogWorkComponent
   }
 
   getFormGroup(index: number): FormGroup {
-    return this.getFormGroupInFormArray(this.formArray, index);
+    return this.getSubFormGroupInFormArray(this.formArray, index);
   }
 
   onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
@@ -382,16 +358,9 @@ export class LogWorkComponent
   }
 
   onSaveCreate() {
-    // const outsideValue = this.issueId()
-    //   ? {
-    //       issueId: this.issueId(),
-    //     }
-    //   : {};
     const data: ILogWorkRowData = {
       ...this.createFormGroup.value,
       ...this.getCommonValue(),
-      // ...outsideValue,
-      // issueId: this.issueId(),
       createdDate: new Date(),
       updatedDate: null,
     };
@@ -399,7 +368,7 @@ export class LogWorkComponent
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
-      sheetName: ETabName.LOG_WORK,
+      sheetName: ESheetName.LOG_WORK,
       data: [data],
     }));
 

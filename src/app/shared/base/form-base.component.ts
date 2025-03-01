@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import {
   FormArray,
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
 } from '@angular/forms';
@@ -28,7 +29,7 @@ import { TimeTrackingCalculateService } from '../../features/time-tracking/time-
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
 })
-export abstract class FormBaseComponent implements OnInit, OnDestroy {
+export class FormBaseComponent implements OnInit, OnDestroy {
   formGroup: FormGroup = new FormGroup({});
 
   renderer = this.injector.get(Renderer2);
@@ -113,7 +114,17 @@ export abstract class FormBaseComponent implements OnInit, OnDestroy {
     return control ? control.valueChanges : new Observable(); // Tránh lỗi nếu control không tồn tại
   }
 
-  getFormGroupInFormArray(formArray: FormArray, index: number): FormGroup {
+  getSubFormGroupInFormArray(formArray: FormArray, index: number): FormGroup {
     return formArray?.at(index) as FormGroup;
+  }
+
+  getFormControlInSubFormGroup(
+    formArray: FormArray,
+    index: number,
+    formControlName: string,
+  ): FormControl {
+    return this.getSubFormGroupInFormArray(formArray, index)?.get(
+      formControlName,
+    ) as FormControl;
   }
 }

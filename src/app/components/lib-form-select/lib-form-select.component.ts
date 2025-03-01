@@ -1,8 +1,10 @@
 import {
   Component,
   ContentChildren,
+  EventEmitter,
   Input,
   Optional,
+  Output,
   QueryList,
   Self,
   TemplateRef,
@@ -17,7 +19,7 @@ import {
   Validator,
 } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
-import { IOption } from 'src/app/shared/interface/common.interface';
+import { ID, IOption } from 'src/app/shared/interface/common.interface';
 import { DevTemplateDirective } from '../../directives';
 import { CommonService } from '../../services';
 import { Nullable } from 'primeng/ts-helpers';
@@ -33,6 +35,9 @@ export class LibFormSelectComponent implements ControlValueAccessor, Validator {
   @Input() optionLabel = 'label';
   @Input() optionValue = 'value';
   @Input() appendTo = 'body';
+
+  @Output() selectOption = new EventEmitter<ID>(null);
+
   @ContentChildren(DevTemplateDirective)
   vpsTemplates: QueryList<DevTemplateDirective>;
   value: any;
@@ -70,6 +75,7 @@ export class LibFormSelectComponent implements ControlValueAccessor, Validator {
 
   handleChange(event: any) {
     this.onChange(event.value);
+    this.selectOption.emit(event.value);
   }
 
   isTemplateRef(templateName: string): boolean {

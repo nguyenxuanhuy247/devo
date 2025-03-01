@@ -14,7 +14,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import {
-  ETabName,
+  ESheetName,
   IEmployeeResponseDTO,
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
@@ -92,7 +92,7 @@ export class FixBugDoImprovement1Component
     ITimeTrackingDoPostRequestDTO<IFixBugDoImprovementRequestDTO>
   >({
     method: EApiMethod.POST,
-    sheetName: ETabName.BUG,
+    sheetName: ESheetName.BUG,
     ids: null,
     data: null,
   });
@@ -108,7 +108,7 @@ export class FixBugDoImprovement1Component
   statusDependentTabOptions$ =
     this.timeTrackingStore.statusDependentTabOptions$;
 
-  ETabName = ETabName;
+  ETabName = ESheetName;
 
   constructor(override injector: Injector) {
     super(injector);
@@ -366,10 +366,6 @@ export class FixBugDoImprovement1Component
 
   getFormControl(index: number, formControlName: string): FormControl {
     return this.formArray?.at(index)?.get(formControlName) as FormControl;
-  }
-
-  getFormGroup(index: number): FormGroup {
-    return this.getFormGroupInFormArray(this.formArray, index);
   }
 
   onSetCurrentTimeForDatepicker(index: number, formControlName: string) {

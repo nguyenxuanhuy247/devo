@@ -17,7 +17,7 @@ export enum EGetApiMode {
   DEPARTMENTS = 7,
 }
 
-export enum ETabName {
+export enum ESheetName {
   ESTIMATE = 'estimates',
   LOG_WORK = 'logWorks',
   ISSUE = 'issues',
@@ -25,6 +25,16 @@ export enum ETabName {
   IMPROVEMENT = 'improvements',
   FIX_BUG_DO_IMPROVEMENT = 'Fix Bug & Do Improvement',
   REPORT = 'Report',
+}
+
+export enum ETabName {
+  ESTIMATE = 'Dự toán',
+  LOG_WORK = 'Log work',
+  ISSUE = 'Vấn đề',
+  BUG = 'Bug',
+  IMPROVEMENT = 'Improvement',
+  FIX_BUG_DO_IMPROVEMENT = 'Fix Bug & Do Improvement',
+  REPORT = 'Báo cáo',
 }
 
 export enum ECategory {
@@ -53,7 +63,7 @@ export interface ITimeTrackingDoGetRequestDTO {
 
 export interface ITimeTrackingDoPostRequestDTO<T> {
   method: EApiMethod.POST | EApiMethod.PUT | EApiMethod.DELETE;
-  sheetName: ETabName;
+  sheetName: ESheetName;
   ids: ID[];
   data: T[];
 }

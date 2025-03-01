@@ -378,6 +378,10 @@ export class TimeTrackingStore extends ComponentStore<ITimeTrackingState> {
                     'statuses',
                     'statusName',
                   );
+                console.log(
+                  'statusDependentTabOptions',
+                  statusDependentTabOptions,
+                );
               }
 
               const data = {
