@@ -149,6 +149,7 @@
                 tooltipPosition="bottom"
                 (click)="
                   onSetCurrentTimeForDatepicker(
+                    formArray,
                     index,
                     FORM_GROUP_KEYS.startTime
                   )
@@ -177,7 +178,7 @@
                 pTooltip="Thời gian hiện tại"
                 tooltipPosition="bottom"
                 (click)="
-                  onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.endTime)
+                  onSetCurrentTimeForDatepicker(formArray, index, FORM_GROUP_KEYS.endTime)
                 "
               />
 
@@ -442,6 +443,7 @@
                   tooltipPosition="bottom"
                   (click)="
                   onSetCurrentTimeForDatepicker(
+                    formArray,
                     index,
                     FORM_GROUP_KEYS.startTime
                   )
@@ -470,7 +472,7 @@
                   pTooltip="Thời gian hiện tại"
                   tooltipPosition="bottom"
                   (click)="
-                  onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.endTime)
+                  onSetCurrentTimeForDatepicker(formArray, index, FORM_GROUP_KEYS.endTime)
                 "
                 />
 

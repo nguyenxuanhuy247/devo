@@ -6,7 +6,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import {
   ESheetName,
   IEmployeeResponseDTO,
@@ -34,7 +34,6 @@ import {
 import { TableModule } from 'primeng/table';
 import { RoundPipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
-import { FormBaseComponent } from '../../../shared';
 import { TooltipModule } from 'primeng/tooltip';
 import { Button } from 'primeng/button';
 import { catchError, EMPTY, filter, finalize } from 'rxjs';
@@ -49,6 +48,7 @@ import { LOG_WORK_COLUMN_FIELD } from '../log-work/log-work.model';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { getValue } from 'src/app/utils/function';
 import * as Papa from 'papaparse';
+import { TabComponentBaseComponent } from '../../../shared/base/tab-component-base/tab-component-base.component';
 
 @Component({
   standalone: true,
@@ -66,10 +66,10 @@ import * as Papa from 'papaparse';
   styleUrl: './fix-bug-do-improvement.component.scss',
 })
 export class FixBugDoImprovementComponent
-  extends FormBaseComponent
+  extends TabComponentBaseComponent
   implements OnInit
 {
-  formGroupControl = input.required<FormGroup>();
+  // formGroupControl = input.required<FormGroup>();
   commonFormGroupKey = input.required<any>();
 
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
@@ -182,7 +182,7 @@ export class FixBugDoImprovementComponent
 
   convertListBugOrImprovementBeforeSave() {
     const commonValue: ISelectFormGroup = _.cloneDeep(
-      this.formGroupControl().value,
+      this.formGroupControl.value,
     );
     delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
     delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];

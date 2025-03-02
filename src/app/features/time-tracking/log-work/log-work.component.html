@@ -7,10 +7,25 @@
     <!-- TABLE HEADER -->
     <ng-template pTemplate="header">
       <tr>
-        <td></td>
         @for (col of headerColumnConfigs; track col.field) {
           <!--  -->
-          @if (col.field === COLUMN_FIELD.actions) {
+          @if (col.field === COLUMN_FIELD.batch) {
+            <th
+              pResizableColumn
+              [style.min-width.px]="col.minWidth"
+            >
+              <div class="flex">
+                <div class="flex-1 line-clamp line-clamp-2">
+                  <p-checkbox
+                    [ngModelOptions]="{standalone: true}"
+                    [ngModel]="isSelectAll"
+                    (onChange)="toggleSelectAll($event, formArray)"
+                    [binary]="true"
+                  />
+                </div>
+              </div>
+            </th>
+          } @else if (col.field === COLUMN_FIELD.batch || col.field === COLUMN_FIELD.order || col.field === COLUMN_FIELD.actions) {
             <th
               [pSortableColumn]="col.field"
               [style.min-width.px]="col.minWidth"
@@ -49,6 +64,7 @@
       let-index="rowIndex"
     >
       <tr [formGroup]="createFormGroup">
+        <td></td>
         <td>
           <div class="flex align-items-center justify-content-between gap-1">
             <p-button
@@ -135,7 +151,7 @@
               pTooltip="Thời gian hiện tại"
               tooltipPosition="bottom"
               (click)="
-                onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.startTime)
+                onSetCurrentTimeForDatepicker(formArray,index, FORM_GROUP_KEYS.startTime)
               "
             />
             <p-datepicker
@@ -161,7 +177,7 @@
               pTooltip="Thời gian hiện tại"
               tooltipPosition="bottom"
               (click)="
-                onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.endTime)
+                onSetCurrentTimeForDatepicker(formArray, index, FORM_GROUP_KEYS.endTime)
               "
             />
 
@@ -234,8 +250,17 @@
         <!-- Chế độ VIEW chỉ hiển thị text -->
         <tr>
           @for (col of headerColumnConfigs; track col.field) {
-            @if (col.field ===
-            COLUMN_FIELD.order) {
+            @if (col.field === COLUMN_FIELD.batch) {
+              <td>
+                <div>
+                  <p-checkbox
+                    [ngModelOptions]="{standalone: true}"
+                    [ngModel]="rowData"
+                    [binary]="true"
+                  ></p-checkbox>
+                </div>
+              </td>
+            } @else if (col.field === COLUMN_FIELD.order) {
               <td>{{ index + 1 }}</td>
             } @else if (col.field === COLUMN_FIELD.moduleId) {
               <td>
@@ -343,6 +368,17 @@
         <!-- Hiển thị Form Update -->
         <tr [formGroup]="getFormGroup(index)">
           <td>
+            <div>
+              <p-checkbox
+                [ngModelOptions]="{standalone: true}"
+                [ngModel]="rowData"
+                (onChange)="onRowSelectionChange($event, formArray, index)"
+                [binary]="true"
+              ></p-checkbox>
+            </div>
+          </td>
+
+          <td>
             <div>{{ index + 1 }}</div>
           </td>
           <td>
@@ -416,7 +452,7 @@
                 pTooltip="Thời gian hiện tại"
                 tooltipPosition="bottom"
                 (click)="
-                onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.startTime)
+                onSetCurrentTimeForDatepicker(formArray, index, FORM_GROUP_KEYS.startTime)
               "
               />
               <p-datepicker
@@ -442,7 +478,7 @@
                 pTooltip="Thời gian hiện tại"
                 tooltipPosition="bottom"
                 (click)="
-                onSetCurrentTimeForDatepicker(index, FORM_GROUP_KEYS.endTime)
+                onSetCurrentTimeForDatepicker(formArray, index, FORM_GROUP_KEYS.endTime)
               "
               />
 

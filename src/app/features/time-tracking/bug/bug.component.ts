@@ -30,7 +30,6 @@ import {
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
 import { ConvertIdToNamePipe } from '../../../pipes';
-import { FormBaseComponent } from '../../../shared';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { TagModule } from 'primeng/tag';
 import { ILogWorkRowData } from '../log-work/log-work.model';
@@ -57,11 +56,12 @@ import {
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
 import { IBugResponseDTO } from './bug.dto.model';
-import { Checkbox, CheckboxChangeEvent } from 'primeng/checkbox';
+import { Checkbox } from 'primeng/checkbox';
 import * as Papa from 'papaparse';
 import * as _ from 'lodash';
-import { ExtendedFormBase } from '../../../utils/function';
 import { PopoverModule } from 'primeng/popover';
+import { FormBaseComponent } from '../../../shared';
+import { ExtendedFormBase } from '../../../utils/function';
 
 @Component({
   selector: 'app-bug',
@@ -89,7 +89,7 @@ import { PopoverModule } from 'primeng/popover';
   },
 })
 export class BugComponent
-  extends ExtendedFormBase<IBugRowData>(FormBaseComponent)
+  extends ExtendedFormBase(FormBaseComponent)
   implements OnInit, ITabComponent
 {
   projectFormControl = input<LibFormSelectComponent>();
@@ -111,7 +111,6 @@ export class BugComponent
   statusDependentTabOptions$ =
     this.timeTrackingStore.statusDependentTabOptions$;
 
-  // createTableData: IBugRowData[] = [];
   viewUpdateTableData: IBugRowData[];
 
   headerColumnConfigs: IColumnHeaderConfigs[] = bugHeaderColumnConfigs;
@@ -234,7 +233,6 @@ export class BugComponent
           this.statusOption.set(statusOption);
 
           this.onAddNewCreateRow();
-          console.log(' this.statusOption', this.statusOption());
         }),
     );
   }
@@ -347,7 +345,6 @@ export class BugComponent
             },
           ]);
         }
-        // this.createTableData = this.createFormArray.value;
         this.callAPIGetTableData();
       });
   }
@@ -440,13 +437,13 @@ export class BugComponent
             this.createFormArray.clear();
           }
 
+          const EStatusNameId = this.convertOptionToEnum(this.statusOption());
           this.csvData.forEach((rowData: any) => {
             const formGroup = this.formBuilder.group({
               ...bugNullableObj,
               mode: this.EMode.UPDATE,
               isLunchBreak: true,
-              startTime: rowData.startTime ? new Date(rowData.startTime) : null,
-              endTime: rowData.endTime ? new Date(rowData.endTime) : null,
+              status: EStatusNameId['CHUA_FIX'],
               ...rowData,
             });
             this.createFormArray.push(formGroup);
@@ -458,6 +455,12 @@ export class BugComponent
     };
 
     reader.readAsText(file);
+  }
+
+  override checkIsTimeTracking() {
+    return this.createFormArray.value.some(
+      (rowData: IBugRowData) => rowData.startTime,
+    );
   }
 
   onBulkCreate() {
@@ -528,6 +531,8 @@ export class BugComponent
         this.FORM_GROUP_KEYS.startTime,
       ).setValue(null);
     }
+
+    this.warningWhenChangeChromeTab();
   }
 
   onAddNewCreateRow() {
@@ -538,12 +543,10 @@ export class BugComponent
       mode: EMode.CREATE,
     });
     this.createFormArray.push(formGroup);
-    // this.createTableData = this.createFormArray.value;
   }
 
   onRemoveCreateRow(index: number) {
     this.createFormArray.removeAt(index);
-    // this.createTableData = this.createFormArray.value;
   }
 
   onClearRowData(index: number) {
@@ -580,9 +583,7 @@ export class BugComponent
 
   onBatchRemoveCreateRow() {
     this.indexListBatch.forEach((index: number) => {
-      console.log('111111111 ' + index, this.createFormArray);
       this.createFormArray.removeAt(index);
-      console.log('this.Xóa nhiều control ' + index, this.createFormArray);
     });
   }
 
@@ -598,42 +599,42 @@ export class BugComponent
     this.batchUpdateFormGroup.reset();
   }
 
-  isSelectAll: boolean = false;
-  selectedNumber: number = 0;
-  indexListBatch: number[] = [];
+  // isSelectAll: boolean = false;
+  // selectedNumber: number = 0;
+  // indexListBatch: number[] = [];
 
-  getSelectedNumberAndIds() {
-    this.indexListBatch = [];
-    this.selectedNumber = this.createFormArray.value.filter(
-      (rowData: IBugFormGroup, index: number) => {
-        if (rowData.selected) {
-          this.indexListBatch.push(index);
-        }
-        return rowData.selected;
-      },
-    ).length;
-    this.indexListBatch.sort((a, b) => b - a);
-  }
+  // getSelectedNumberAndIds() {
+  //   this.indexListBatch = [];
+  //   this.selectedNumber = this.createFormArray.value.filter(
+  //     (rowData: IBugFormGroup, index: number) => {
+  //       if (rowData.selected) {
+  //         this.indexListBatch.push(index);
+  //       }
+  //       return rowData.selected;
+  //     },
+  //   ).length;
+  //   this.indexListBatch.sort((a, b) => b - a);
+  // }
+  //
+  // toggleSelectAll(event: CheckboxChangeEvent) {
+  //   this.isSelectAll = event.checked;
+  //   this.createFormArray.controls.forEach((control) => {
+  //     control.patchValue({
+  //       selected: this.isSelectAll,
+  //     });
+  //   });
+  //
+  //   this.getSelectedNumberAndIds();
+  // }
 
-  toggleSelectAll(event: CheckboxChangeEvent) {
-    this.isSelectAll = event.checked;
-    this.createFormArray.controls.forEach((control) => {
-      control.patchValue({
-        selected: this.isSelectAll,
-      });
-    });
-
-    this.getSelectedNumberAndIds();
-  }
-
-  onRowSelectionChange(event: CheckboxChangeEvent, index: number) {
-    this.createFormArray.at(index).patchValue({
-      selected: event.checked,
-    });
-    this.isSelectAll = this.createFormArray.value.every(
-      (row: IBugFormGroup) => row.selected,
-    );
-
-    this.getSelectedNumberAndIds();
-  }
+  // onRowSelectionChange(event: CheckboxChangeEvent, index: number) {
+  //   this.createFormArray.at(index).patchValue({
+  //     selected: event.checked,
+  //   });
+  //   this.isSelectAll = this.createFormArray.value.every(
+  //     (row: IBugFormGroup) => row.selected,
+  //   );
+  //
+  //   this.getSelectedNumberAndIds(this.createFormArray);
+  // }
 }

@@ -102,6 +102,7 @@ export interface ICommonTimeTrackingRowData {
   startTime: string;
   endTime: string;
   duration: number;
+  isLunchBreak: boolean;
   createdDate: Date;
   updatedDate: Date;
 }
@@ -112,7 +113,7 @@ export const getHeaderColumnConfigsFactory = (
 ): IColumnHeaderConfigs[] => {
   return [
     {
-      label: 'STT',
+      label: '',
       field: COMMON_COLUMN_FIELD.batch,
       minWidth: 80,
     },

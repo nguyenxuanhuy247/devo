@@ -7,11 +7,11 @@
     }"
   >
     <div *ngIf="selectedNumber" class="flex justify-content-end gap-3">
-      <span>Chọn {{ selectedNumber }} - </span>
+      <span>Chọn {{ selectedNumber }} </span>
       <p-button
         [outlined]="true"
         severity="secondary"
-        icon="pi pi-file-edit"
+        icon="pi pi-trash"
         pTooltip="Xóa nhiều"
         label="Xóa nhiều"
         (click)="onBatchRemoveCreateRow()"
@@ -19,13 +19,13 @@
       <p-button
         [outlined]="true"
         severity="secondary"
-        icon="pi pi-trash"
+        icon="pi pi-file-edit"
         pTooltip="Xóa nhiều"
         label="Chỉnh sửa nhiều"
         (click)="batchUpdate.toggle($event)"
       />
       <p-popover #batchUpdate>
-        <div class="flex flex-column" [formGroup]="batchUpdateFormGroup">
+        <div class="flex flex-column" style="width: 360px" [formGroup]="batchUpdateFormGroup">
           <div>
             <span>Module</span>
             <lib-form-select
@@ -150,7 +150,7 @@
                     <p-checkbox
                       [ngModelOptions]="{standalone: true}"
                       [ngModel]="isSelectAll"
-                      (onChange)="toggleSelectAll($event)"
+                      (onChange)="toggleSelectAll($event, createFormArray)"
                       [binary]="true"
                     />
                   </div>
@@ -225,11 +225,10 @@
               <p-checkbox
                 [ngModelOptions]="{standalone: true}"
                 [ngModel]="control.value.selected"
-                (onChange)="onRowSelectionChange($event, index)"
+                (onChange)="onRowSelectionChange($event, createFormArray, index)"
                 [binary]="true"
               ></p-checkbox>
             </div>
-            {{ control.value.selected }}
           </td>
 
           <td>

@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 import { Observable } from 'rxjs';
 import { FormBaseComponent } from '../shared';
-import { Component, inject } from '@angular/core';
 import {
   ControlContainer,
   FormArray,
@@ -10,6 +9,8 @@ import {
 } from '@angular/forms';
 import { SELECT_FORM_GROUP_KEY } from '../features/time-tracking/time-tracking.model';
 import { IOption } from '../shared/interface/common.interface';
+import { CheckboxChangeEvent } from 'primeng/checkbox';
+import { IBugFormGroup } from '../features/time-tracking/bug/bug.model';
 
 export function getValue<T>(obs: Observable<T>): T {
   let value: T;
@@ -24,15 +25,16 @@ export function getValue<T>(obs: Observable<T>): T {
 type Constructor<T = {}> = new (...args: any[]) => T;
 
 export function ExtendedFormBase<
-  U,
   T extends Constructor<FormBaseComponent> = Constructor<FormBaseComponent>,
 >(Base: T) {
-  @Component({
-    selector: 'app-form',
-    template: ``,
-  })
   class ExtendedComponent extends Base {
-    formGroupControl = inject(ControlContainer).control as FormGroup;
+    formGroupControl!: FormGroup;
+    controlContainer = this.injector.get(ControlContainer);
+
+    constructor(...args: any[]) {
+      super(...args);
+      this.formGroupControl = this.controlContainer.control as FormGroup;
+    }
 
     protected getCommonValue() {
       const commonValue = _.cloneDeep(this.formGroupControl.value);
@@ -43,7 +45,7 @@ export function ExtendedFormBase<
       return commonValue;
     }
 
-    protected onSetCurrentTimeForDatepicker(
+    override onSetCurrentTimeForDatepicker(
       formArray: FormArray,
       index: number,
       formControlName: string,
@@ -56,7 +58,7 @@ export function ExtendedFormBase<
       control.setValue(new Date());
     }
 
-    convertOptionToEnum(data: IOption[]) {
+    override convertOptionToEnum(data: IOption[]) {
       return Object.freeze(
         data.reduce((acc, { label, value }) => {
           const key = label
@@ -73,8 +75,51 @@ export function ExtendedFormBase<
       ) as { readonly [K in string]: string };
     }
 
-    mapRowDataToType<U>(rowData: U): U {
+    override mapRowDataToType<U>(rowData: U): U {
       return rowData as U;
+    }
+
+    isSelectAll: boolean = false;
+    selectedNumber: number = 0;
+    indexListBatch: number[] = [];
+
+    getSelectedNumberAndIds(formArray: FormArray) {
+      this.indexListBatch = [];
+      this.selectedNumber = formArray.value.filter(
+        (rowData: IBugFormGroup, index: number) => {
+          if (rowData.selected) {
+            this.indexListBatch.push(index);
+          }
+          return rowData.selected;
+        },
+      ).length;
+      this.indexListBatch.sort((a, b) => b - a);
+    }
+
+    toggleSelectAll(event: CheckboxChangeEvent, formArray: FormArray) {
+      this.isSelectAll = event.checked;
+      formArray.controls.forEach((control) => {
+        control.patchValue({
+          selected: this.isSelectAll,
+        });
+      });
+
+      this.getSelectedNumberAndIds(formArray);
+    }
+
+    onRowSelectionChange(
+      event: CheckboxChangeEvent,
+      formArray: FormArray,
+      index: number,
+    ) {
+      formArray.at(index).patchValue({
+        selected: event.checked,
+      });
+      this.isSelectAll = formArray.value.every(
+        (row: IBugFormGroup) => row.selected,
+      );
+
+      this.getSelectedNumberAndIds(formArray);
     }
   }
 

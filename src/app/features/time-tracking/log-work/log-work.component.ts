@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import {
+  COMMON_COLUMN_FIELD,
   ISelectFormGroup,
   ITabComponent,
   SELECT_FORM_GROUP_KEY,
@@ -25,11 +26,9 @@ import { IColumnHeaderConfigs } from 'src/app/shared/interface/common.interface'
 import {
   ILogWorkRowData,
   LOG_WORK_CHILD_FORM_GROUP_KEYS,
-  LOG_WORK_COLUMN_FIELD,
   logWorkHeaderColumnConfigs,
   logWorkNullableObj,
 } from './log-work.model';
-import { FormBaseComponent } from 'src/app/shared';
 import { TimeTrackingApiService } from '../time-tracking-api.service';
 import {
   catchError,
@@ -49,11 +48,12 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { ConvertIdToNamePipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
 import { TimeTrackingStore } from '../time-tracking.store';
-import * as _ from 'lodash';
 import { WorkDurationDirective } from '../../../directives';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { ILogWorkResponseDTO } from './log-work.dto.model';
+import { ExtendedFormBase } from '../../../utils/function';
+import { FormBaseComponent } from '../../../shared';
 
 @Component({
   selector: 'app-log-work',
@@ -77,10 +77,9 @@ import { ILogWorkResponseDTO } from './log-work.dto.model';
   styleUrl: './log-work.component.scss',
 })
 export class LogWorkComponent
-  extends FormBaseComponent
+  extends ExtendedFormBase(FormBaseComponent)
   implements OnInit, ITabComponent
 {
-  formGroupControl = input.required<FormGroup>();
   projectFormControl = input.required<LibFormSelectComponent>();
 
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
@@ -110,7 +109,7 @@ export class LogWorkComponent
   createFormGroup!: FormGroup;
   fixedRowData: ILogWorkRowData[] = [];
   protected readonly FORM_GROUP_KEYS = LOG_WORK_CHILD_FORM_GROUP_KEYS;
-  protected readonly COLUMN_FIELD = LOG_WORK_COLUMN_FIELD;
+  protected readonly COLUMN_FIELD = COMMON_COLUMN_FIELD;
   protected readonly EMode = EMode;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
   allDropdownData$ = this.timeTrackingStore.allDropdownData$;
@@ -131,7 +130,7 @@ export class LogWorkComponent
   override ngOnInit() {
     super.ngOnInit();
 
-    const formValue = this.formGroupControl().value;
+    const formValue = this.formGroupControl.value;
     this.addCreateRowForm();
     this.createFormGroup = this.formBuilder.group({
       ...logWorkNullableObj,
@@ -153,7 +152,7 @@ export class LogWorkComponent
             this.timeTrackingStore.setLoading(true);
             this.doGetRequestDTO.update((oldValue: any) => {
               const formGroupValue =
-                this.formGroupControl().getRawValue() as ISelectFormGroup;
+                this.formGroupControl.getRawValue() as ISelectFormGroup;
 
               return {
                 ...oldValue,
@@ -205,7 +204,7 @@ export class LogWorkComponent
     this.subscription.add(
       this.getControlValueChanges(
         SELECT_FORM_GROUP_KEY.dateRange,
-        this.formGroupControl(),
+        this.formGroupControl,
       )
         .pipe(filter((dataRange) => !!dataRange))
         .subscribe(() => {
@@ -217,18 +216,6 @@ export class LogWorkComponent
 
   addCreateRowForm() {
     this.fixedRowData = [
-      {
-        ...logWorkNullableObj,
-        mode: EMode.CREATE,
-        isLunchBreak: true,
-        createdDate: new Date(),
-      },
-      {
-        ...logWorkNullableObj,
-        mode: EMode.CREATE,
-        isLunchBreak: true,
-        createdDate: new Date(),
-      },
       {
         ...logWorkNullableObj,
         mode: EMode.CREATE,
@@ -297,7 +284,11 @@ export class LogWorkComponent
     return this.getSubFormGroupInFormArray(this.formArray, index);
   }
 
-  onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
+  override onSetCurrentTimeForDatepicker(
+    formArray: FormArray,
+    index: number,
+    formControlName: string,
+  ) {
     let control: FormControl;
     if (this.mode() === EMode.UPDATE) {
       control = this.getFormControl(index, formControlName);
@@ -348,14 +339,14 @@ export class LogWorkComponent
     this.tableData = this.formArray.value;
   }
 
-  getCommonValue() {
-    const commonValue = _.cloneDeep(this.formGroupControl().value);
-    delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
-    delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
-    delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
-
-    return commonValue;
-  }
+  // override getCommonValue() {
+  //   const commonValue = _.cloneDeep(this.formGroupControl().value);
+  //   delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
+  //   delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
+  //   delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
+  //
+  //   return commonValue;
+  // }
 
   onSaveCreate() {
     const data: ILogWorkRowData = {

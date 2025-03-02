@@ -41,14 +41,12 @@ import {
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { LibFormSelectComponent } from 'src/app/components';
 import { TagModule } from 'primeng/tag';
-import { FixBugDoImprovementComponent } from './fix-bug-do-improvement/fix-bug-do-improvement.component';
 import { LogWorkComponent } from './log-work/log-work.component';
 import { TimeTrackingStore } from './time-tracking.store';
 import { getValue } from 'src/app/utils/function';
 import { IssuesComponent } from './issues/issues.component';
 import { BugComponent } from './bug/bug.component';
 import { ImprovementComponent } from './improvement/improvement.component';
-import { FixBugDoImprovement1Component } from './bug-improvement-list/fix-bug-do-improvement.component';
 
 @Component({
   selector: 'app-time-tracking',
@@ -80,12 +78,10 @@ import { FixBugDoImprovement1Component } from './bug-improvement-list/fix-bug-do
     ConfirmDialogModule,
     LibFormSelectComponent,
     TagModule,
-    FixBugDoImprovementComponent,
     LogWorkComponent,
     IssuesComponent,
     BugComponent,
     ImprovementComponent,
-    FixBugDoImprovement1Component,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',

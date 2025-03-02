@@ -34,7 +34,6 @@ import {
   EApiMethod,
   EMode,
 } from '../../../contants/common.constant';
-import { FormBaseComponent } from '../../../shared';
 import {
   catchError,
   debounceTime,
@@ -71,11 +70,11 @@ import {
 import { TimeTrackingApiService } from '../time-tracking-api.service';
 import { message } from 'src/app/contants/api.contant';
 import { IIssueResponseDTO } from './issues.dto.model';
-import * as _ from 'lodash';
 import { Checkbox } from 'primeng/checkbox';
 import { getValue } from '../../../utils/function';
 import { ImprovementComponent } from '../improvement/improvement.component';
 import { ILogWorkRowData } from '../log-work/log-work.model';
+import { TabComponentBaseComponent } from '../../../shared/base/tab-component-base/tab-component-base.component';
 
 @Component({
   selector: 'app-issues',
@@ -104,10 +103,10 @@ import { ILogWorkRowData } from '../log-work/log-work.model';
   styleUrl: './issues.component.scss',
 })
 export class IssuesComponent
-  extends FormBaseComponent
+  extends TabComponentBaseComponent
   implements OnInit, ITabComponent
 {
-  formGroupControl = input<FormGroup>();
+  // formGroupControl = input<FormGroup>();
   projectFormControl = input<LibFormSelectComponent>();
 
   headerColumnConfigs: IColumnHeaderConfigs[] = issuesHeaderColumnConfigs;
@@ -196,7 +195,7 @@ export class IssuesComponent
           switchMap(() => {
             this.doGetRequestDTO.update((oldValue: any) => {
               const formGroupValue =
-                this.formGroupControl().getRawValue() as ISelectFormGroup;
+                this.formGroupControl.getRawValue() as ISelectFormGroup;
 
               return {
                 ...oldValue,
@@ -248,7 +247,7 @@ export class IssuesComponent
     this.subscription.add(
       this.getControlValueChanges(
         SELECT_FORM_GROUP_KEY.dateRange,
-        this.formGroupControl(),
+        this.formGroupControl,
       )
         .pipe(filter((dataRange) => !!dataRange))
         .subscribe((dataRange: any) => {
@@ -264,6 +263,7 @@ export class IssuesComponent
       ).subscribe((isbool: boolean) => {
         if (isbool) {
           this.onSetCurrentTimeForDatepicker(
+            this.formArray,
             -1,
             this.FORM_GROUP_KEYS.startTime,
           );
@@ -285,7 +285,11 @@ export class IssuesComponent
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
+  override onSetCurrentTimeForDatepicker(
+    formArray: FormArray,
+    index: number,
+    formControlName: string,
+  ) {
     let control: FormControl;
     if (this.mode() === EMode.UPDATE) {
       control = this.getFormControl(index, formControlName);
@@ -392,14 +396,14 @@ export class IssuesComponent
     data: null,
   });
 
-  getCommonValue() {
-    const commonValue = _.cloneDeep(this.formGroupControl().value);
-    delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
-    delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
-    delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
-
-    return commonValue;
-  }
+  // getCommonValue() {
+  //   const commonValue = _.cloneDeep(this.formGroupControl().value);
+  //   delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
+  //   delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
+  //   delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
+  //
+  //   return commonValue;
+  // }
 
   onSaveCreate() {
     const isValid = this.createFormGroup.valid;

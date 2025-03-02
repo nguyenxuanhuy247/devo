@@ -161,7 +161,6 @@
           <p-tabpanel [value]="ETabName.LOG_WORK">
             <app-log-work
               #tab
-              [formGroupControl]="formGroup"
               [projectFormControl]="projectId"
             >
             </app-log-work>
@@ -183,7 +182,6 @@
           <p-tabpanel [value]="ETabName.IMPROVEMENT">
             <app-improvement
               #tab
-              [formGroupControl]="formGroup"
               [projectFormControl]="projectId"
             >
             </app-improvement>
@@ -195,34 +193,14 @@
           <p-tabpanel [value]="ETabName.ISSUE">
             <app-issues
               #tab
-              [formGroupControl]="formGroup"
               [projectFormControl]="projectId"
             >
             </app-issues>
           </p-tabpanel>
         }
 
-        <!-- Tab Fix Bug & Do Improvement -->
-        @if (activeTab() === ETabName.FIX_BUG_DO_IMPROVEMENT) {
-          <p-tabpanel [value]="ETabName.FIX_BUG_DO_IMPROVEMENT">
-            <app-fix-bug-do-improvement
-              #tab
-              [formGroupControl]="formGroup"
-              [commonFormGroupKey]="SELECT_FORM_GROUP_KEY"
-            ></app-fix-bug-do-improvement>
-          </p-tabpanel>
-        }
-
         <!-- Tab Fix Bug & Do Improvement thử nghiệm-->
         @if (activeTab() === ETabName.REPORT) {
-          <p-tabpanel [value]="ETabName.REPORT">
-            <app-fix-bug-do-improvement-1
-              #tab
-              [formGroupControl]="formGroup"
-              [commonFormGroupKey]="SELECT_FORM_GROUP_KEY"
-              [projectFormControl]="projectId"
-            ></app-fix-bug-do-improvement-1>
-          </p-tabpanel>
         }
       </p-tabpanels>
     </p-tabs>

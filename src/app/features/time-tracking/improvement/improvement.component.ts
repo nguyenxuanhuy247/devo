@@ -36,7 +36,6 @@ import {
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
 import { ConvertIdToNamePipe } from '../../../pipes';
-import { FormBaseComponent } from '../../../shared';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { TagModule } from 'primeng/tag';
 import {
@@ -68,6 +67,7 @@ import { IImprovementResponseDTO } from './improvement.dto.model';
 import { Checkbox } from 'primeng/checkbox';
 import { IIssuesRowData } from '../issues/issues.model';
 import * as _ from 'lodash';
+import { TabComponentBaseComponent } from '../../../shared/base/tab-component-base/tab-component-base.component';
 
 @Component({
   selector: 'app-improvement',
@@ -94,10 +94,10 @@ import * as _ from 'lodash';
   },
 })
 export class ImprovementComponent
-  extends FormBaseComponent
+  extends TabComponentBaseComponent
   implements OnInit, ITabComponent
 {
-  formGroupControl = input<FormGroup>();
+  // formGroupControl = input<FormGroup>();
   projectFormControl = input<LibFormSelectComponent>();
   issueRowData = input<IIssuesRowData>(null);
 
@@ -115,7 +115,7 @@ export class ImprovementComponent
   });
 
   commonFormGroupValue = computed(() => {
-    const commonValue = _.cloneDeep(this.formGroupControl().value);
+    const commonValue = _.cloneDeep(this.formGroupControl.value);
     delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
     delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
     delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
@@ -170,7 +170,7 @@ export class ImprovementComponent
 
   override ngOnInit() {
     super.ngOnInit();
-    const formValue = this.formGroupControl().value;
+    const formValue = this.formGroupControl.value;
     this.addCreateRowForm();
     this.createFormGroup = this.formBuilder.group({
       ...improvementNullableObj,
@@ -192,7 +192,7 @@ export class ImprovementComponent
           switchMap(() => {
             this.doGetRequestDTO.update((oldValue: any) => {
               const formGroupValue =
-                this.formGroupControl().getRawValue() as ISelectFormGroup;
+                this.formGroupControl.getRawValue() as ISelectFormGroup;
 
               return {
                 ...oldValue,
@@ -251,7 +251,7 @@ export class ImprovementComponent
     this.subscription.add(
       this.getControlValueChanges(
         SELECT_FORM_GROUP_KEY.dateRange,
-        this.formGroupControl(),
+        this.formGroupControl,
       )
         .pipe(filter((dataRange) => !!dataRange))
         .subscribe((_) => {
@@ -310,18 +310,18 @@ export class ImprovementComponent
     return this.getSubFormGroupInFormArray(this.formArray, index);
   }
 
-  onSetCurrentTimeForDatepicker(index: number, formControlName: string) {
-    let control: FormControl;
-    if (this.mode() === EMode.UPDATE) {
-      control = this.getFormControl(index, formControlName);
-    } else {
-      control = this.getControl(
-        formControlName,
-        this.createFormGroup,
-      ) as FormControl;
-    }
-    control.setValue(new Date());
-  }
+  // onSetCurrentTimeForDatepicker(formindex: number, formControlName: string) {
+  //   let control: FormControl;
+  //   if (this.mode() === EMode.UPDATE) {
+  //     control = this.getFormControl(index, formControlName);
+  //   } else {
+  //     control = this.getControl(
+  //       formControlName,
+  //       this.createFormGroup,
+  //     ) as FormControl;
+  //   }
+  //   control.setValue(new Date());
+  // }
 
   getFormControl(index: number, formControlName: string): FormControl {
     return this.formArray?.at(index)?.get(formControlName) as FormControl;
