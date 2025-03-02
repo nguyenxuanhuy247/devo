@@ -57,10 +57,11 @@ import {
   SELECT_FORM_GROUP_KEY,
 } from '../time-tracking.model';
 import { IBugResponseDTO } from './bug.dto.model';
-import { Checkbox } from 'primeng/checkbox';
+import { Checkbox, CheckboxChangeEvent } from 'primeng/checkbox';
 import * as Papa from 'papaparse';
 import * as _ from 'lodash';
 import { ExtendedFormBase } from '../../../utils/function';
+import { PopoverModule } from 'primeng/popover';
 
 @Component({
   selector: 'app-bug',
@@ -79,6 +80,7 @@ import { ExtendedFormBase } from '../../../utils/function';
     Textarea,
     WorkDurationDirective,
     Checkbox,
+    PopoverModule,
   ],
   templateUrl: './bug.component.html',
   styleUrl: './bug.component.scss',
@@ -135,6 +137,7 @@ export class BugComponent
     startTime: null,
     endTime: null,
   });
+  batchUpdateFormGroup: FormGroup;
 
   constructor(override injector: Injector) {
     super(injector);
@@ -143,6 +146,14 @@ export class BugComponent
   override ngOnInit() {
     super.ngOnInit();
     this.initSubscriptions();
+
+    this.batchUpdateFormGroup = this.formBuilder.group({
+      moduleId: null,
+      menuId: null,
+      screenId: null,
+      featureId: null,
+      categoryId: null,
+    });
   }
 
   initSubscriptions() {
@@ -560,5 +571,69 @@ export class BugComponent
     this.getSubFormGroupInFormArray(this.createFormArray, index).setValue(
       lowerRowValue,
     );
+  }
+
+  onRemoveAllCreateRow() {
+    this.createFormArray.clear();
+    this.onAddNewCreateRow();
+  }
+
+  onBatchRemoveCreateRow() {
+    this.indexListBatch.forEach((index: number) => {
+      console.log('111111111 ' + index, this.createFormArray);
+      this.createFormArray.removeAt(index);
+      console.log('this.Xóa nhiều control ' + index, this.createFormArray);
+    });
+  }
+
+  onBatchUpdateCreateRow() {
+    const batchUpdateFormValue = this.batchUpdateFormGroup.value;
+    this.createFormArray.controls.forEach((control, index: number) => {
+      if (this.indexListBatch.includes(index)) {
+        control.patchValue({
+          ...batchUpdateFormValue,
+        });
+      }
+    });
+    this.batchUpdateFormGroup.reset();
+  }
+
+  isSelectAll: boolean = false;
+  selectedNumber: number = 0;
+  indexListBatch: number[] = [];
+
+  getSelectedNumberAndIds() {
+    this.indexListBatch = [];
+    this.selectedNumber = this.createFormArray.value.filter(
+      (rowData: IBugFormGroup, index: number) => {
+        if (rowData.selected) {
+          this.indexListBatch.push(index);
+        }
+        return rowData.selected;
+      },
+    ).length;
+    this.indexListBatch.sort((a, b) => b - a);
+  }
+
+  toggleSelectAll(event: CheckboxChangeEvent) {
+    this.isSelectAll = event.checked;
+    this.createFormArray.controls.forEach((control) => {
+      control.patchValue({
+        selected: this.isSelectAll,
+      });
+    });
+
+    this.getSelectedNumberAndIds();
+  }
+
+  onRowSelectionChange(event: CheckboxChangeEvent, index: number) {
+    this.createFormArray.at(index).patchValue({
+      selected: event.checked,
+    });
+    this.isSelectAll = this.createFormArray.value.every(
+      (row: IBugFormGroup) => row.selected,
+    );
+
+    this.getSelectedNumberAndIds();
   }
 }

@@ -11,6 +11,7 @@ export const BUG_FORM_GROUP_KEY =
 export type IBugFormGroup = IBugRowData;
 
 export const bugNullableObj: IBugRowData = {
+  selected: false,
   mode: EMode.VIEW,
   id: null,
   moduleId: null,

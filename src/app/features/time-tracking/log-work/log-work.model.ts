@@ -22,6 +22,7 @@ export interface ILogWorkRowData extends ICommonTimeTrackingRowData {
 }
 
 export const logWorkNullableObj: ILogWorkRowData = {
+  selected: false,
   mode: EMode.VIEW,
   id: null,
   moduleId: null,

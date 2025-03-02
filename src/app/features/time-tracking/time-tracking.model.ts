@@ -84,12 +84,14 @@ export interface ITabComponent {
 export const COMMON_COLUMN_FIELD = Object.assign(
   CommonService.generateEnumFromInterface<ICommonTimeTrackingRowData>(),
   {
+    batch: 'batch',
     order: 'order',
     actions: 'actions',
   },
 );
 
 export interface ICommonTimeTrackingRowData {
+  selected: boolean;
   mode: EMode;
   id: ID;
   moduleId: ID;
@@ -109,6 +111,11 @@ export const getHeaderColumnConfigsFactory = (
   configs02: IColumnHeaderConfigs[] = [],
 ): IColumnHeaderConfigs[] => {
   return [
+    {
+      label: 'STT',
+      field: COMMON_COLUMN_FIELD.batch,
+      minWidth: 80,
+    },
     {
       label: 'STT',
       field: COMMON_COLUMN_FIELD.order,

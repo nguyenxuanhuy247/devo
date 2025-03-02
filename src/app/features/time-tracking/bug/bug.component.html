@@ -1,38 +1,135 @@
 <div class="huynx15-bug h-full flex flex-column">
-  <!-- Danh sách nút bấm -->
-  <div class="flex justify-content-end gap-3">
-    <p-button
-      [outlined]="true"
-      severity="secondary"
-      icon="pi pi-file-import"
-      pTooltip="Nhập dữ liệu từ CSV"
-      label="Import CSV"
-      (click)="importCSV.click()"
-    />
-    <input
-      #importCSV
-      type="file"
-      hidden
-      (change)="onFileChange($event)"
-      accept=".csv"
-    />
+  <div
+    class="huynx15-actions flex align-items-center justify-content-between gap-3"
+    [ngClass]="{
+       'justify-content-between': selectedNumber,
+       'justify-content-end': !selectedNumber
+    }"
+  >
+    <div *ngIf="selectedNumber" class="flex justify-content-end gap-3">
+      <span>Chọn {{ selectedNumber }} - </span>
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-file-edit"
+        pTooltip="Xóa nhiều"
+        label="Xóa nhiều"
+        (click)="onBatchRemoveCreateRow()"
+      />
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-trash"
+        pTooltip="Xóa nhiều"
+        label="Chỉnh sửa nhiều"
+        (click)="batchUpdate.toggle($event)"
+      />
+      <p-popover #batchUpdate>
+        <div class="flex flex-column" [formGroup]="batchUpdateFormGroup">
+          <div>
+            <span>Module</span>
+            <lib-form-select
+              #moduleId
+              [formControlName]="FORM_GROUP_KEYS.moduleId"
+              [options]="(moduleDependentOptions$ | async)?.[projectFormControl().value]"
+            ></lib-form-select>
+          </div>
 
-    <p-button
-      [outlined]="true"
-      severity="secondary"
-      icon="pi pi-plus"
-      pTooltip="Thêm 1 dòng để tạo mới"
-      label="Thêm dòng mới"
-      (click)="onAddNewCreateRow()"
-    />
+          <div>
+            <span>Menu</span>
+            <lib-form-select
+              #menuId
+              [formControlName]="FORM_GROUP_KEYS.menuId"
+              [options]="(menuDependentOptions$ | async)?.[moduleId.value]"
+            ></lib-form-select>
+          </div>
 
-    <p-button
-      icon="pi pi-save"
-      label="Lưu tất cả"
-      (click)="onBulkCreate()"
-    />
+          <div>
+            <span>Màn hình</span>
+            <lib-form-select
+              #screenId
+              [formControlName]="FORM_GROUP_KEYS.screenId"
+              [options]="(screenDependentOptions$ | async)?.[menuId.value]"
+            ></lib-form-select>
+          </div>
+
+          <div>
+            <span>Tính năng</span>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.featureId"
+              [options]="(featureDependentOptions$ | async)?.[screenId.value]"
+            ></lib-form-select>
+          </div>
+
+          <div>
+            <span>Phân loại</span>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.categoryId"
+              [options]="(categoryOptions$ | async) || []"
+            ></lib-form-select>
+          </div>
+
+          <div class="flex justify-content-end gap-3">
+            <p-button
+              [outlined]="true"
+              severity="secondary"
+              icon="pi pi-times"
+              pTooltip="Hủy chỉnh sửa hàng loạt"
+              label="Hủy"
+              (click)="batchUpdate.hide(); batchUpdateFormGroup.reset()"
+            />
+            <p-button
+              icon="pi pi-save"
+              pTooltip="Lưu chỉnh sửa hàng loạt"
+              label="Xác nhận"
+              (click)="onBatchUpdateCreateRow()"
+            />
+          </div>
+        </div>
+      </p-popover>
+    </div>
+    <!-- Danh sách nút bấm -->
+    <div class="flex justify-content-end gap-3">
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-file-import"
+        pTooltip="Nhập dữ liệu từ CSV"
+        label="Import CSV"
+        (click)="importCSV.click()"
+      />
+      <input
+        #importCSV
+        type="file"
+        hidden
+        (change)="onFileChange($event)"
+        accept=".csv"
+      />
+
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-plus"
+        pTooltip="Thêm 1 dòng để tạo mới"
+        label="Thêm dòng mới"
+        (click)="onAddNewCreateRow()"
+      />
+
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-trash"
+        pTooltip="Xóa toàn bộ dòng thêm mới"
+        label="Xóa hết"
+        (click)="onRemoveAllCreateRow()"
+      />
+      <p-button
+        icon="pi pi-save"
+        label="Lưu tất cả"
+        (click)="onBulkCreate()"
+      />
+    </div>
   </div>
-
   <div class="huynx15-table flex-1 overflow-hidden">
     <p-table
       [frozenValue]="createFormArray.controls"
@@ -43,7 +140,23 @@
       <ng-template pTemplate="header">
         <tr class="sticky top-0 z-5">
           @for (col of headerColumnConfigs; track col.field) {
-            @if (col.field === COLUMN_FIELD.order) {
+            @if (col.field === COLUMN_FIELD.batch) {
+              <th
+                pResizableColumn
+                [style.min-width.px]="col.minWidth"
+              >
+                <div class="flex">
+                  <div class="flex-1 line-clamp line-clamp-2">
+                    <p-checkbox
+                      [ngModelOptions]="{standalone: true}"
+                      [ngModel]="isSelectAll"
+                      (onChange)="toggleSelectAll($event)"
+                      [binary]="true"
+                    />
+                  </div>
+                </div>
+              </th>
+            } @else if (col.field === COLUMN_FIELD.order) {
               <th
                 pResizableColumn
                 [style.min-width.px]="col.minWidth"
@@ -103,13 +216,26 @@
       <!--  TABLE : THÊM MỚI -->
       <ng-template
         pTemplate="frozenbody"
-        let-rowData
+        let-control
         let-index="rowIndex"
       >
         <tr [formGroup]="getFormGroup(index, createFormArray)">
           <td>
+            <div>
+              <p-checkbox
+                [ngModelOptions]="{standalone: true}"
+                [ngModel]="control.value.selected"
+                (onChange)="onRowSelectionChange($event, index)"
+                [binary]="true"
+              ></p-checkbox>
+            </div>
+            {{ control.value.selected }}
+          </td>
+
+          <td>
             <div>{{ index + 1 }}</div>
           </td>
+
           <td>
             <div>
               <lib-form-select
@@ -180,7 +306,7 @@
 
           <td>
             <div>
-              {{ mapRowDataToType(rowData).name || "--" }}
+              {{ mapRowDataToType(control.value).name || "--" }}
             </div>
           </td>
 
@@ -440,6 +566,12 @@
         } @else {
           <!-- Chế độ cập nhật - UPDATE -->
           <tr [formGroup]="getFormGroup(index, viewUpdateFormArray)">
+            <td>
+              <div>
+                <!--                <p-checkbox formControlName="city" value="New York" />-->
+              </div>
+            </td>
+
             <td>
               <div>{{ index + 1 }}</div>
             </td>

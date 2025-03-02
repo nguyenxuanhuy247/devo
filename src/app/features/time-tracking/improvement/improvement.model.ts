@@ -14,6 +14,7 @@ export const IMPROVEMENT_FORM_GROUP_KEYS =
   CommonService.generateEnumFromInterface<IImprovementRowData>();
 
 export const improvementNullableObj: IImprovementRowData = {
+  selected: false,
   mode: EMode.VIEW,
   id: null,
   moduleId: null,
