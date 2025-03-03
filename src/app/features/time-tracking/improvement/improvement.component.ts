@@ -69,6 +69,7 @@ import { IIssuesRowData } from '../issues/issues.model';
 import * as _ from 'lodash';
 import { ExtendedFormBase } from 'src/app/utils/function';
 import { FormBaseComponent } from 'src/app/shared';
+import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
 
 @Component({
   selector: 'app-improvement',
@@ -95,7 +96,7 @@ import { FormBaseComponent } from 'src/app/shared';
   },
 })
 export class ImprovementComponent
-  extends ExtendedFormBase(FormBaseComponent)
+  extends TabComponentBaseComponent
   implements OnInit, ITabComponent
 {
   // formGroupControl = input<FormGroup>();

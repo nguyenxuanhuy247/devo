@@ -1,4 +1,7 @@
 import { Injectable } from '@angular/core';
+export enum EStorageKey {
+  CURRENT_LOG = 'currentLog',
+}
 
 @Injectable({
   providedIn: 'root',

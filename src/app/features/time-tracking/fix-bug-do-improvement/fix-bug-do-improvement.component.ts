@@ -48,7 +48,7 @@ import { LOG_WORK_COLUMN_FIELD } from '../log-work/log-work.model';
 import { TimeTrackingStore } from '../time-tracking.store';
 import { getValue } from 'src/app/utils/function';
 import * as Papa from 'papaparse';
-import { TabComponentBaseComponent } from '../../../shared/base/tab-component-base/tab-component-base.component';
+import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
 
 @Component({
   standalone: true,

@@ -62,6 +62,8 @@ import * as _ from 'lodash';
 import { PopoverModule } from 'primeng/popover';
 import { FormBaseComponent } from '../../../shared';
 import { ExtendedFormBase } from '../../../utils/function';
+import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
+import { EStorageKey } from 'src/app/services';
 
 @Component({
   selector: 'app-bug',
@@ -89,7 +91,7 @@ import { ExtendedFormBase } from '../../../utils/function';
   },
 })
 export class BugComponent
-  extends ExtendedFormBase(FormBaseComponent)
+  extends TabComponentBaseComponent
   implements OnInit, ITabComponent
 {
   projectFormControl = input<LibFormSelectComponent>();
@@ -199,6 +201,7 @@ export class BugComponent
 
           listData.forEach((rowData) => {
             const formGroup = this.formBuilder.group({
+              ...bugNullableObj,
               ...rowData,
               mode: EMode.VIEW,
               isLunchBreak: true,
@@ -507,7 +510,6 @@ export class BugComponent
 
   onSelectStatus(optionId: ID, index: number) {
     const EStatusNameId = this.convertOptionToEnum(this.statusOption());
-    console.log('onSelectStatus ', EStatusNameId);
     if (optionId === EStatusNameId['DANG_FIX']) {
       this.onSetCurrentTimeForDatepicker(
         this.createFormArray,
@@ -531,8 +533,14 @@ export class BugComponent
         this.FORM_GROUP_KEYS.startTime,
       ).setValue(null);
     }
-
+    console.log('Cảnh báo cho thay đổi status');
     this.warningWhenChangeChromeTab();
+    this.saveCurrentLogToMemory(index);
+  }
+
+  private saveCurrentLogToMemory(index: number) {
+    const value = this.createFormArray.at(index).value;
+    this.localStorageService.setItem(EStorageKey.CURRENT_LOG, value);
   }
 
   onAddNewCreateRow() {
@@ -599,42 +607,20 @@ export class BugComponent
     this.batchUpdateFormGroup.reset();
   }
 
-  // isSelectAll: boolean = false;
-  // selectedNumber: number = 0;
-  // indexListBatch: number[] = [];
+  onContinueFixThisBug(index: number) {
+    const EStatusNameId = this.convertOptionToEnum(this.statusOption());
+    const formGroup = this.viewUpdateFormArray.at(index);
+    formGroup.patchValue({
+      status: EStatusNameId['DANG_FIX'],
+      startTime: new Date(),
+      endTime: null,
+      duration: null,
+    });
 
-  // getSelectedNumberAndIds() {
-  //   this.indexListBatch = [];
-  //   this.selectedNumber = this.createFormArray.value.filter(
-  //     (rowData: IBugFormGroup, index: number) => {
-  //       if (rowData.selected) {
-  //         this.indexListBatch.push(index);
-  //       }
-  //       return rowData.selected;
-  //     },
-  //   ).length;
-  //   this.indexListBatch.sort((a, b) => b - a);
-  // }
-  //
-  // toggleSelectAll(event: CheckboxChangeEvent) {
-  //   this.isSelectAll = event.checked;
-  //   this.createFormArray.controls.forEach((control) => {
-  //     control.patchValue({
-  //       selected: this.isSelectAll,
-  //     });
-  //   });
-  //
-  //   this.getSelectedNumberAndIds();
-  // }
-
-  // onRowSelectionChange(event: CheckboxChangeEvent, index: number) {
-  //   this.createFormArray.at(index).patchValue({
-  //     selected: event.checked,
-  //   });
-  //   this.isSelectAll = this.createFormArray.value.every(
-  //     (row: IBugFormGroup) => row.selected,
-  //   );
-  //
-  //   this.getSelectedNumberAndIds(this.createFormArray);
-  // }
+    if (this.createFormArray.controls.length > 1) {
+      this.createFormArray.insert(0, formGroup);
+    } else {
+      this.createFormArray.patchValue([formGroup.value]);
+    }
+  }
 }

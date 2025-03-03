@@ -11,6 +11,7 @@ import { SELECT_FORM_GROUP_KEY } from '../features/time-tracking/time-tracking.m
 import { IOption } from '../shared/interface/common.interface';
 import { CheckboxChangeEvent } from 'primeng/checkbox';
 import { IBugFormGroup } from '../features/time-tracking/bug/bug.model';
+import { Directive, OnInit } from '@angular/core';
 
 export function getValue<T>(obs: Observable<T>): T {
   let value: T;
@@ -45,20 +46,7 @@ export function ExtendedFormBase<
       return commonValue;
     }
 
-    override onSetCurrentTimeForDatepicker(
-      formArray: FormArray,
-      index: number,
-      formControlName: string,
-    ) {
-      const control = this.getFormControlInSubFormGroup(
-        formArray,
-        index,
-        formControlName,
-      ) as FormControl;
-      control.setValue(new Date());
-    }
-
-    override convertOptionToEnum(data: IOption[]) {
+    convertOptionToEnum(data: IOption[]) {
       return Object.freeze(
         data.reduce((acc, { label, value }) => {
           const key = label

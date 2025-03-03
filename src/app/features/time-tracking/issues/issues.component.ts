@@ -75,6 +75,7 @@ import { ExtendedFormBase, getValue } from '../../../utils/function';
 import { ImprovementComponent } from '../improvement/improvement.component';
 import { ILogWorkRowData } from '../log-work/log-work.model';
 import { FormBaseComponent } from 'src/app/shared';
+import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
 
 @Component({
   selector: 'app-issues',
@@ -103,7 +104,7 @@ import { FormBaseComponent } from 'src/app/shared';
   styleUrl: './issues.component.scss',
 })
 export class IssuesComponent
-  extends ExtendedFormBase(FormBaseComponent)
+  extends TabComponentBaseComponent
   implements OnInit, ITabComponent
 {
   // formGroupControl = input<FormGroup>();

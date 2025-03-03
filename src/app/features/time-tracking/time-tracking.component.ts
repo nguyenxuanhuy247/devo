@@ -136,12 +136,6 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     }
 
     this.timeTrackingStore.getAllDropdownData();
-
-    document.addEventListener(
-      'visibilitychange',
-      this.warningWhenChangeChromeTab,
-    );
-    this.warningWhenChangeChromeTab();
   }
 
   initSubscriptions() {

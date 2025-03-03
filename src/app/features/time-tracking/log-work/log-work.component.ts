@@ -54,6 +54,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { ILogWorkResponseDTO } from './log-work.dto.model';
 import { ExtendedFormBase } from '../../../utils/function';
 import { FormBaseComponent } from '../../../shared';
+import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
 
 @Component({
   selector: 'app-log-work',
@@ -77,7 +78,7 @@ import { FormBaseComponent } from '../../../shared';
   styleUrl: './log-work.component.scss',
 })
 export class LogWorkComponent
-  extends ExtendedFormBase(FormBaseComponent)
+  extends TabComponentBaseComponent
   implements OnInit, ITabComponent
 {
   projectFormControl = input.required<LibFormSelectComponent>();
