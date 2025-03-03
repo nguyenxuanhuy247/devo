@@ -67,7 +67,8 @@ import { IImprovementResponseDTO } from './improvement.dto.model';
 import { Checkbox } from 'primeng/checkbox';
 import { IIssuesRowData } from '../issues/issues.model';
 import * as _ from 'lodash';
-import { TabComponentBaseComponent } from '../../../shared/base/tab-component-base/tab-component-base.component';
+import { ExtendedFormBase } from 'src/app/utils/function';
+import { FormBaseComponent } from 'src/app/shared';
 
 @Component({
   selector: 'app-improvement',
@@ -94,7 +95,7 @@ import { TabComponentBaseComponent } from '../../../shared/base/tab-component-ba
   },
 })
 export class ImprovementComponent
-  extends TabComponentBaseComponent
+  extends ExtendedFormBase(FormBaseComponent)
   implements OnInit, ITabComponent
 {
   // formGroupControl = input<FormGroup>();

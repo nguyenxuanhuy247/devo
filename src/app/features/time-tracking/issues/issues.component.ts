@@ -71,10 +71,10 @@ import { TimeTrackingApiService } from '../time-tracking-api.service';
 import { message } from 'src/app/contants/api.contant';
 import { IIssueResponseDTO } from './issues.dto.model';
 import { Checkbox } from 'primeng/checkbox';
-import { getValue } from '../../../utils/function';
+import { ExtendedFormBase, getValue } from '../../../utils/function';
 import { ImprovementComponent } from '../improvement/improvement.component';
 import { ILogWorkRowData } from '../log-work/log-work.model';
-import { TabComponentBaseComponent } from '../../../shared/base/tab-component-base/tab-component-base.component';
+import { FormBaseComponent } from 'src/app/shared';
 
 @Component({
   selector: 'app-issues',
@@ -103,7 +103,7 @@ import { TabComponentBaseComponent } from '../../../shared/base/tab-component-ba
   styleUrl: './issues.component.scss',
 })
 export class IssuesComponent
-  extends TabComponentBaseComponent
+  extends ExtendedFormBase(FormBaseComponent)
   implements OnInit, ITabComponent
 {
   // formGroupControl = input<FormGroup>();
