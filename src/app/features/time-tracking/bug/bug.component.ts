@@ -60,10 +60,8 @@ import { Checkbox } from 'primeng/checkbox';
 import * as Papa from 'papaparse';
 import * as _ from 'lodash';
 import { PopoverModule } from 'primeng/popover';
-import { FormBaseComponent } from '../../../shared';
-import { ExtendedFormBase } from '../../../utils/function';
 import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
-import { EStorageKey } from 'src/app/services';
+import { ELogStorageKey } from 'src/app/services';
 
 @Component({
   selector: 'app-bug',
@@ -158,6 +156,11 @@ export class BugComponent
   }
 
   initSubscriptions() {
+    this.onDestroy$.subscribe(() => {
+      this.subscription.unsubscribe();
+      this.localStorageService.removeItem(ELogStorageKey.CURRENT_BUG);
+    });
+
     this.subscription.add(
       this.getTableDataApiRequest$
         .pipe(
@@ -212,6 +215,7 @@ export class BugComponent
           });
 
           this.viewUpdateTableData = this.viewUpdateFormArray.value;
+          this.warningWhenChangeChromeTab();
         }),
     );
 
@@ -300,7 +304,6 @@ export class BugComponent
     delete cloneFormValue.mode;
     delete cloneFormValue.name;
 
-    console.log('onSaveCreate 111111', this.doPostRequestDTO());
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
@@ -313,7 +316,6 @@ export class BugComponent
       ],
     }));
 
-    console.log('onSaveCreate 22222', this.doPostRequestDTO());
     this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .createItemAsync(this.doPostRequestDTO())
@@ -441,13 +443,16 @@ export class BugComponent
           }
 
           const EStatusNameId = this.convertOptionToEnum(this.statusOption());
-          this.csvData.forEach((rowData: any) => {
+          this.csvData.forEach((rowData: any, index: number) => {
             const formGroup = this.formBuilder.group({
               ...bugNullableObj,
               mode: this.EMode.UPDATE,
               isLunchBreak: true,
               status: EStatusNameId['CHUA_FIX'],
               ...rowData,
+            });
+            formGroup.valueChanges.subscribe((value) => {
+              this.saveCurrentLogToMemory(index);
             });
             this.createFormArray.push(formGroup);
           });
@@ -462,7 +467,7 @@ export class BugComponent
 
   override checkIsTimeTracking() {
     return this.createFormArray.value.some(
-      (rowData: IBugRowData) => rowData.startTime,
+      (rowData: IBugRowData) => rowData.startTime && !rowData.endTime,
     );
   }
 
@@ -540,7 +545,7 @@ export class BugComponent
 
   private saveCurrentLogToMemory(index: number) {
     const value = this.createFormArray.at(index).value;
-    this.localStorageService.setItem(EStorageKey.CURRENT_LOG, value);
+    this.localStorageService.setItem(ELogStorageKey.CURRENT_BUG, value);
   }
 
   onAddNewCreateRow() {
@@ -622,5 +627,33 @@ export class BugComponent
     } else {
       this.createFormArray.patchValue([formGroup.value]);
     }
+  }
+
+  override onSetCurrentTimeForDatepicker(
+    formArray: FormArray,
+    index: number,
+    formControlName: string,
+  ) {
+    super.onSetCurrentTimeForDatepicker(formArray, index, formControlName);
+    this.warningWhenChangeChromeTab();
+  }
+
+  onRecoverCurrentLog() {
+    const value = this.localStorageService.getItem(
+      ELogStorageKey.CURRENT_BUG,
+    ) as IBugRowData;
+    if (value) {
+      const formGroup = this.formBuilder.group({
+        ...value,
+        startTime: value.startTime ? new Date(value.startTime) : null,
+        endTime: value.endTime ? new Date(value.endTime) : null,
+      });
+      if (this.createFormArray.controls.length > 1) {
+        this.createFormArray.insert(0, formGroup);
+      } else {
+        this.createFormArray.patchValue([formGroup.value]);
+      }
+    }
+    this.warningWhenChangeChromeTab();
   }
 }

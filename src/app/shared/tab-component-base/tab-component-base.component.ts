@@ -51,6 +51,7 @@ export class TabComponentBaseComponent extends FormBaseComponent {
    * @usage Hiển thị cảnh báo trên thanh tiêu đề trình duyệt
    */
   warningWhenChangeChromeTab = () => {
+    this.clearBlinking();
     const isStartTimeTracking = this.checkIsTimeTracking();
     console.log('cảnh báo ', isStartTimeTracking);
     if (!isStartTimeTracking) {

@@ -100,6 +100,14 @@
       <p-button
         [outlined]="true"
         severity="secondary"
+        icon="pi pi-history"
+        pTooltip="Khôi phục dữ liệu đang log"
+        label="Khôi phục"
+        (click)="onRecoverCurrentLog()"
+      />
+      <p-button
+        [outlined]="true"
+        severity="secondary"
         icon="pi pi-file-import"
         pTooltip="Nhập dữ liệu từ CSV"
         label="Import CSV"
@@ -535,7 +543,7 @@
             />
           </td>
           } @else if (col.field === COLUMN_FIELD.duration) {
-          <td>{{ rowData[col.field] | number : '1.2-2' }}</td>
+          <td>{{ rowData[col.field] | number : '1.1-1' }}</td>
           } @else if (col.field === COLUMN_FIELD.actions) {
           <td>
             <div class="flex align-items-center justify-content-center gap-1">

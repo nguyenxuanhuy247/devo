@@ -5,6 +5,7 @@ import {
   ID,
 } from 'src/app/shared/interface/common.interface';
 import { IIssueResponseDTO } from './issues.dto.model';
+import { getHeaderColumnConfigsFactory } from '../time-tracking.model';
 
 export type IIssueCreateFormGroup = IIssueResponseDTO;
 
@@ -62,105 +63,56 @@ export const nullableIssuesObj: IIssuesRowData = {
 export const ISSUES_COLUMN_FIELD = Object.assign(
   CommonService.generateEnumFromInterface<IIssuesRowData>(),
   {
-    no: 'no',
+    order: 'order',
     actions: 'actions',
   },
 );
 
-export const issuesHeaderColumnConfigs: IColumnHeaderConfigs[] = [
-  {
-    label: 'STT',
-    field: ISSUES_COLUMN_FIELD.no,
-    minWidth: 80,
-  },
-  {
-    label: 'Module',
-    field: ISSUES_COLUMN_FIELD.moduleId,
-    minWidth: 200,
-  },
-  {
-    label: 'Menu',
-    field: ISSUES_COLUMN_FIELD.menuId,
-    minWidth: 200,
-  },
-  {
-    label: 'Màn hình',
-    field: ISSUES_COLUMN_FIELD.screenId,
-    minWidth: 200,
-  },
-  {
-    label: 'Tính năng',
-    field: ISSUES_COLUMN_FIELD.featureId,
-    minWidth: 200,
-  },
-  {
-    label: 'Phân loại',
-    field: ISSUES_COLUMN_FIELD.categoryId,
-    minWidth: 200,
-  },
-  {
-    label: 'Mã vấn đề',
-    field: ISSUES_COLUMN_FIELD.issueCode,
-    minWidth: 120,
-  },
-  {
-    label: 'Tên vấn đề',
-    field: ISSUES_COLUMN_FIELD.issueName,
-    minWidth: 120,
-  },
-  {
-    label: 'Nội dung vấn đề',
-    field: ISSUES_COLUMN_FIELD.issueContent,
-    minWidth: 120,
-  },
-  {
-    label: 'Đơn vị gây ra',
-    field: ISSUES_COLUMN_FIELD.departmentMakeId,
-    minWidth: 200,
-  },
-  {
-    label: 'Nhân viên gây ra',
-    field: ISSUES_COLUMN_FIELD.employeeMakeId,
-    minWidth: 200,
-  },
-  {
-    label: 'Lý do gián đoạn',
-    field: ISSUES_COLUMN_FIELD.interruptionReasonId,
-    minWidth: 200,
-  },
-  {
-    label: 'Mốc bàn giao',
-    field: ISSUES_COLUMN_FIELD.deadlineId,
-    minWidth: 200,
-  },
-  {
-    label: 'Hiện trạng',
-    field: ISSUES_COLUMN_FIELD.statusId,
-    minWidth: 200,
-  },
-  {
-    label: 'Block tiến độ',
-    field: ISSUES_COLUMN_FIELD.isBlockProgress,
-    minWidth: 200,
-  },
-  {
-    label: 'Thời gian bắt đầu',
-    field: ISSUES_COLUMN_FIELD.startTime,
-    minWidth: 200,
-  },
-  {
-    label: 'Thời gian hoàn thành',
-    field: ISSUES_COLUMN_FIELD.endTime,
-    minWidth: 200,
-  },
-  {
-    label: 'Thời lượng',
-    field: ISSUES_COLUMN_FIELD.duration,
-    minWidth: 60,
-  },
-  {
-    label: 'Hành động',
-    field: ISSUES_COLUMN_FIELD.actions,
-    minWidth: 120,
-  },
-];
+export const issuesHeaderColumnConfigs: IColumnHeaderConfigs[] =
+  getHeaderColumnConfigsFactory([
+    {
+      label: 'Mã vấn đề',
+      field: ISSUES_COLUMN_FIELD.issueCode,
+      minWidth: 120,
+    },
+    {
+      label: 'Tên vấn đề',
+      field: ISSUES_COLUMN_FIELD.issueName,
+      minWidth: 120,
+    },
+    {
+      label: 'Nội dung vấn đề',
+      field: ISSUES_COLUMN_FIELD.issueContent,
+      minWidth: 120,
+    },
+    {
+      label: 'Đơn vị gây ra',
+      field: ISSUES_COLUMN_FIELD.departmentMakeId,
+      minWidth: 200,
+    },
+    {
+      label: 'Nhân viên gây ra',
+      field: ISSUES_COLUMN_FIELD.employeeMakeId,
+      minWidth: 200,
+    },
+    {
+      label: 'Lý do gián đoạn',
+      field: ISSUES_COLUMN_FIELD.interruptionReasonId,
+      minWidth: 200,
+    },
+    {
+      label: 'Mốc bàn giao',
+      field: ISSUES_COLUMN_FIELD.deadlineId,
+      minWidth: 200,
+    },
+    {
+      label: 'Hiện trạng',
+      field: ISSUES_COLUMN_FIELD.statusId,
+      minWidth: 200,
+    },
+    {
+      label: 'Block tiến độ',
+      field: ISSUES_COLUMN_FIELD.isBlockProgress,
+      minWidth: 200,
+    },
+  ]);

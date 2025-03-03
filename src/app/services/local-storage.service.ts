@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-export enum EStorageKey {
-  CURRENT_LOG = 'currentLog',
+export enum ELogStorageKey {
+  CURRENT_BUG = 'logFixBug',
 }
 
 @Injectable({
