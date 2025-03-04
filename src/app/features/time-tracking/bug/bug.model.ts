@@ -1,6 +1,7 @@
 import { EMode } from 'src/app/contants/common.constant';
 import { CommonService } from 'src/app/services';
 import {
+  COMMON_COLUMN_FIELD,
   getHeaderColumnConfigsFactory,
   ICommonTimeTrackingRowData,
 } from '../time-tracking.model';
@@ -21,7 +22,7 @@ export const bugNullableObj: IBugRowData = {
   categoryId: null,
   code: null,
   name: null,
-  status: null,
+  statusId: null,
   startTime: null,
   endTime: null,
   duration: null,
@@ -31,6 +32,7 @@ export const bugNullableObj: IBugRowData = {
 };
 
 export const BUG_COLUMN_FIELD = Object.assign(
+  COMMON_COLUMN_FIELD,
   CommonService.generateEnumFromInterface<IBugRowData>(),
   {
     order: 'order',
@@ -42,7 +44,7 @@ export interface IBugRowData extends ICommonTimeTrackingRowData {
   code: string;
   isLunchBreak: boolean;
   name: 'name';
-  status: 'status';
+  statusId: 'statusId';
 }
 
 export const bugHeaderColumnConfigs = getHeaderColumnConfigsFactory(
@@ -59,7 +61,7 @@ export const bugHeaderColumnConfigs = getHeaderColumnConfigsFactory(
     },
     {
       label: 'Hiện trạng',
-      field: BUG_COLUMN_FIELD.status,
+      field: BUG_COLUMN_FIELD.statusId,
       minWidth: 200,
     },
   ],

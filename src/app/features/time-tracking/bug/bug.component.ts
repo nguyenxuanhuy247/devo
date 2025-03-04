@@ -1,6 +1,7 @@
 import { Component, Injector, input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
+  BUG_COLUMN_FIELD,
   BUG_FORM_GROUP_KEY,
   bugHeaderColumnConfigs,
   bugNullableObj,
@@ -100,7 +101,7 @@ export class BugComponent
   protected readonly FORM_GROUP_KEYS = BUG_FORM_GROUP_KEY;
   protected readonly ETabName = ESheetName;
   // protected readonly COLUMN_FIELD = BUG_COLUMN_FIELD;
-  protected readonly COLUMN_FIELD = COMMON_COLUMN_FIELD;
+  protected readonly COLUMN_FIELD = BUG_COLUMN_FIELD;
   protected readonly EMode = EMode;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
   timeTrackingService = this.injector.get(TimeTrackingApiService);
@@ -156,6 +157,12 @@ export class BugComponent
       featureId: null,
       categoryId: null,
     });
+  }
+
+  selectedRows: any[] = [];
+
+  onChangeSelection(event: any) {
+    console.log('aaaaaaaaa ', event, this.selectedRows);
   }
 
   initSubscriptions() {
@@ -488,10 +495,12 @@ export class BugComponent
         status: EStatusNameId['CHUA_FIX'],
         ...rowData,
       });
-      formGroup.valueChanges.subscribe((value) => {
-        this.saveCurrentLogToMemory(index);
-      });
       this.createFormArray.push(formGroup);
+
+      formGroup.valueChanges.subscribe(() => {
+        this.saveCurrentLogToMemory(index);
+        this.warningWhenChangeChromeTab();
+      });
     });
     this.timeTrackingStore.setLoading(false);
   }

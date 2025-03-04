@@ -2,15 +2,15 @@
   <div
     class="huynx15-actions flex align-items-center justify-content-between gap-3"
     [ngClass]="{
-      'justify-content-between': selectedNumber,
-      'justify-content-end': !selectedNumber
+      'justify-content-between': selectedRows?.length,
+      'justify-content-end': !selectedRows?.length
     }"
   >
     <div
-      *ngIf="selectedNumber"
+      *ngIf="selectedRows?.length"
       class="flex justify-content-end gap-3"
     >
-      <span>Chọn {{ selectedNumber }} </span>
+      <span>Chọn {{ selectedRows?.length }} </span>
       <p-button
         [outlined]="true"
         severity="secondary"
@@ -199,13 +199,18 @@
     <p-table
       [frozenValue]="createFormArray.controls"
       [value]="viewUpdateTableData"
+      [(selection)]="selectedRows"
+      (selectionChange)="onChangeSelection($event)"
       [resizableColumns]="true"
+      dataKey="selected"
     >
       <!-- TABLE HEADER -->
       <ng-template pTemplate="header">
         <tr class="sticky top-0 z-5">
-          @for (col of headerColumnConfigs; track col.field) { @if (col.field
-          === COLUMN_FIELD.batch) {
+          <th style="width: 4rem"><p-tableHeaderCheckbox /></th>
+          @for (col of headerColumnConfigs; track col.field) {
+          <!--  -->
+          @if (col.field === COLUMN_FIELD.batch) {
           <th
             pResizableColumn
             [style.min-width.px]="col.minWidth"
@@ -284,7 +289,7 @@
         let-index="rowIndex"
       >
         <tr [formGroup]="getFormGroup(index, createFormArray)">
-          <td>
+          <!-- <td>
             <div>
               <p-checkbox
                 [ngModelOptions]="{ standalone: true }"
@@ -295,8 +300,10 @@
                 [binary]="true"
               ></p-checkbox>
             </div>
+          </td> -->
+          <td>
+            <p-tableCheckbox [value]="index" />
           </td>
-
           <td>
             <div>{{ index + 1 }}</div>
           </td>
@@ -396,7 +403,7 @@
           <td>
             <div>
               <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.status"
+                [formControlName]="FORM_GROUP_KEYS.statusId"
                 [options]="(statusDependentTabOptions$ | async)?.['Bug']"
                 (selectOption)="onSelectStatus($event, index)"
               ></lib-form-select>
@@ -552,8 +559,10 @@
         @if (rowData.mode === EMode.VIEW) {
         <!-- Chế độ xem - VIEW -->
         <tr>
-          @for (col of headerColumnConfigs; track col.field) { @if (col.field
-          === COLUMN_FIELD.order) {
+          <td></td>
+          @for (col of headerColumnConfigs; track col.field) {
+          <!--  -->
+          @if (col.field === COLUMN_FIELD.order) {
           <td>{{ index + 1 }}</td>
           } @else if (col.field === COLUMN_FIELD.moduleId) {
           <td>
@@ -599,6 +608,22 @@
                   : (allDropdownData$ | async)?.categories
                   : 'categoryName'
             }}
+          </td>
+          } @else if (col.field === COLUMN_FIELD.statusId) {
+          <td>
+            {{
+              rowData[col.field]
+                | convertIdToName
+                  : (allDropdownData$ | async)?.statuses
+                  : 'statusName'
+            }}
+          </td>
+          } @else if (col.field === COLUMN_FIELD.isLunchBreak) {
+          <td>
+            <p-tag
+              [severity]="rowData[col.field] ? 'danger' : 'success'"
+              [value]="rowData[col.field] ? 'Có' : 'Không'"
+            />
           </td>
           } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
           COLUMN_FIELD.endTime) {
@@ -735,7 +760,7 @@
 
           <td>
             <div>
-              {{ mapRowDataToType(rowData).status || '--' }}
+              {{ mapRowDataToType(rowData).statusId || '--' }}
             </div>
           </td>
 
@@ -847,6 +872,8 @@
         </tr>
         }
       </ng-template>
+
+      <ng-template #summary> aaaaaaaaaaaaaaa </ng-template>
     </p-table>
   </div>
 </div>

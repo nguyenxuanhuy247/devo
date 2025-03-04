@@ -113,11 +113,6 @@ export const getHeaderColumnConfigsFactory = (
 ): IColumnHeaderConfigs[] => {
   return [
     {
-      label: 'C',
-      field: COMMON_COLUMN_FIELD.batch,
-      minWidth: 80,
-    },
-    {
       label: 'STT',
       field: COMMON_COLUMN_FIELD.order,
       minWidth: 80,

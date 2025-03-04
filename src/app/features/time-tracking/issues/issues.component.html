@@ -15,6 +15,7 @@
       <ng-template pTemplate="header">
         <tr>
           <th></th>
+          <th style="width: 4rem"><p-tableHeaderCheckbox /></th>
           @for (col of headerColumnConfigs; track col.field) {
           <!--  -->
           @if (col.field === COLUMN_FIELD.order) {
@@ -354,6 +355,9 @@
               [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
               (click)="toggleExpandRow(rowData, index)"
             />
+          </td>
+          <td>
+            <p-tableCheckbox [value]="rowData" />
           </td>
           @for (col of headerColumnConfigs; track col.field) {
           <!--  -->
