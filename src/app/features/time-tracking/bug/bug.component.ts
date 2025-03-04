@@ -59,9 +59,11 @@ import { IBugResponseDTO } from './bug.dto.model';
 import { Checkbox } from 'primeng/checkbox';
 import * as Papa from 'papaparse';
 import * as _ from 'lodash';
-import { PopoverModule } from 'primeng/popover';
+import { Popover, PopoverModule } from 'primeng/popover';
 import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
 import { ELogStorageKey } from 'src/app/services';
+import { endOfDay, startOfDay } from 'date-fns';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-bug',
@@ -81,6 +83,7 @@ import { ELogStorageKey } from 'src/app/services';
     WorkDurationDirective,
     Checkbox,
     PopoverModule,
+    SelectModule,
   ],
   templateUrl: './bug.component.html',
   styleUrl: './bug.component.scss',
@@ -176,8 +179,10 @@ export class BugComponent
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
                 sheetName: ESheetName.BUG,
-                startTime: formGroupValue.dateRange[0].toISOString(),
-                endTime: formGroupValue.dateRange[1].toISOString(),
+                startTime: startOfDay(
+                  formGroupValue.dateRange[0],
+                ).toISOString(),
+                endTime: endOfDay(formGroupValue.dateRange[1]).toISOString(),
               };
             });
 
@@ -224,8 +229,9 @@ export class BugComponent
         SELECT_FORM_GROUP_KEY.dateRange,
         this.formGroupControl,
       )
-        .pipe(filter((dataRange) => !!dataRange))
-        .subscribe(() => {
+        .pipe(filter((range) => range.every((date: Date) => !!date)))
+        .subscribe((value) => {
+          console.log('tùy chỉnh ', value);
           // Sau khi thiết lập các giá trị chung như Level, Nhân viên, dự án, thời gian mới gọi API lấy danh sách
           this.callAPIGetTableData();
         }),
@@ -401,13 +407,19 @@ export class BugComponent
   }
 
   csvData: any[] = [];
-
+  mapColumnCsvData: any[] = [];
+  csvHeaderOptions: IOption[] = [];
+  codeHeaderInCSVFile: string = 'Issue key';
+  nameHeaderInCSVFile: string = 'Summary';
+  browserEvent: any;
   /*
    * @usage Import CSV
    */
-  onFileChange(event: any) {
-    const file = event.target.files[0];
+  onFileChange(event: any, popupOver: Popover) {
+    const input = event.target;
+    const file = input.files[0];
     if (!file) return;
+    file.value = '';
 
     const reader = new FileReader();
     this.timeTrackingStore.setLoading(true);
@@ -416,53 +428,72 @@ export class BugComponent
       Papa.parse(csv, {
         header: true,
         skipEmptyLines: true,
+        encoding: 'UTF-8',
         complete: (result) => {
-          const columnMapping: { [key: string]: string } = {
-            Summary: 'name',
-            'Issue key': 'code',
-            'Issue Type': 'tabName',
-          };
+          // Lấy danh sách header từ file CSV
+          this.csvHeaderOptions =
+            result.meta.fields?.map(
+              (item: string) =>
+                ({
+                  label: item,
+                  value: item,
+                } as IOption),
+            ) || [];
 
-          this.csvData = result.data.map((row: any) => {
-            const newRow: any = {};
-            Object.keys(columnMapping).forEach((oldKey) => {
-              if (Object.prototype.hasOwnProperty.call(row, oldKey)) {
-                const newKey = columnMapping[oldKey];
-                newRow[newKey] = row[oldKey];
-              }
-            });
-            return newRow;
-          });
-
-          const createTableData = this.createFormArray.value;
-          const isInputDataMode = createTableData.some(
-            (rowData: IBugRowData) => !!rowData.startTime,
-          );
-          if (!isInputDataMode) {
-            this.createFormArray.clear();
-          }
-
-          const EStatusNameId = this.convertOptionToEnum(this.statusOption());
-          this.csvData.forEach((rowData: any, index: number) => {
-            const formGroup = this.formBuilder.group({
-              ...bugNullableObj,
-              mode: this.EMode.UPDATE,
-              isLunchBreak: true,
-              status: EStatusNameId['CHUA_FIX'],
-              ...rowData,
-            });
-            formGroup.valueChanges.subscribe((value) => {
-              this.saveCurrentLogToMemory(index);
-            });
-            this.createFormArray.push(formGroup);
-          });
-
+          console.log('this.csvHeader ', this.csvHeaderOptions);
+          this.csvData = result.data;
           this.timeTrackingStore.setLoading(false);
+          input.value = '';
+
+          popupOver.toggle(this.browserEvent);
         },
       });
     };
 
     reader.readAsText(file);
+  }
+
+  mapColumnAfterImportCSV() {
+    this.timeTrackingStore.setLoading(true);
+    const columnMapping: { [key: string]: string } = {
+      [this.codeHeaderInCSVFile]: 'code',
+      [this.nameHeaderInCSVFile]: 'name',
+    };
+
+    this.mapColumnCsvData = this.csvData.map((row: any) => {
+      const newRow: any = {};
+      Object.keys(columnMapping).forEach((oldKey) => {
+        if (Object.prototype.hasOwnProperty.call(row, oldKey)) {
+          const newKey = columnMapping[oldKey];
+          newRow[newKey] = row[oldKey];
+        }
+      });
+      return newRow;
+    });
+
+    const createTableData = this.createFormArray.value;
+    const isInputDataMode = createTableData.some(
+      (rowData: IBugRowData) => !!rowData.startTime,
+    );
+    if (!isInputDataMode) {
+      this.createFormArray.clear();
+    }
+
+    const EStatusNameId = this.convertOptionToEnum(this.statusOption());
+    this.mapColumnCsvData.forEach((rowData: any, index: number) => {
+      const formGroup = this.formBuilder.group({
+        ...bugNullableObj,
+        mode: this.EMode.UPDATE,
+        isLunchBreak: true,
+        status: EStatusNameId['CHUA_FIX'],
+        ...rowData,
+      });
+      formGroup.valueChanges.subscribe((value) => {
+        this.saveCurrentLogToMemory(index);
+      });
+      this.createFormArray.push(formGroup);
+    });
+    this.timeTrackingStore.setLoading(false);
   }
 
   override checkIsTimeTracking() {

@@ -106,20 +106,70 @@
         (click)="onRecoverCurrentLog()"
       />
       <p-button
+        #importCSVButton
         [outlined]="true"
         severity="secondary"
         icon="pi pi-file-import"
         pTooltip="Nhập dữ liệu từ CSV"
         label="Import CSV"
-        (click)="importCSV.click()"
+        (click)="importCSV.click(); browserEvent = $event"
       />
       <input
         #importCSV
         type="file"
         hidden
-        (change)="onFileChange($event)"
+        (change)="onFileChange($event, importCSVPopup)"
         accept=".csv"
       />
+
+      <p-popover #importCSVPopup>
+        <div
+          class="flex flex-column"
+          style="width: 360px"
+        >
+          <div>Map dữ liệu</div>
+          <div>
+            <span>Mã bug</span>
+            <p-select
+              [(ngModel)]="codeHeaderInCSVFile"
+              [options]="csvHeaderOptions"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+            />
+          </div>
+
+          <div>
+            <span>Tên bug</span>
+            <p-select
+              [(ngModel)]="nameHeaderInCSVFile"
+              [options]="csvHeaderOptions"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+            />
+          </div>
+
+          <div class="flex justify-content-end gap-3">
+            <p-button
+              [outlined]="true"
+              severity="secondary"
+              icon="pi pi-times"
+              pTooltip="Hủy nhập dữ liệu bằng CSV"
+              label="Hủy"
+              (click)="importCSVPopup.hide()"
+            />
+            <p-button
+              icon="pi pi-save"
+              pTooltip="Xác nhận nhập file CSV"
+              label="Xác nhận"
+              (click)="mapColumnAfterImportCSV(); importCSVPopup.hide()"
+            />
+          </div>
+        </div>
+      </p-popover>
 
       <p-button
         [outlined]="true"
@@ -308,22 +358,40 @@
             </div>
           </td>
 
-          <!--          <td>-->
-          <!--            <div>-->
-          <!--              <textarea-->
-          <!--                pTextarea-->
-          <!--                [formControlName]="FORM_GROUP_KEYS.name"-->
-          <!--                rows="1"-->
-          <!--                cols="30"-->
-          <!--              ></textarea>-->
-          <!--            </div>-->
-          <!--          </td>-->
-
-          <td>
+          <!-- <td>
             <div>
+              <textarea
+                pTextarea
+                [formControlName]="FORM_GROUP_KEYS.name"
+                rows="1"
+                cols="30"
+              ></textarea>
+            </div>
+          </td> -->
+          <td
+            [pEditableColumn]="control.value.name"
+            pEditableColumnField="name"
+          >
+            <p-cellEditor>
+              <ng-template #input>
+                <input
+                  class="w-full"
+                  pInputText
+                  type="text"
+                  [formControlName]="FORM_GROUP_KEYS.name"
+                />
+              </ng-template>
+              <ng-template #output>
+                {{ mapRowDataToType(control.value).name }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+
+          <!-- <td>
+            <div contenteditable>
               {{ mapRowDataToType(control.value).name || '--' }}
             </div>
-          </td>
+          </td> -->
 
           <td>
             <div>
