@@ -2,15 +2,15 @@
   <div
     class="huynx15-actions flex align-items-center justify-content-between gap-3"
     [ngClass]="{
-      'justify-content-between': selectedNumber,
-      'justify-content-end': !selectedNumber
+      'justify-content-between': createIndexListBatch?.length,
+      'justify-content-end': !createIndexListBatch?.length
     }"
   >
     <div
-      *ngIf="selectedNumber"
+      *ngIf="createIndexListBatch?.length"
       class="flex align-items-center justify-content-end gap-3"
     >
-      <span>Chọn {{ selectedNumber }} dòng </span>
+      <span>Chọn {{ createIndexListBatch?.length || 0 }} dòng </span>
       <p-button
         [outlined]="true"
         severity="secondary"
@@ -195,12 +195,15 @@
       />
     </div>
   </div>
+
+  <!-- BẢNG THÊM MỚI -->
   <div class="huynx15-table flex-1 overflow-hidden">
     <p-table
-      [frozenValue]="createFormArray.controls"
-      [value]="viewUpdateTableData"
+      [value]="createFormArray.controls"
       [resizableColumns]="true"
       dataKey="id"
+      [rowHover]="true"
+      stripedRows
     >
       <!-- TABLE HEADER -->
       <ng-template pTemplate="header">
@@ -210,8 +213,15 @@
               <div class="flex-1 line-clamp line-clamp-2">
                 <p-checkbox
                   [ngModelOptions]="{ standalone: true }"
-                  [ngModel]="isSelectAll"
-                  (onChange)="toggleSelectAll($event, createFormArray)"
+                  [ngModel]="isCreateSelectAll"
+                  (onChange)="
+                    toggleSelectAll(
+                      $event,
+                      createFormArray,
+                      'createIndexListBatch',
+                      'isCreateSelectAll'
+                    )
+                  "
                   [binary]="true"
                 />
               </div>
@@ -229,7 +239,14 @@
                 <p-checkbox
                   [ngModelOptions]="{ standalone: true }"
                   [ngModel]="isSelectAll"
-                  (onChange)="toggleSelectAll($event, createFormArray)"
+                  (onChange)="
+                    toggleSelectAll(
+                      $event,
+                      createFormArray,
+                      'createIndexListBatch',
+                      'isCreateSelectAll'
+                    )
+                  "
                   [binary]="true"
                 />
               </div>
@@ -293,7 +310,7 @@
 
       <!--  TABLE : THÊM MỚI -->
       <ng-template
-        pTemplate="frozenbody"
+        pTemplate="body"
         let-control
         let-index="rowIndex"
       >
@@ -304,15 +321,19 @@
                 [ngModelOptions]="{ standalone: true }"
                 [ngModel]="control.value.selected"
                 (onChange)="
-                  onRowSelectionChange($event, createFormArray, index)
+                  onRowSelectionChange(
+                    $event,
+                    createFormArray,
+                    index,
+                    'createIndexListBatch',
+                    'isCreateSelectAll'
+                  )
                 "
                 [binary]="true"
               ></p-checkbox>
             </div>
           </td>
-          <!-- <td>
-            <p-tableCheckbox [value]="index" />
-          </td> -->
+
           <td>
             <div>{{ index + 1 }}</div>
           </td>
@@ -434,6 +455,7 @@
                 hourFormat="24"
                 dateFormat="dd/mm"
                 appendTo="body"
+                showClear
               >
               </p-datepicker>
             </div>
@@ -465,6 +487,7 @@
                 hourFormat="24"
                 dateFormat="dd/mm"
                 appendTo="body"
+                showClear
               >
               </p-datepicker>
             </div>
@@ -549,16 +572,157 @@
         </tr>
       </ng-template>
 
-      <!--  TABLE : XEM + CẬP NHẬT -->
+      <ng-template pTemplate="footer">
+        <tr>
+          <td [attr.colspan]="headerColumnConfigs?.length">
+            <div class="font-bold">
+              Tổng số bug : {{ createFormArray.value.length }}
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- BẢNG XEM CHI TIẾT VÀ CHỈNH SỬA -->
+  <div class="huynx15-table flex-1 overflow-hidden">
+    <p-table
+      [value]="viewUpdateFormArray.controls"
+      [resizableColumns]="true"
+      dataKey="id"
+      [rowHover]="true"
+      stripedRows
+    >
+      <!-- TABLE HEADER -->
+      <ng-template pTemplate="header">
+        <tr class="sticky top-0 z-5">
+          <th pResizableColumn>
+            <div class="flex">
+              <div class="flex-1 line-clamp line-clamp-2">
+                <p-checkbox
+                  [ngModelOptions]="{ standalone: true }"
+                  [ngModel]="isViewUpdateSelectAll"
+                  (onChange)="
+                    toggleSelectAll(
+                      $event,
+                      viewUpdateFormArray,
+                      'viewUpdateIndexListBatch',
+                      'isViewUpdateSelectAll'
+                    )
+                  "
+                  [binary]="true"
+                />
+              </div>
+            </div>
+          </th>
+          @for (col of headerColumnConfigs; track col.field) {
+          <!--  -->
+          @if (col.field === COLUMN_FIELD.batch) {
+          <th
+            pResizableColumn
+            [style.min-width.px]="col.minWidth"
+          >
+            <div class="flex">
+              <div class="flex-1 line-clamp line-clamp-2">
+                <p-checkbox
+                  [ngModelOptions]="{ standalone: true }"
+                  [ngModel]="isSelectAll"
+                  (onChange)="
+                    toggleSelectAll(
+                      $event,
+                      viewUpdateFormArray,
+                      'viewUpdateIndexListBatch',
+                      'isViewUpdateSelectAll'
+                    )
+                  "
+                  [binary]="true"
+                />
+              </div>
+            </div>
+          </th>
+          } @else if (col.field === COLUMN_FIELD.order) {
+          <th
+            pResizableColumn
+            [style.min-width.px]="col.minWidth"
+          >
+            <div class="flex">
+              <div class="flex-1 line-clamp line-clamp-2">
+                {{ col.label }}
+              </div>
+            </div>
+          </th>
+          } @else if (col.field === COLUMN_FIELD.actions) {
+          <th
+            pResizableColumn
+            [style.min-width.px]="col.minWidth"
+          >
+            <div class="flex">
+              <div class="flex-1 line-clamp line-clamp-2">
+                {{ col.label }}
+              </div>
+            </div>
+          </th>
+          } @else if (col.field === COLUMN_FIELD.categoryId) {
+          <th
+            [pSortableColumn]="col.field"
+            pResizableColumn
+            pFrozenColumn
+            [style.min-width.px]="col.minWidth"
+          >
+            <div class="flex">
+              <div class="flex-1 line-clamp line-clamp-2">
+                {{ col.label }}
+              </div>
+              <p-sortIcon [field]="col.field" />
+            </div>
+          </th>
+          } @else {
+          <th
+            [pSortableColumn]="col.field"
+            pResizableColumn
+            [style.min-width.px]="col.minWidth"
+          >
+            <div class="flex">
+              <div
+                class="flex-1 line-clamp line-clamp-2"
+                [pTooltip]="col.label"
+              >
+                {{ col.label }}
+              </div>
+              <p-sortIcon [field]="col.field" />
+            </div>
+          </th>
+          } }
+        </tr>
+      </ng-template>
+
+      <!--  TABLE : XEM CHI TIẾT + CẬP NHẬT -->
       <ng-template
         pTemplate="body"
-        let-rowData
+        let-control
         let-index="rowIndex"
       >
-        @if (rowData.mode === EMode.VIEW) {
+        @if (control.value.mode === EMode.VIEW) {
         <!-- Chế độ xem - VIEW -->
         <tr>
-          <td></td>
+          <td>
+            <div>
+              <p-checkbox
+                [ngModelOptions]="{ standalone: true }"
+                [ngModel]="control.value.selected"
+                (onChange)="
+                  onRowSelectionChange(
+                    $event,
+                    viewUpdateFormArray,
+                    index,
+                    'viewUpdateIndexListBatch',
+                    'isViewUpdateSelectAll'
+                  )
+                "
+                [binary]="true"
+              ></p-checkbox>
+            </div>
+          </td>
           @for (col of headerColumnConfigs; track col.field) {
           <!--  -->
           @if (col.field === COLUMN_FIELD.order) {
@@ -566,7 +730,7 @@
           } @else if (col.field === COLUMN_FIELD.moduleId) {
           <td>
             {{
-              rowData[col.field]
+              control.value[col.field]
                 | convertIdToName
                   : (allDropdownData$ | async)?.modules
                   : 'moduleName'
@@ -575,7 +739,7 @@
           } @else if (col.field === COLUMN_FIELD.menuId) {
           <td>
             {{
-              rowData[col.field]
+              control.value[col.field]
                 | convertIdToName
                   : (allDropdownData$ | async)?.menus
                   : 'menuName'
@@ -584,7 +748,7 @@
           } @else if (col.field === COLUMN_FIELD.screenId) {
           <td>
             {{
-              rowData[col.field]
+              control.value[col.field]
                 | convertIdToName
                   : (allDropdownData$ | async)?.screens
                   : 'screenName'
@@ -593,7 +757,7 @@
           } @else if (col.field === COLUMN_FIELD.featureId) {
           <td>
             {{
-              rowData[col.field]
+              control.value[col.field]
                 | convertIdToName
                   : (allDropdownData$ | async)?.features
                   : 'featureName'
@@ -602,7 +766,7 @@
           } @else if (col.field === COLUMN_FIELD.categoryId) {
           <td>
             {{
-              rowData[col.field]
+              control.value[col.field]
                 | convertIdToName
                   : (allDropdownData$ | async)?.categories
                   : 'categoryName'
@@ -611,7 +775,7 @@
           } @else if (col.field === COLUMN_FIELD.statusId) {
           <td>
             {{
-              rowData[col.field]
+              control.value[col.field]
                 | convertIdToName
                   : (allDropdownData$ | async)?.statuses
                   : 'statusName'
@@ -620,22 +784,22 @@
           } @else if (col.field === COLUMN_FIELD.isLunchBreak) {
           <td>
             <p-tag
-              [severity]="rowData[col.field] ? 'danger' : 'success'"
-              [value]="rowData[col.field] ? 'Có' : 'Không'"
+              [severity]="control.value[col.field] ? 'danger' : 'success'"
+              [value]="control.value[col.field] ? 'Có' : 'Không'"
             />
           </td>
           } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
           COLUMN_FIELD.endTime) {
-          <td>{{ rowData[col.field] | date : 'HH:mm - dd/MM' }}</td>
+          <td>{{ control.value[col.field] | date : 'HH:mm - dd/MM' }}</td>
           } @else if (col.field === COLUMN_FIELD.categoryId) {
           <td>
             <p-tag
-              [severity]="rowData[col.field] ? 'danger' : 'success'"
-              [value]="rowData[col.field] ? 'Có' : 'Không'"
+              [severity]="control.value[col.field] ? 'danger' : 'success'"
+              [value]="control.value[col.field] ? 'Có' : 'Không'"
             />
           </td>
           } @else if (col.field === COLUMN_FIELD.duration) {
-          <td>{{ rowData[col.field] | number : '1.1-1' }}</td>
+          <td>{{ control.value[col.field] | number : '1.1-1' }}</td>
           } @else if (col.field === COLUMN_FIELD.actions) {
           <td>
             <div class="flex align-items-center justify-content-center gap-1">
@@ -665,7 +829,7 @@
                 aria-label="Xóa dòng"
                 pTooltip="Xóa dòng"
                 tooltipPosition="bottom"
-                (click)="onDelete(rowData)"
+                (click)="onDelete(control.value)"
               />
             </div>
           </td>
@@ -673,9 +837,9 @@
           <td>
             <div
               class="line-clamp line-clamp-1"
-              [pTooltip]="rowData[col.field]"
+              [pTooltip]="control.value[col.field]"
             >
-              {{ rowData[col.field] }}
+              {{ control.value[col.field] }}
             </div>
           </td>
           } }
@@ -683,12 +847,7 @@
         } @else {
         <!-- Chế độ cập nhật - UPDATE -->
         <tr [formGroup]="getFormGroup(index, viewUpdateFormArray)">
-          <td>
-            <div>
-              <!--                <p-checkbox formControlName="city" value="New York" />-->
-            </div>
-          </td>
-
+          <td></td>
           <td>
             <div>{{ index + 1 }}</div>
           </td>
@@ -747,13 +906,14 @@
                 [formControlName]="FORM_GROUP_KEYS.code"
                 rows="1"
                 cols="30"
+                showClear
               ></textarea>
             </div>
           </td>
 
           <td>
             <div>
-              {{ mapRowDataToType(rowData).name || '--' }}
+              {{ mapRowDataToType(control.value).name || '--' }}
             </div>
           </td>
 
@@ -769,7 +929,7 @@
 
           <!-- <td>
             <div>
-              {{ mapRowDataToType(rowData).statusId || '--' }}
+              {{ mapRowDataToType(control.value).statusId || '--' }}
             </div>
           </td> -->
 
@@ -798,6 +958,7 @@
                 hourFormat="24"
                 dateFormat="dd/mm"
                 appendTo="body"
+                showClear
               >
               </p-datepicker>
             </div>
@@ -829,6 +990,7 @@
                 hourFormat="24"
                 dateFormat="dd/mm"
                 appendTo="body"
+                showClear
               >
               </p-datepicker>
             </div>
@@ -882,7 +1044,15 @@
         }
       </ng-template>
 
-      <ng-template #summary> aaaaaaaaaaaaaaa </ng-template>
+      <ng-template pTemplate="footer">
+        <tr>
+          <td [attr.colspan]="headerColumnConfigs?.length">
+            <div class="font-bold">
+              Tổng số giờ : {{ totalDuration | number : '1.1-1' }}
+            </div>
+          </td>
+        </tr>
+      </ng-template>
     </p-table>
   </div>
 </div>

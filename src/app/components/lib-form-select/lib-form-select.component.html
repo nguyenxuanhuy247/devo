@@ -9,35 +9,42 @@
   emptyMessage="Không có lựa chọn"
   filter
   filterBy="label"
+  showClear
 >
-  <ng-template pTemplate="selectedItem" let-data>
+  <ng-template
+    pTemplate="selectedItem"
+    let-data
+  >
     <div class="flex align-items-center gap-2">
       @if (isTemplateRef(templateName)) {
-        <!-- Render ra Template -->
-        <ng-container
-          *ngTemplateOutlet="
-                getTemplateRef(templateName);
-                context: { $implicit: data }
-              "
-        ></ng-container>
+      <!-- Render ra Template -->
+      <ng-container
+        *ngTemplateOutlet="
+          getTemplateRef(templateName);
+          context: { $implicit: data }
+        "
+      ></ng-container>
       } @else {
-        <div class="line-clamp">{{ data.label }}</div>
+      <div class="line-clamp">{{ data.label }}</div>
       }
     </div>
   </ng-template>
 
-  <ng-template pTemplate="item" let-data>
+  <ng-template
+    pTemplate="item"
+    let-data
+  >
     <div class="flex align-items-center gap-2">
       @if (isTemplateRef('option')) {
-        <!-- Render ra Template -->
-        <ng-container
-          *ngTemplateOutlet="
-                getTemplateRef('option');
-                context: { $implicit: data }
-              "
-        ></ng-container>
+      <!-- Render ra Template -->
+      <ng-container
+        *ngTemplateOutlet="
+          getTemplateRef('option');
+          context: { $implicit: data }
+        "
+      ></ng-container>
       } @else {
-        <div>{{ data.label }}</div>
+      <div>{{ data.label }}</div>
       }
     </div>
   </ng-template>

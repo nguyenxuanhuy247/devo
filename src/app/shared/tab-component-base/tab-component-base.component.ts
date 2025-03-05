@@ -117,42 +117,50 @@ export class TabComponentBaseComponent extends FormBaseComponent {
   isSelectAll: boolean = false;
   selectedNumber: number = 0;
   indexListBatch: number[] = [];
+  [key: string]: any;
 
-  getSelectedNumberAndIds(formArray: FormArray) {
-    this.indexListBatch = [];
-    this.selectedNumber = formArray.value.filter(
-      (rowData: any, index: number) => {
-        if (rowData.selected) {
-          this.indexListBatch.push(index);
-        }
-        return rowData.selected;
-      },
-    ).length;
+  getSelectedNumberAndIds(
+    formArray: FormArray,
+    listBatchName: string = 'indexListBatch',
+  ) {
+    this[listBatchName] = [];
+    formArray.value.forEach((rowData: any, index: number) => {
+      if (rowData.selected) {
+        this.indexListBatch.push(index);
+      }
+    });
     this.indexListBatch.sort((a, b) => b - a);
   }
 
-  toggleSelectAll(event: CheckboxChangeEvent, formArray: FormArray) {
-    this.isSelectAll = event.checked;
+  toggleSelectAll(
+    event: CheckboxChangeEvent,
+    formArray: FormArray,
+    listBatchName: string = 'indexListBatch',
+    isSelectAllName: string = 'isSelectAll',
+  ) {
+    this[isSelectAllName] = event.checked;
     formArray.controls.forEach((control) => {
       control.patchValue({
-        selected: this.isSelectAll,
+        selected: this[isSelectAllName],
       });
     });
 
-    this.getSelectedNumberAndIds(formArray);
+    this.getSelectedNumberAndIds(formArray, listBatchName);
   }
 
   onRowSelectionChange(
     event: CheckboxChangeEvent,
     formArray: FormArray,
     index: number,
+    listBatchName: string = 'indexListBatch',
+    isSelectAllName: string = 'isSelectAll',
   ) {
     formArray.at(index).patchValue({
       selected: event.checked,
     });
-    this.isSelectAll = formArray.value.every((row: any) => row.selected);
+    this[isSelectAllName] = formArray.value.every((row: any) => row.selected);
 
-    this.getSelectedNumberAndIds(formArray);
+    this.getSelectedNumberAndIds(formArray, listBatchName);
   }
 
   protected getCommonValue() {

@@ -115,7 +115,7 @@ export class BugComponent
   statusDependentTabOptions$ =
     this.timeTrackingStore.statusDependentTabOptions$;
 
-  viewUpdateTableData: IBugRowData[];
+  // viewUpdateTableData: IBugRowData[];
 
   headerColumnConfigs: IColumnHeaderConfigs[] = bugHeaderColumnConfigs;
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
@@ -142,6 +142,13 @@ export class BugComponent
   });
   batchUpdateFormGroup: FormGroup;
 
+  totalDuration: number = 0;
+  totalBug: number = 0;
+  createIndexListBatch: number[] = [];
+  isCreateSelectAll: boolean = false;
+  viewUpdateIndexListBatch: number[] = [];
+  isViewUpdateSelectAll: boolean = false;
+
   constructor(override injector: Injector) {
     super(injector);
   }
@@ -157,12 +164,6 @@ export class BugComponent
       featureId: null,
       categoryId: null,
     });
-  }
-
-  selectedRows: any[] = [];
-
-  onChangeSelection(event: any) {
-    console.log('aaaaaaaaa ', event, this.selectedRows);
   }
 
   initSubscriptions() {
@@ -226,7 +227,13 @@ export class BugComponent
             this.viewUpdateFormArray.push(formGroup);
           });
 
-          this.viewUpdateTableData = this.viewUpdateFormArray.value;
+          this.totalDuration = listData.reduce(
+            (acc, rowData) => acc + rowData.duration,
+            0,
+          );
+
+          console.log('Gọi API tải danh sách bug', this.viewUpdateFormArray);
+          // this.viewUpdateTableData = this.viewUpdateFormArray.value;
           this.warningWhenChangeChromeTab();
         }),
     );
@@ -262,7 +269,7 @@ export class BugComponent
   onChangeToUpdateMode(index: number) {
     const formGroup = this.getFormGroup(index, this.viewUpdateFormArray);
     formGroup.patchValue({ mode: EMode.UPDATE });
-    this.viewUpdateTableData = this.viewUpdateFormArray.value;
+    // this.viewUpdateTableData = this.viewUpdateFormArray.value;
   }
 
   /*
@@ -305,7 +312,7 @@ export class BugComponent
         mode: EMode.VIEW,
       },
     );
-    this.viewUpdateTableData = this.viewUpdateFormArray.value;
+    // this.viewUpdateTableData = this.viewUpdateFormArray.value;
   }
 
   /**
