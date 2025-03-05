@@ -71,7 +71,7 @@ export interface IAllDropDownResponseDTO {
   interruptionReasons: IInterruptionReasonResponseDTO[];
   issues: IIssueResponseDTO[];
   deadlines: IDeadlineResponseDTO[];
-  dayOffs: IDayOffResponseDTO[];
+  dayoffs: IDayOffResponseDTO[];
   stages: IStageResponseDTO[];
   statuses: IStatuseResponseDTO[];
   tabStatuses: IInterruptionReasonResponseDTO[];

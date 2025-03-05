@@ -61,7 +61,7 @@ const initState: ITimeTrackingState = {
     interruptionReasons: [],
     stages: [],
     statuses: [],
-    dayOffs: [],
+    dayoffs: [],
     moduleDeadlines: [],
     screenIssues: [],
     issues: [],

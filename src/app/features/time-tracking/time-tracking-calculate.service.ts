@@ -1,10 +1,14 @@
 import { Injectable } from '@angular/core';
+import { TimeTrackingStore } from './time-tracking.store';
+import { getValue } from 'src/app/utils/function';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TimeTrackingCalculateService {
-  constructor() {}
+  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
+
+  constructor(private timeTrackingStore: TimeTrackingStore) {}
 
   calculateWorkHours(
     startDate: string | Date,
@@ -37,6 +41,82 @@ export class TimeTrackingCalculateService {
         // Trừ thời gian nghỉ trưa
         totalHours -= lunchDurationMs / (1000 * 60 * 60);
       }
+    }
+
+    return totalHours;
+  }
+
+  calculateBusinessHours(startDate: string | Date): number {
+    if (!startDate) return null;
+    const start = new Date(startDate);
+    const now = new Date(); // Lấy thời gian hiện tại
+    let totalHours = 0;
+
+    const holidayList: Date[] = getValue(this.allDropdownData$)?.dayoffs?.map(
+      (dayoff) => new Date(dayoff.dayOff),
+    );
+
+    const isHoliday = (date: Date) =>
+      holidayList?.some(
+        (holiday) => holiday.toISOString() === date.toDateString(),
+      );
+
+    const isWeekend = (date: Date) =>
+      date.getDay() === 0 || date.getDay() === 6; // 0: Chủ nhật, 6: Thứ bảy
+
+    const businessHours = {
+      start: 8,
+      lunchStart: 12,
+      lunchEnd: 13.5,
+      end: 17.5,
+    };
+
+    const current = new Date(start);
+
+    while (current < now) {
+      // Bỏ qua Thứ 7, Chủ Nhật và ngày nghỉ lễ
+      if (!isWeekend(current) && !isHoliday(current)) {
+        const startOfDay = new Date(current);
+        startOfDay.setHours(businessHours.start, 0, 0, 0);
+
+        const lunchStart = new Date(current);
+        lunchStart.setHours(businessHours.lunchStart, 0, 0, 0);
+
+        const lunchEnd = new Date(current);
+        lunchEnd.setHours(businessHours.lunchEnd, 0, 0, 0);
+
+        const endOfDay = new Date(current);
+        endOfDay.setHours(businessHours.end, 0, 0, 0);
+
+        if (current.toDateString() === now.toDateString()) {
+          // Nếu là ngày hiện tại, chỉ tính đến giờ hiện tại
+          if (current < lunchStart) {
+            totalHours += Math.max(
+              0,
+              Math.min(
+                (now.getTime() - current.getTime()) / 3600000,
+                businessHours.lunchStart - current.getHours(),
+              ),
+            );
+          }
+          if (current < endOfDay && now > lunchEnd) {
+            totalHours += Math.max(
+              0,
+              Math.min(
+                (now.getTime() - lunchEnd.getTime()) / 3600000,
+                businessHours.end - businessHours.lunchEnd,
+              ),
+            );
+          }
+        } else {
+          // Nếu là ngày làm việc bình thường, tính đủ 8 giờ làm việc
+          totalHours += 8;
+        }
+      }
+
+      // Chuyển sang ngày tiếp theo
+      current.setDate(current.getDate() + 1);
+      current.setHours(0, 0, 0, 0);
     }
 
     return totalHours;

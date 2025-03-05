@@ -13,6 +13,7 @@ export const ISSUES_FORM_GROUP_KEYS =
   CommonService.generateEnumFromInterface<IIssuesRowData>();
 
 export interface IIssuesRowData {
+  selected: boolean;
   mode: EMode;
   id: ID;
   moduleId: ID;
@@ -36,9 +37,10 @@ export interface IIssuesRowData {
   updatedDate: Date;
 }
 
-export const nullableIssuesObj: IIssuesRowData = {
+export const issuesNullableObj: IIssuesRowData = {
+  selected: false,
   mode: EMode.VIEW,
-  id: null,
+  id: Math.random(),
   moduleId: null,
   menuId: null,
   screenId: null,

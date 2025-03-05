@@ -11,7 +11,7 @@ export interface IIssueResponseDTO {
   featureId: ID;
   categoryId: ID;
   issueCode: string;
-  IssueName: string;
+  issueName: string;
   issueContent: string;
   departmentMakeId: ID;
   employeeMakeId: ID;

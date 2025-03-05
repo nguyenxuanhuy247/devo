@@ -50,7 +50,7 @@ export class FormBaseComponent implements OnInit, OnDestroy {
 
   constructor(protected injector: Injector) {}
   ngOnInit() {
-    console.log('FORMASDSD ngOnInit');
+    console.log('FormBaseComponent - ngOnInit');
   }
 
   ngOnDestroy() {

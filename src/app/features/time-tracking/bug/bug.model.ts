@@ -14,7 +14,7 @@ export type IBugFormGroup = IBugRowData;
 export const bugNullableObj: IBugRowData = {
   selected: false,
   mode: EMode.VIEW,
-  id: null,
+  id: Math.random(),
   moduleId: null,
   menuId: null,
   screenId: null,

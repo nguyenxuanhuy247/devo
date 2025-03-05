@@ -595,6 +595,7 @@ export class BugComponent
       status: EStatusNameId['CHUA_FIX'],
       mode: EMode.CREATE,
     });
+    console.log('AAAAAAAAAAA ', formGroup.value);
     this.createFormArray.push(formGroup);
   }
 

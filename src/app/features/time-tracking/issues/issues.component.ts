@@ -24,7 +24,7 @@ import {
   ISSUES_COLUMN_FIELD,
   ISSUES_FORM_GROUP_KEYS,
   issuesHeaderColumnConfigs,
-  nullableIssuesObj,
+  issuesNullableObj,
 } from './issues.model';
 import { IColumnHeaderConfigs } from 'src/app/shared/interface/common.interface';
 import { ButtonModule } from 'primeng/button';
@@ -232,10 +232,20 @@ export class IssuesComponent
           this.formArray.clear();
 
           listData.forEach((rowData) => {
+            const startTime = rowData.startTime
+              ? new Date(rowData.startTime)
+              : null;
+            const duration =
+              this.timeTrackingCalculateService.calculateBusinessHours(
+                startTime,
+              );
             const formGroup = this.formBuilder.group({
+              ...issuesNullableObj,
               ...rowData,
               mode: EMode.VIEW,
-              startTime: rowData.startTime ? new Date(rowData.startTime) : null,
+              selected: false,
+              startTime,
+              duration,
               endTime: rowData.endTime ? new Date(rowData.endTime) : null,
             });
             this.formArray.push(formGroup);
@@ -251,7 +261,7 @@ export class IssuesComponent
         this.formGroupControl,
       )
         .pipe(filter((dataRange) => !!dataRange))
-        .subscribe((dataRange: any) => {
+        .subscribe(() => {
           // Sau khi thiết lập các giá trị chung như Level, Nhân viên, dự án, thời gian mới gọi API lấy danh sách
           this.callAPIGetTableData();
         }),
@@ -310,7 +320,7 @@ export class IssuesComponent
   addCreateRowForm() {
     this.fixedRowData = [
       {
-        ...nullableIssuesObj,
+        ...issuesNullableObj,
         mode: EMode.CREATE,
         createdDate: new Date(),
       },
@@ -397,15 +407,6 @@ export class IssuesComponent
     data: null,
   });
 
-  // getCommonValue() {
-  //   const commonValue = _.cloneDeep(this.formGroupControl().value);
-  //   delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
-  //   delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
-  //   delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
-  //
-  //   return commonValue;
-  // }
-
   onSaveCreate() {
     const isValid = this.createFormGroup.valid;
     if (!isValid) {
@@ -464,13 +465,16 @@ export class IssuesComponent
   }
 
   onSaveUpdate(index: number) {
-    const value = this.formArray?.at(index)?.value;
+    const value = this.formArray?.at(index)?.value as IIssueCreateFormGroup;
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.PUT,
       data: [
         {
           ...value,
+          startTime: value.isBlockProgress ? value.startTime : null,
+          endTime: value.isBlockProgress ? value.endTime : null,
+          duration: value.isBlockProgress ? value.duration : null,
           updatedDate: new Date(),
         },
       ],

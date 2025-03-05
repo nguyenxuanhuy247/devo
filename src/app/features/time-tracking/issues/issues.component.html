@@ -15,7 +15,18 @@
       <ng-template pTemplate="header">
         <tr>
           <th></th>
-          <th style="width: 4rem"><p-tableHeaderCheckbox /></th>
+          <th pResizableColumn>
+            <div class="flex">
+              <div class="flex-1 line-clamp line-clamp-2">
+                <p-checkbox
+                  [ngModelOptions]="{ standalone: true }"
+                  [ngModel]="isSelectAll"
+                  (onChange)="toggleSelectAll($event, formArray)"
+                  [binary]="true"
+                />
+              </div>
+            </div>
+          </th>
           @for (col of headerColumnConfigs; track col.field) {
           <!--  -->
           @if (col.field === COLUMN_FIELD.order) {
@@ -356,9 +367,18 @@
               (click)="toggleExpandRow(rowData, index)"
             />
           </td>
+
           <td>
-            <p-tableCheckbox [value]="rowData" />
+            <div>
+              <p-checkbox
+                [ngModelOptions]="{ standalone: true }"
+                [ngModel]="rowData.selected"
+                (onChange)="onRowSelectionChange($event, formArray, index)"
+                [binary]="true"
+              ></p-checkbox>
+            </div>
           </td>
+
           @for (col of headerColumnConfigs; track col.field) {
           <!--  -->
           @if (col.field === COLUMN_FIELD.order) {
@@ -536,6 +556,7 @@
               [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
             />
           </td>
+          <td></td>
           <td>
             <div class="flex align-items-center justify-content-center gap-1">
               <p-button
@@ -617,6 +638,7 @@
                 [formControlName]="FORM_GROUP_KEYS.issueName"
                 rows="1"
                 cols="30"
+                maxlength="200"
               ></textarea>
             </div>
           </td>

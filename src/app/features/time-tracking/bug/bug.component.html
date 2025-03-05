@@ -2,15 +2,15 @@
   <div
     class="huynx15-actions flex align-items-center justify-content-between gap-3"
     [ngClass]="{
-      'justify-content-between': selectedRows?.length,
-      'justify-content-end': !selectedRows?.length
+      'justify-content-between': selectedNumber,
+      'justify-content-end': !selectedNumber
     }"
   >
     <div
-      *ngIf="selectedRows?.length"
-      class="flex justify-content-end gap-3"
+      *ngIf="selectedNumber"
+      class="flex align-items-center justify-content-end gap-3"
     >
-      <span>Chọn {{ selectedRows?.length }} </span>
+      <span>Chọn {{ selectedNumber }} dòng </span>
       <p-button
         [outlined]="true"
         severity="secondary"
@@ -199,15 +199,24 @@
     <p-table
       [frozenValue]="createFormArray.controls"
       [value]="viewUpdateTableData"
-      [(selection)]="selectedRows"
-      (selectionChange)="onChangeSelection($event)"
       [resizableColumns]="true"
-      dataKey="selected"
+      dataKey="id"
     >
       <!-- TABLE HEADER -->
       <ng-template pTemplate="header">
         <tr class="sticky top-0 z-5">
-          <th style="width: 4rem"><p-tableHeaderCheckbox /></th>
+          <th pResizableColumn>
+            <div class="flex">
+              <div class="flex-1 line-clamp line-clamp-2">
+                <p-checkbox
+                  [ngModelOptions]="{ standalone: true }"
+                  [ngModel]="isSelectAll"
+                  (onChange)="toggleSelectAll($event, createFormArray)"
+                  [binary]="true"
+                />
+              </div>
+            </div>
+          </th>
           @for (col of headerColumnConfigs; track col.field) {
           <!--  -->
           @if (col.field === COLUMN_FIELD.batch) {
@@ -289,7 +298,7 @@
         let-index="rowIndex"
       >
         <tr [formGroup]="getFormGroup(index, createFormArray)">
-          <!-- <td>
+          <td>
             <div>
               <p-checkbox
                 [ngModelOptions]="{ standalone: true }"
@@ -300,10 +309,10 @@
                 [binary]="true"
               ></p-checkbox>
             </div>
-          </td> -->
-          <td>
-            <p-tableCheckbox [value]="index" />
           </td>
+          <!-- <td>
+            <p-tableCheckbox [value]="index" />
+          </td> -->
           <td>
             <div>{{ index + 1 }}</div>
           </td>
@@ -365,16 +374,6 @@
             </div>
           </td>
 
-          <!-- <td>
-            <div>
-              <textarea
-                pTextarea
-                [formControlName]="FORM_GROUP_KEYS.name"
-                rows="1"
-                cols="30"
-              ></textarea>
-            </div>
-          </td> -->
           <td
             [pEditableColumn]="control.value.name"
             pEditableColumnField="name"
@@ -760,9 +759,19 @@
 
           <td>
             <div>
-              {{ mapRowDataToType(rowData).statusId || '--' }}
+              <lib-form-select
+                [formControlName]="FORM_GROUP_KEYS.statusId"
+                [options]="(statusDependentTabOptions$ | async)?.['Bug']"
+                (selectOption)="onSelectStatus($event, index)"
+              ></lib-form-select>
             </div>
           </td>
+
+          <!-- <td>
+            <div>
+              {{ mapRowDataToType(rowData).statusId || '--' }}
+            </div>
+          </td> -->
 
           <!-- Thời gian bắt đầu -->
           <td>
