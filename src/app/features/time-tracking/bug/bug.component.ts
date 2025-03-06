@@ -147,7 +147,7 @@ export class BugComponent
   totalBug: number = 0;
   createIndexListBatch: number[] = [];
   isCreateSelectAll: boolean = false;
-  viewUpdateIndexListBatch: number[] = [];
+  viewUpdateIdListBatch: number[] = [];
   isViewUpdateSelectAll: boolean = false;
 
   constructor(override injector: Injector) {
@@ -293,6 +293,25 @@ export class BugComponent
       method: EApiMethod.DELETE,
     }));
 
+    this.callAPIDeleteRows();
+  }
+
+  /*
+   * @usage Xóa nhiều
+   */
+  onBatchDeleteViewRow() {
+    this.timeTrackingStore.setLoading(true);
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      ids: [...this.viewUpdateIdListBatch],
+      method: EApiMethod.DELETE,
+    }));
+
+    this.callAPIDeleteRows();
+  }
+
+  callAPIDeleteRows() {
+    this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .deleteItemAsync(this.doPostRequestDTO())
       .pipe(
@@ -307,7 +326,14 @@ export class BugComponent
           return EMPTY;
         }),
       )
-      .subscribe(() => {
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+
+        this.viewUpdateIdListBatch = [];
         this.callAPIGetTableData();
       });
   }
@@ -612,7 +638,7 @@ export class BugComponent
       status: EStatusNameId['CHUA_FIX'],
       mode: EMode.CREATE,
     });
-    console.log('AAAAAAAAAAA ', formGroup.value);
+
     this.createFormArray.push(formGroup);
   }
 
@@ -656,6 +682,7 @@ export class BugComponent
     this.createIndexListBatch.forEach((index: number) => {
       this.createFormArray.removeAt(index);
     });
+    this.createIndexListBatch = [];
   }
 
   onBatchUpdateCreateRow() {
@@ -714,4 +741,10 @@ export class BugComponent
     }
     this.warningWhenChangeChromeTab();
   }
+
+  onReloadTableData() {
+    this.callAPIGetTableData();
+  }
+
+  onDeleteAllTableData() {}
 }

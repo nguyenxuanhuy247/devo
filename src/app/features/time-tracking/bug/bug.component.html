@@ -1,5 +1,5 @@
 <div class="huynx15-bug h-full flex flex-column">
-  {{ createIndexListBatch | json }} | {{ viewUpdateIndexListBatch | json }}
+  {{ createIndexListBatch | json }} | {{ viewUpdateIdListBatch | json }}
   <!-- Những nút bấm của Bảng Thêm mới -->
   <div
     class="huynx15-actions flex align-items-center justify-content-between gap-3"
@@ -221,7 +221,8 @@
                       $event,
                       createFormArray,
                       'createIndexListBatch',
-                      'isCreateSelectAll'
+                      'isCreateSelectAll',
+                      true
                     )
                   "
                   [binary]="true"
@@ -231,30 +232,7 @@
           </th>
           @for (col of headerColumnConfigs; track col.field) {
           <!--  -->
-          @if (col.field === COLUMN_FIELD.batch) {
-          <th
-            pResizableColumn
-            [style.min-width.px]="col.minWidth"
-          >
-            <div class="flex">
-              <div class="flex-1 line-clamp line-clamp-2">
-                <p-checkbox
-                  [ngModelOptions]="{ standalone: true }"
-                  [ngModel]="isSelectAll"
-                  (onChange)="
-                    toggleSelectAll(
-                      $event,
-                      createFormArray,
-                      'createIndexListBatch',
-                      'isCreateSelectAll'
-                    )
-                  "
-                  [binary]="true"
-                />
-              </div>
-            </div>
-          </th>
-          } @else if (col.field === COLUMN_FIELD.order) {
+          @if (col.field === COLUMN_FIELD.order) {
           <th
             pResizableColumn
             [style.min-width.px]="col.minWidth"
@@ -328,7 +306,8 @@
                     createFormArray,
                     index,
                     'createIndexListBatch',
-                    'isCreateSelectAll'
+                    'isCreateSelectAll',
+                    true
                   )
                 "
                 [binary]="true"
@@ -429,6 +408,18 @@
                 [options]="(statusDependentTabOptions$ | async)?.['Bug']"
                 (selectOption)="onSelectStatus($event, index)"
               ></lib-form-select>
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <textarea
+                pTextarea
+                [formControlName]="FORM_GROUP_KEYS.note"
+                rows="1"
+                cols="30"
+                showClear
+              ></textarea>
             </div>
           </td>
 
@@ -590,22 +581,22 @@
   <div
     class="huynx15-actions flex align-items-center gap-3 mt-3"
     [ngClass]="{
-      'justify-content-between': viewUpdateIndexListBatch?.length,
-      'justify-content-end': !viewUpdateIndexListBatch?.length
+      'justify-content-between': viewUpdateIdListBatch?.length,
+      'justify-content-end': !viewUpdateIdListBatch?.length
     }"
   >
     <div
-      *ngIf="viewUpdateIndexListBatch?.length"
+      *ngIf="viewUpdateIdListBatch?.length"
       class="flex align-items-center justify-content-end gap-3"
     >
-      <span>Chọn {{ viewUpdateIndexListBatch?.length || 0 }} dòng </span>
+      <span>Chọn {{ viewUpdateIdListBatch?.length || 0 }} dòng </span>
       <p-button
         [outlined]="true"
         severity="secondary"
         icon="pi pi-trash"
         pTooltip="Xóa nhiều"
         label="Xóa nhiều"
-        (click)="onBatchRemoveCreateRow()"
+        (click)="onBatchDeleteViewRow()"
       />
       <p-button
         [outlined]="true"
@@ -696,84 +687,10 @@
       <p-button
         [outlined]="true"
         severity="secondary"
-        icon="pi pi-history"
-        pTooltip="Khôi phục dữ liệu đang log"
-        label="Khôi phục"
-        (click)="onRecoverCurrentLog()"
-      />
-      <p-button
-        #importCSVButton
-        [outlined]="true"
-        severity="secondary"
-        icon="pi pi-file-import"
-        pTooltip="Nhập dữ liệu từ CSV"
-        label="Import CSV"
-        (click)="importCSV.click(); browserEvent = $event"
-      />
-      <input
-        #importCSV
-        type="file"
-        hidden
-        (change)="onFileChange($event, importCSVPopup)"
-        accept=".csv"
-      />
-
-      <p-popover #importCSVPopup>
-        <div
-          class="flex flex-column"
-          style="width: 360px"
-        >
-          <div>Map dữ liệu</div>
-          <div>
-            <span>Mã bug</span>
-            <p-select
-              [(ngModel)]="codeHeaderInCSVFile"
-              [options]="csvHeaderOptions"
-              optionLabel="label"
-              optionValue="value"
-              [filter]="true"
-              filterBy="label"
-            />
-          </div>
-
-          <div>
-            <span>Tên bug</span>
-            <p-select
-              [(ngModel)]="nameHeaderInCSVFile"
-              [options]="csvHeaderOptions"
-              optionLabel="label"
-              optionValue="value"
-              [filter]="true"
-              filterBy="label"
-            />
-          </div>
-
-          <div class="flex justify-content-end gap-3">
-            <p-button
-              [outlined]="true"
-              severity="secondary"
-              icon="pi pi-times"
-              pTooltip="Hủy nhập dữ liệu bằng CSV"
-              label="Hủy"
-              (click)="importCSVPopup.hide()"
-            />
-            <p-button
-              icon="pi pi-save"
-              pTooltip="Xác nhận nhập file CSV"
-              label="Xác nhận"
-              (click)="mapColumnAfterImportCSV(); importCSVPopup.hide()"
-            />
-          </div>
-        </div>
-      </p-popover>
-
-      <p-button
-        [outlined]="true"
-        severity="secondary"
-        icon="pi pi-plus"
-        pTooltip="Thêm 1 dòng để tạo mới"
-        label="Thêm dòng mới"
-        (click)="onAddNewCreateRow()"
+        icon="pi pi-refresh"
+        pTooltip="Tải lại danh sách"
+        label="Tải lại"
+        (click)="onReloadTableData()"
       />
 
       <p-button
@@ -782,7 +699,7 @@
         icon="pi pi-trash"
         pTooltip="Xóa toàn bộ dòng thêm mới"
         label="Xóa hết"
-        (click)="onRemoveAllCreateRow()"
+        (click)="onDeleteAllTableData()"
       />
       <p-button
         icon="pi pi-save"
@@ -814,8 +731,9 @@
                     toggleSelectAll(
                       $event,
                       viewUpdateFormArray,
-                      'viewUpdateIndexListBatch',
-                      'isViewUpdateSelectAll'
+                      'viewUpdateIdListBatch',
+                      'isViewUpdateSelectAll',
+                      false
                     )
                   "
                   [binary]="true"
@@ -825,30 +743,7 @@
           </th>
           @for (col of headerColumnConfigs; track col.field) {
           <!--  -->
-          @if (col.field === COLUMN_FIELD.batch) {
-          <th
-            pResizableColumn
-            [style.min-width.px]="col.minWidth"
-          >
-            <div class="flex">
-              <div class="flex-1 line-clamp line-clamp-2">
-                <p-checkbox
-                  [ngModelOptions]="{ standalone: true }"
-                  [ngModel]="isSelectAll"
-                  (onChange)="
-                    toggleSelectAll(
-                      $event,
-                      viewUpdateFormArray,
-                      'viewUpdateIndexListBatch',
-                      'isViewUpdateSelectAll'
-                    )
-                  "
-                  [binary]="true"
-                />
-              </div>
-            </div>
-          </th>
-          } @else if (col.field === COLUMN_FIELD.order) {
+          @if (col.field === COLUMN_FIELD.order) {
           <th
             pResizableColumn
             [style.min-width.px]="col.minWidth"
@@ -923,8 +818,9 @@
                     $event,
                     viewUpdateFormArray,
                     index,
-                    'viewUpdateIndexListBatch',
-                    'isViewUpdateSelectAll'
+                    'viewUpdateIdListBatch',
+                    'isViewUpdateSelectAll',
+                    false
                   )
                 "
                 [binary]="true"
@@ -1109,13 +1005,10 @@
 
           <td>
             <div>
-              <textarea
-                pTextarea
+              <input
                 [formControlName]="FORM_GROUP_KEYS.code"
-                rows="1"
-                cols="30"
-                showClear
-              ></textarea>
+                pInputText
+              />
             </div>
           </td>
 
@@ -1140,6 +1033,18 @@
               {{ mapRowDataToType(control.value).statusId || '--' }}
             </div>
           </td> -->
+
+          <td>
+            <div>
+              <textarea
+                pTextarea
+                [formControlName]="FORM_GROUP_KEYS.note"
+                rows="1"
+                cols="30"
+                showClear
+              ></textarea>
+            </div>
+          </td>
 
           <!-- Thời gian bắt đầu -->
           <td>

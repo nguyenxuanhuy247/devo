@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Injector } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBaseComponent } from '../base/form-base.component';
 import {
@@ -7,7 +7,7 @@ import {
   FormControl,
   FormGroup,
 } from '@angular/forms';
-import { IOption } from '../interface/common.interface';
+import { ID, IOption } from '../interface/common.interface';
 import { CheckboxChangeEvent } from 'primeng/checkbox';
 import { SELECT_FORM_GROUP_KEY } from 'src/app/features/time-tracking/time-tracking.model';
 import * as _ from 'lodash';
@@ -24,6 +24,10 @@ export class TabComponentBaseComponent extends FormBaseComponent {
   private warningTitle = '⚠️ Chưa điền thời gian bắt đầu';
   formGroupControl!: FormGroup;
   controlContainer = this.injector.get(ControlContainer);
+
+  constructor(override injector: Injector) {
+    super(injector);
+  }
 
   override ngOnInit() {
     super.ngOnInit();
@@ -122,11 +126,13 @@ export class TabComponentBaseComponent extends FormBaseComponent {
   getSelectedNumberAndIds(
     formArray: FormArray,
     listBatchName: string = 'indexListBatch',
+    isUseIndex: boolean = false,
   ) {
     this[listBatchName] = [];
     formArray.value.forEach((rowData: any, index: number) => {
+      const selectedItem = isUseIndex ? index : rowData.id;
       if (rowData.selected) {
-        this[listBatchName].push(index);
+        this[listBatchName].push(selectedItem);
       }
     });
     this[listBatchName].sort((a: number, b: number) => b - a);
@@ -137,6 +143,7 @@ export class TabComponentBaseComponent extends FormBaseComponent {
     formArray: FormArray,
     listBatchName: string = 'indexListBatch',
     isSelectAllName: string = 'isSelectAll',
+    isUseIndex: boolean = false,
   ) {
     this[isSelectAllName] = event.checked;
     formArray.controls.forEach((control) => {
@@ -145,7 +152,7 @@ export class TabComponentBaseComponent extends FormBaseComponent {
       });
     });
 
-    this.getSelectedNumberAndIds(formArray, listBatchName);
+    this.getSelectedNumberAndIds(formArray, listBatchName, isUseIndex);
   }
 
   onRowSelectionChange(
@@ -154,13 +161,14 @@ export class TabComponentBaseComponent extends FormBaseComponent {
     index: number,
     listBatchName: string = 'indexListBatch',
     isSelectAllName: string = 'isSelectAll',
+    isUseIndex: boolean = false,
   ) {
     formArray.at(index).patchValue({
       selected: event.checked,
     });
     this[isSelectAllName] = formArray.value.every((row: any) => row.selected);
 
-    this.getSelectedNumberAndIds(formArray, listBatchName);
+    this.getSelectedNumberAndIds(formArray, listBatchName, isUseIndex);
   }
 
   protected getCommonValue() {

@@ -3,8 +3,8 @@ import { CommonService } from 'src/app/services';
 import {
   COMMON_COLUMN_FIELD,
   getHeaderColumnConfigsFactory,
-  ICommonTimeTrackingRowData,
 } from '../time-tracking.model';
+import { IBugResponseDTO } from './bug.dto.model';
 
 export const BUG_FORM_GROUP_KEY =
   CommonService.generateEnumFromInterface<IBugRowData>();
@@ -12,9 +12,12 @@ export const BUG_FORM_GROUP_KEY =
 export type IBugFormGroup = IBugRowData;
 
 export const bugNullableObj: IBugRowData = {
-  selected: false,
   mode: EMode.VIEW,
+  selected: false,
   id: Math.random(),
+  employeeLevelId: null,
+  employeeId: null,
+  projectId: null,
   moduleId: null,
   menuId: null,
   screenId: null,
@@ -23,6 +26,7 @@ export const bugNullableObj: IBugRowData = {
   code: null,
   name: null,
   statusId: null,
+  note: null,
   startTime: null,
   endTime: null,
   duration: null,
@@ -40,11 +44,11 @@ export const BUG_COLUMN_FIELD = Object.assign(
   },
 );
 
-export interface IBugRowData extends ICommonTimeTrackingRowData {
-  code: string;
+export interface IBugRowData extends IBugResponseDTO {
+  mode: EMode;
+  selected: boolean;
+  name: string;
   isLunchBreak: boolean;
-  name: 'name';
-  statusId: 'statusId';
 }
 
 export const bugHeaderColumnConfigs = getHeaderColumnConfigsFactory(
@@ -62,6 +66,11 @@ export const bugHeaderColumnConfigs = getHeaderColumnConfigsFactory(
     {
       label: 'Hiện trạng',
       field: BUG_COLUMN_FIELD.statusId,
+      minWidth: 200,
+    },
+    {
+      label: 'Ghi chú',
+      field: BUG_COLUMN_FIELD.note,
       minWidth: 200,
     },
   ],
