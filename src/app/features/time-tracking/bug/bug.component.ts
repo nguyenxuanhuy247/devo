@@ -51,7 +51,6 @@ import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
 import { WorkDurationDirective } from '../../../directives';
 import {
-  COMMON_COLUMN_FIELD,
   ISelectFormGroup,
   ITabComponent,
   SELECT_FORM_GROUP_KEY,
@@ -147,7 +146,7 @@ export class BugComponent
   totalBug: number = 0;
   createIndexListBatch: number[] = [];
   isCreateSelectAll: boolean = false;
-  viewUpdateIdListBatch: number[] = [];
+  viewUpdateIdListBatch: ID[] = [];
   isViewUpdateSelectAll: boolean = false;
 
   constructor(override injector: Injector) {
@@ -334,6 +333,7 @@ export class BugComponent
         });
 
         this.viewUpdateIdListBatch = [];
+        this.isViewUpdateSelectAll = false;
         this.callAPIGetTableData();
       });
   }
@@ -426,6 +426,33 @@ export class BugComponent
       ],
     }));
 
+    this.callAPIUpdateRowData();
+  }
+
+  onBatchUpdateViewRow() {
+    const value = this.batchUpdateViewUpdateFormGroup.getRawValue();
+    console.log('value ', value);
+    const viewUpdateTableData = this.viewUpdateFormArray.value;
+    const updateData = viewUpdateTableData
+      .filter((rowData: IBugRowData) => {
+        return this.viewUpdateIdListBatch.includes(rowData.id);
+      })
+      ?.map((rowData: IBugRowData) => {
+        return this.commonService.mergeObjects(rowData, {
+          ...value,
+          updatedDate: new Date(),
+        });
+      });
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      method: EApiMethod.PUT,
+      data: [...updateData],
+    }));
+    console.log('this.doPostRequestDTO() ', this.doPostRequestDTO());
+    this.callAPIUpdateRowData();
+  }
+
+  callAPIUpdateRowData() {
     this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .updateItemAsync(this.doPostRequestDTO())
@@ -434,7 +461,7 @@ export class BugComponent
           this.messageService.add({
             severity: 'error',
             summary: 'Thất bại',
-            detail: `Cập nhật bug thất bại, kiểm tra hàm onSaveUpdate`,
+            detail: `Cập nhật bug thất bại, kiểm tra hàm callAPIUpdateRowData`,
           });
 
           this.timeTrackingStore.setLoading(false);
@@ -447,7 +474,9 @@ export class BugComponent
           summary: 'Thành công',
           detail: res?.message,
         });
-
+        this.viewUpdateIdListBatch = [];
+        this.isViewUpdateSelectAll = false;
+        this.batchUpdateViewUpdateFormGroup.reset();
         this.callAPIGetTableData();
       });
   }
@@ -462,6 +491,7 @@ export class BugComponent
   codeHeaderInCSVFile: string = 'Issue key';
   nameHeaderInCSVFile: string = 'Summary';
   browserEvent: any;
+
   /*
    * @usage Import CSV
    */
@@ -745,6 +775,4 @@ export class BugComponent
   onReloadTableData() {
     this.callAPIGetTableData();
   }
-
-  onDeleteAllTableData() {}
 }

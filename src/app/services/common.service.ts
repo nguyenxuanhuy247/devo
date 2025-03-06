@@ -121,4 +121,26 @@ export class CommonService {
       return template.devTemplate === attributeName;
     })?.templateRef;
   }
+
+  /*
+   * @usage Nếu cả hai giá trị đều khác null, lấy một trong hai (ưu tiên giá trị đầu tiên).
+   * Nếu một giá trị là null, lấy giá trị còn lại.
+   * Nếu cả hai giá trị đều là null, kết quả là null.
+   */
+  mergeObjects(obj1: any, obj2: any): any {
+    const merged: any = {};
+    Object.keys({ ...obj1, ...obj2 }).forEach((key) => {
+      const val1 = obj1[key];
+      const val2 = obj2[key];
+
+      if (val2 !== null && val2 !== undefined) {
+        merged[key] = val2; // Ưu tiên giá trị từ obj2
+      } else if (val1 !== null && val1 !== undefined) {
+        merged[key] = val1;
+      } else {
+        merged[key] = null;
+      }
+    });
+    return merged;
+  }
 }

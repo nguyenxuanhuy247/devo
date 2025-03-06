@@ -7,7 +7,7 @@ import {
   FormControl,
   FormGroup,
 } from '@angular/forms';
-import { ID, IOption } from '../interface/common.interface';
+import { IOption } from '../interface/common.interface';
 import { CheckboxChangeEvent } from 'primeng/checkbox';
 import { SELECT_FORM_GROUP_KEY } from 'src/app/features/time-tracking/time-tracking.model';
 import * as _ from 'lodash';
@@ -16,7 +16,7 @@ import * as _ from 'lodash';
   selector: 'app-tab-component-base',
   imports: [CommonModule],
   templateUrl: './tab-component-base.component.html',
-  styleUrl: './tab-component-base.component.css',
+  styleUrl: './tab-component-base.component.scss',
 })
 export class TabComponentBaseComponent extends FormBaseComponent {
   private blinkInterval: any;
@@ -121,6 +121,7 @@ export class TabComponentBaseComponent extends FormBaseComponent {
   isSelectAll: boolean = false;
   selectedNumber: number = 0;
   indexListBatch: number[] = [];
+
   [key: string]: any;
 
   getSelectedNumberAndIds(
