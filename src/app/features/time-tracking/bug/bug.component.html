@@ -1,4 +1,6 @@
 <div class="huynx15-bug h-full flex flex-column">
+  {{ createIndexListBatch | json }} | {{ viewUpdateIndexListBatch | json }}
+  <!-- Những nút bấm của Bảng Thêm mới -->
   <div
     class="huynx15-actions flex align-items-center justify-content-between gap-3"
     [ngClass]="{
@@ -582,6 +584,212 @@
         </tr>
       </ng-template>
     </p-table>
+  </div>
+
+  <!-- Những nút bấm của Bảng Xem chi tiết và Chỉnh sửa -->
+  <div
+    class="huynx15-actions flex align-items-center gap-3 mt-3"
+    [ngClass]="{
+      'justify-content-between': viewUpdateIndexListBatch?.length,
+      'justify-content-end': !viewUpdateIndexListBatch?.length
+    }"
+  >
+    <div
+      *ngIf="viewUpdateIndexListBatch?.length"
+      class="flex align-items-center justify-content-end gap-3"
+    >
+      <span>Chọn {{ viewUpdateIndexListBatch?.length || 0 }} dòng </span>
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-trash"
+        pTooltip="Xóa nhiều"
+        label="Xóa nhiều"
+        (click)="onBatchRemoveCreateRow()"
+      />
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-file-edit"
+        pTooltip="Xóa nhiều"
+        label="Chỉnh sửa nhiều"
+        (click)="batchUpdate.toggle($event)"
+      />
+      <p-popover #batchUpdate>
+        <div
+          class="flex flex-column"
+          style="width: 360px"
+          [formGroup]="batchUpdateViewUpdateFormGroup"
+        >
+          <div>
+            <span>Module</span>
+            <lib-form-select
+              #moduleId
+              [formControlName]="FORM_GROUP_KEYS.moduleId"
+              [options]="(moduleDependentOptions$ | async)?.[projectFormControl().value]"
+            ></lib-form-select>
+          </div>
+
+          <div>
+            <span>Menu</span>
+            <lib-form-select
+              #menuId
+              [formControlName]="FORM_GROUP_KEYS.menuId"
+              [options]="(menuDependentOptions$ | async)?.[moduleId.value]"
+            ></lib-form-select>
+          </div>
+
+          <div>
+            <span>Màn hình</span>
+            <lib-form-select
+              #screenId
+              [formControlName]="FORM_GROUP_KEYS.screenId"
+              [options]="(screenDependentOptions$ | async)?.[menuId.value]"
+            ></lib-form-select>
+          </div>
+
+          <div>
+            <span>Tính năng</span>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.featureId"
+              [options]="(featureDependentOptions$ | async)?.[screenId.value]"
+            ></lib-form-select>
+          </div>
+
+          <div>
+            <span>Phân loại</span>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.categoryId"
+              [options]="(categoryOptions$ | async) || []"
+            ></lib-form-select>
+          </div>
+
+          <div>
+            <span>Hiện trạng</span>
+            <lib-form-select
+              [formControlName]="FORM_GROUP_KEYS.statusId"
+              [options]="(statusDependentTabOptions$ | async)?.['Bug']"
+            ></lib-form-select>
+          </div>
+
+          <div class="flex justify-content-end gap-3">
+            <p-button
+              [outlined]="true"
+              severity="secondary"
+              icon="pi pi-times"
+              pTooltip="Hủy chỉnh sửa hàng loạt"
+              label="Hủy"
+              (click)="batchUpdate.hide(); batchUpdateFormGroup.reset()"
+            />
+            <p-button
+              icon="pi pi-save"
+              pTooltip="Lưu chỉnh sửa hàng loạt"
+              label="Xác nhận"
+              (click)="onBatchUpdateCreateRow()"
+            />
+          </div>
+        </div>
+      </p-popover>
+    </div>
+    <!-- Danh sách nút bấm -->
+    <div class="flex justify-content-end gap-3">
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-history"
+        pTooltip="Khôi phục dữ liệu đang log"
+        label="Khôi phục"
+        (click)="onRecoverCurrentLog()"
+      />
+      <p-button
+        #importCSVButton
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-file-import"
+        pTooltip="Nhập dữ liệu từ CSV"
+        label="Import CSV"
+        (click)="importCSV.click(); browserEvent = $event"
+      />
+      <input
+        #importCSV
+        type="file"
+        hidden
+        (change)="onFileChange($event, importCSVPopup)"
+        accept=".csv"
+      />
+
+      <p-popover #importCSVPopup>
+        <div
+          class="flex flex-column"
+          style="width: 360px"
+        >
+          <div>Map dữ liệu</div>
+          <div>
+            <span>Mã bug</span>
+            <p-select
+              [(ngModel)]="codeHeaderInCSVFile"
+              [options]="csvHeaderOptions"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+            />
+          </div>
+
+          <div>
+            <span>Tên bug</span>
+            <p-select
+              [(ngModel)]="nameHeaderInCSVFile"
+              [options]="csvHeaderOptions"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+            />
+          </div>
+
+          <div class="flex justify-content-end gap-3">
+            <p-button
+              [outlined]="true"
+              severity="secondary"
+              icon="pi pi-times"
+              pTooltip="Hủy nhập dữ liệu bằng CSV"
+              label="Hủy"
+              (click)="importCSVPopup.hide()"
+            />
+            <p-button
+              icon="pi pi-save"
+              pTooltip="Xác nhận nhập file CSV"
+              label="Xác nhận"
+              (click)="mapColumnAfterImportCSV(); importCSVPopup.hide()"
+            />
+          </div>
+        </div>
+      </p-popover>
+
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-plus"
+        pTooltip="Thêm 1 dòng để tạo mới"
+        label="Thêm dòng mới"
+        (click)="onAddNewCreateRow()"
+      />
+
+      <p-button
+        [outlined]="true"
+        severity="secondary"
+        icon="pi pi-trash"
+        pTooltip="Xóa toàn bộ dòng thêm mới"
+        label="Xóa hết"
+        (click)="onRemoveAllCreateRow()"
+      />
+      <p-button
+        icon="pi pi-save"
+        label="Lưu tất cả"
+        (click)="onBulkCreate()"
+      />
+    </div>
   </div>
 
   <!-- BẢNG XEM CHI TIẾT VÀ CHỈNH SỬA -->

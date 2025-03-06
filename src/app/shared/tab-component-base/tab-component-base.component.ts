@@ -126,10 +126,10 @@ export class TabComponentBaseComponent extends FormBaseComponent {
     this[listBatchName] = [];
     formArray.value.forEach((rowData: any, index: number) => {
       if (rowData.selected) {
-        this.indexListBatch.push(index);
+        this[listBatchName].push(index);
       }
     });
-    this.indexListBatch.sort((a, b) => b - a);
+    this[listBatchName].sort((a: number, b: number) => b - a);
   }
 
   toggleSelectAll(

@@ -141,6 +141,7 @@ export class BugComponent
     endTime: null,
   });
   batchUpdateFormGroup: FormGroup;
+  batchUpdateViewUpdateFormGroup: FormGroup;
 
   totalDuration: number = 0;
   totalBug: number = 0;
@@ -163,6 +164,15 @@ export class BugComponent
       screenId: null,
       featureId: null,
       categoryId: null,
+    });
+
+    this.batchUpdateViewUpdateFormGroup = this.formBuilder.group({
+      moduleId: null,
+      menuId: null,
+      screenId: null,
+      featureId: null,
+      categoryId: null,
+      statusId: null,
     });
   }
 
@@ -643,7 +653,7 @@ export class BugComponent
   }
 
   onBatchRemoveCreateRow() {
-    this.indexListBatch.forEach((index: number) => {
+    this.createIndexListBatch.forEach((index: number) => {
       this.createFormArray.removeAt(index);
     });
   }
@@ -651,7 +661,7 @@ export class BugComponent
   onBatchUpdateCreateRow() {
     const batchUpdateFormValue = this.batchUpdateFormGroup.value;
     this.createFormArray.controls.forEach((control, index: number) => {
-      if (this.indexListBatch.includes(index)) {
+      if (this.createIndexListBatch.includes(index)) {
         control.patchValue({
           ...batchUpdateFormValue,
         });
