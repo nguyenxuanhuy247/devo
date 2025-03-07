@@ -1,4 +1,4 @@
-import { Component, Injector } from '@angular/core';
+import { Component, Injector, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBaseComponent } from '../base/form-base.component';
 import {
@@ -11,6 +11,7 @@ import { IOption } from '../interface/common.interface';
 import { CheckboxChangeEvent } from 'primeng/checkbox';
 import { SELECT_FORM_GROUP_KEY } from 'src/app/features/time-tracking/time-tracking.model';
 import * as _ from 'lodash';
+import { LibFormSelectComponent } from '../../components';
 
 @Component({
   selector: 'app-tab-component-base',
@@ -19,6 +20,8 @@ import * as _ from 'lodash';
   styleUrl: './tab-component-base.component.scss',
 })
 export class TabComponentBaseComponent extends FormBaseComponent {
+  projectFormControl = input<LibFormSelectComponent>();
+
   private blinkInterval: any;
   private originalTitle = 'devo';
   private warningTitle = '⚠️ Chưa điền thời gian bắt đầu';

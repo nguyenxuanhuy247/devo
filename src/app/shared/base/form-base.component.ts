@@ -23,7 +23,6 @@ import {
 } from '../../services';
 import { DomSanitizer } from '@angular/platform-browser';
 import { TimeTrackingCalculateService } from '../../features/time-tracking/time-tracking-calculate.service';
-import { IOption } from '../interface/common.interface';
 
 @Component({
   template: ``,
@@ -49,6 +48,7 @@ export class FormBaseComponent implements OnInit, OnDestroy {
   onDestroy$: Subject<any> = new Subject<any>();
 
   constructor(protected injector: Injector) {}
+
   ngOnInit() {
     console.log('FormBaseComponent - ngOnInit');
   }
@@ -92,5 +92,9 @@ export class FormBaseComponent implements OnInit, OnDestroy {
 
   mapRowDataToType<U>(rowData: U): U {
     return rowData as U;
+  }
+
+  convertISOString(value: string): Date {
+    return new Date(value);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Injector, input, OnInit, signal } from '@angular/core';
+import { Component, Injector, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   BUG_COLUMN_FIELD,
@@ -8,7 +8,11 @@ import {
   IBugFormGroup,
   IBugRowData,
 } from './bug.model';
-import { EApiMethod, EMode } from 'src/app/contants/common.constant';
+import {
+  DATE_FORMAT,
+  EApiMethod,
+  EMode,
+} from 'src/app/contants/common.constant';
 import {
   EGetApiMode,
   ESheetName,
@@ -49,7 +53,10 @@ import { LibFormSelectComponent } from '../../../components';
 import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
-import { WorkDurationDirective } from '../../../directives';
+import {
+  DevTemplateDirective,
+  WorkDurationDirective,
+} from '../../../directives';
 import {
   ISelectFormGroup,
   ITabComponent,
@@ -64,6 +71,7 @@ import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab
 import { ELogStorageKey } from 'src/app/services';
 import { endOfDay, startOfDay } from 'date-fns';
 import { SelectModule } from 'primeng/select';
+import { ISSUES_FORM_GROUP_KEYS } from '../issues/issues.model';
 
 @Component({
   selector: 'app-bug',
@@ -84,6 +92,7 @@ import { SelectModule } from 'primeng/select';
     Checkbox,
     PopoverModule,
     SelectModule,
+    DevTemplateDirective,
   ],
   templateUrl: './bug.component.html',
   styleUrl: './bug.component.scss',
@@ -95,11 +104,9 @@ export class BugComponent
   extends TabComponentBaseComponent
   implements OnInit, ITabComponent
 {
-  projectFormControl = input<LibFormSelectComponent>();
-
-  protected readonly FORM_GROUP_KEYS = BUG_FORM_GROUP_KEY;
-  protected readonly ETabName = ESheetName;
-  // protected readonly COLUMN_FIELD = BUG_COLUMN_FIELD;
+  protected readonly FORM_GROUP_KEY = BUG_FORM_GROUP_KEY;
+  protected readonly ESheetName = ESheetName;
+  sheetName = signal<ESheetName>(ESheetName.BUG);
   protected readonly COLUMN_FIELD = BUG_COLUMN_FIELD;
   protected readonly EMode = EMode;
   private timeTrackingStore = this.injector.get(TimeTrackingStore);
@@ -113,13 +120,15 @@ export class BugComponent
   categoryOptions$ = this.timeTrackingStore.categoryOptions$;
   statusDependentTabOptions$ =
     this.timeTrackingStore.statusDependentTabOptions$;
-
-  // viewUpdateTableData: IBugRowData[];
+  issueDependentScreenOptions$ =
+    this.timeTrackingStore.issueDependentScreenOptions$;
+  deadlineDependentModuleOptions$ =
+    this.timeTrackingStore.deadlineDependentModuleOptions$;
 
   headerColumnConfigs: IColumnHeaderConfigs[] = bugHeaderColumnConfigs;
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
-    sheetName: ESheetName.BUG,
+    sheetName: this.sheetName(),
     ids: null,
     data: null,
   });
@@ -135,7 +144,7 @@ export class BugComponent
     employeeId: null,
     projectId: null,
     issueId: null,
-    sheetName: ESheetName.BUG,
+    sheetName: this.sheetName(),
     startTime: null,
     endTime: null,
   });
@@ -148,6 +157,7 @@ export class BugComponent
   isCreateSelectAll: boolean = false;
   viewUpdateIdListBatch: ID[] = [];
   isViewUpdateSelectAll: boolean = false;
+  nullableObj = bugNullableObj;
 
   constructor(override injector: Injector) {
     super(injector);
@@ -195,7 +205,7 @@ export class BugComponent
                 employeeLevelId: formGroupValue.employeeLevelId,
                 employeeId: formGroupValue.employeeId,
                 projectId: formGroupValue.projectId,
-                sheetName: ESheetName.BUG,
+                sheetName: this.sheetName(),
                 startTime: startOfDay(
                   formGroupValue.dateRange[0],
                 ).toISOString(),
@@ -226,7 +236,7 @@ export class BugComponent
 
           listData.forEach((rowData) => {
             const formGroup = this.formBuilder.group({
-              ...bugNullableObj,
+              ...this.nullableObj,
               ...rowData,
               mode: EMode.VIEW,
               isLunchBreak: true,
@@ -237,12 +247,12 @@ export class BugComponent
           });
 
           this.totalDuration = listData.reduce(
-            (acc, rowData) => acc + rowData.duration,
+            (acc, rowData) => acc + (rowData.duration ? rowData.duration : 0),
             0,
           );
 
-          console.log('Gọi API tải danh sách bug', this.viewUpdateFormArray);
-          // this.viewUpdateTableData = this.viewUpdateFormArray.value;
+          console.log('listData', listData);
+          console.log('this.totalDuration', this.totalDuration);
           this.warningWhenChangeChromeTab();
         }),
     );
@@ -371,7 +381,7 @@ export class BugComponent
         },
       ],
     }));
-
+    console.log('Thêm mới ', this.doPostRequestDTO());
     this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .createItemAsync(this.doPostRequestDTO())
@@ -400,7 +410,7 @@ export class BugComponent
           const EStatusNameId = this.convertOptionToEnum(this.statusOption());
           this.createFormArray.setValue([
             {
-              ...bugNullableObj,
+              ...this.nullableObj,
               status: EStatusNameId['CHUA_FIX'],
               mode: EMode.CREATE,
             },
@@ -562,7 +572,7 @@ export class BugComponent
     const EStatusNameId = this.convertOptionToEnum(this.statusOption());
     this.mapColumnCsvData.forEach((rowData: any, index: number) => {
       const formGroup = this.formBuilder.group({
-        ...bugNullableObj,
+        ...this.nullableObj,
         mode: this.EMode.UPDATE,
         isLunchBreak: true,
         status: EStatusNameId['CHUA_FIX'],
@@ -632,7 +642,7 @@ export class BugComponent
       this.onSetCurrentTimeForDatepicker(
         this.createFormArray,
         index,
-        this.FORM_GROUP_KEYS.startTime,
+        this.FORM_GROUP_KEY.startTime,
       );
     } else if (optionId === EStatusNameId['DA_FIX']) {
       this.getFormGroup(index, this.createFormArray).patchValue({
@@ -641,14 +651,14 @@ export class BugComponent
       this.getFormControlInSubFormGroup(
         this.createFormArray,
         index,
-        this.FORM_GROUP_KEYS.endTime,
+        this.FORM_GROUP_KEY.endTime,
       ).setValue(new Date());
       this.onSaveCreate(index);
     } else {
       this.getFormControlInSubFormGroup(
         this.createFormArray,
         index,
-        this.FORM_GROUP_KEYS.startTime,
+        this.FORM_GROUP_KEY.startTime,
       ).setValue(null);
     }
     console.log('Cảnh báo cho thay đổi status');
@@ -664,7 +674,7 @@ export class BugComponent
   onAddNewCreateRow() {
     const EStatusNameId = this.convertOptionToEnum(this.statusOption());
     const formGroup = this.formBuilder.group({
-      ...bugNullableObj,
+      ...this.nullableObj,
       status: EStatusNameId['CHUA_FIX'],
       mode: EMode.CREATE,
     });
@@ -775,4 +785,7 @@ export class BugComponent
   onReloadTableData() {
     this.callAPIGetTableData();
   }
+
+  protected readonly FORM_GROUP_KEYS = ISSUES_FORM_GROUP_KEYS;
+  protected readonly DATE_FORMAT = DATE_FORMAT;
 }

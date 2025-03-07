@@ -59,7 +59,7 @@ export const bugHeaderColumnConfigs = getHeaderColumnConfigsFactory(
       minWidth: 120,
     },
     {
-      label: 'Tên bug & improvement',
+      label: 'Tên bug',
       field: BUG_COLUMN_FIELD.name,
       minWidth: 300,
     },

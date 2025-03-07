@@ -1,4 +1,4 @@
-import { Component, Injector, input, OnInit, signal } from '@angular/core';
+import { Component, Injector, OnInit, signal } from '@angular/core';
 import {
   FormArray,
   FormControl,
@@ -52,8 +52,6 @@ import { WorkDurationDirective } from '../../../directives';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { ILogWorkResponseDTO } from './log-work.dto.model';
-import { ExtendedFormBase } from '../../../utils/function';
-import { FormBaseComponent } from '../../../shared';
 import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
 
 @Component({
@@ -81,8 +79,6 @@ export class LogWorkComponent
   extends TabComponentBaseComponent
   implements OnInit, ITabComponent
 {
-  projectFormControl = input.required<LibFormSelectComponent>();
-
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
   headerColumnConfigs: IColumnHeaderConfigs[] = logWorkHeaderColumnConfigs;
   isLoading = signal(false);

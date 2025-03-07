@@ -90,7 +90,7 @@ import { ImprovementComponent } from './improvement/improvement.component';
   },
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.BUG);
+  activeTab = signal<ETabName>(ETabName.IMPROVEMENT);
   subscription: Subscription = new Subscription();
   SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
   ETabName = ETabName;

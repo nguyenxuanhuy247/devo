@@ -1,7 +1,6 @@
 import {
   Component,
   Injector,
-  input,
   OnInit,
   QueryList,
   signal,
@@ -71,10 +70,9 @@ import { TimeTrackingApiService } from '../time-tracking-api.service';
 import { message } from 'src/app/contants/api.contant';
 import { IIssueResponseDTO } from './issues.dto.model';
 import { Checkbox } from 'primeng/checkbox';
-import { ExtendedFormBase, getValue } from '../../../utils/function';
+import { getValue } from '../../../utils/function';
 import { ImprovementComponent } from '../improvement/improvement.component';
 import { ILogWorkRowData } from '../log-work/log-work.model';
-import { FormBaseComponent } from 'src/app/shared';
 import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
 
 @Component({
@@ -107,9 +105,6 @@ export class IssuesComponent
   extends TabComponentBaseComponent
   implements OnInit, ITabComponent
 {
-  // formGroupControl = input<FormGroup>();
-  projectFormControl = input<LibFormSelectComponent>();
-
   headerColumnConfigs: IColumnHeaderConfigs[] = issuesHeaderColumnConfigs;
   tableData: any[] = [];
   COLUMN_FIELD = ISSUES_COLUMN_FIELD;

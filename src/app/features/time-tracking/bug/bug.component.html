@@ -39,7 +39,7 @@
             <span>Module</span>
             <lib-form-select
               #moduleId
-              [formControlName]="FORM_GROUP_KEYS.moduleId"
+              [formControlName]="FORM_GROUP_KEY.moduleId"
               [options]="(moduleDependentOptions$ | async)?.[projectFormControl().value]"
             ></lib-form-select>
           </div>
@@ -48,7 +48,7 @@
             <span>Menu</span>
             <lib-form-select
               #menuId
-              [formControlName]="FORM_GROUP_KEYS.menuId"
+              [formControlName]="FORM_GROUP_KEY.menuId"
               [options]="(menuDependentOptions$ | async)?.[moduleId.value]"
             ></lib-form-select>
           </div>
@@ -57,7 +57,7 @@
             <span>Màn hình</span>
             <lib-form-select
               #screenId
-              [formControlName]="FORM_GROUP_KEYS.screenId"
+              [formControlName]="FORM_GROUP_KEY.screenId"
               [options]="(screenDependentOptions$ | async)?.[menuId.value]"
             ></lib-form-select>
           </div>
@@ -65,7 +65,7 @@
           <div>
             <span>Tính năng</span>
             <lib-form-select
-              [formControlName]="FORM_GROUP_KEYS.featureId"
+              [formControlName]="FORM_GROUP_KEY.featureId"
               [options]="(featureDependentOptions$ | async)?.[screenId.value]"
             ></lib-form-select>
           </div>
@@ -73,7 +73,7 @@
           <div>
             <span>Phân loại</span>
             <lib-form-select
-              [formControlName]="FORM_GROUP_KEYS.categoryId"
+              [formControlName]="FORM_GROUP_KEY.categoryId"
               [options]="(categoryOptions$ | async) || []"
             ></lib-form-select>
           </div>
@@ -324,7 +324,7 @@
             <div>
               <lib-form-select
                 #moduleId
-                [formControlName]="FORM_GROUP_KEYS.moduleId"
+                [formControlName]="FORM_GROUP_KEY.moduleId"
                 [options]="(moduleDependentOptions$ | async)?.[projectFormControl().value]"
               ></lib-form-select>
             </div>
@@ -334,7 +334,7 @@
             <div>
               <lib-form-select
                 #menuId
-                [formControlName]="FORM_GROUP_KEYS.menuId"
+                [formControlName]="FORM_GROUP_KEY.menuId"
                 [options]="(menuDependentOptions$ | async)?.[moduleId.value]"
               ></lib-form-select>
             </div>
@@ -344,7 +344,7 @@
             <div>
               <lib-form-select
                 #screenId
-                [formControlName]="FORM_GROUP_KEYS.screenId"
+                [formControlName]="FORM_GROUP_KEY.screenId"
                 [options]="(screenDependentOptions$ | async)?.[menuId.value]"
               ></lib-form-select>
             </div>
@@ -353,7 +353,7 @@
           <td>
             <div>
               <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.featureId"
+                [formControlName]="FORM_GROUP_KEY.featureId"
                 [options]="(featureDependentOptions$ | async)?.[screenId.value]"
               ></lib-form-select>
             </div>
@@ -362,7 +362,7 @@
           <td>
             <div>
               <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.categoryId"
+                [formControlName]="FORM_GROUP_KEY.categoryId"
                 [options]="(categoryOptions$ | async) || []"
               ></lib-form-select>
             </div>
@@ -371,7 +371,7 @@
           <td>
             <div>
               <input
-                [formControlName]="FORM_GROUP_KEYS.code"
+                [formControlName]="FORM_GROUP_KEY.code"
                 pInputText
               />
             </div>
@@ -387,7 +387,7 @@
                   class="w-full"
                   pInputText
                   type="text"
-                  [formControlName]="FORM_GROUP_KEYS.name"
+                  [formControlName]="FORM_GROUP_KEY.name"
                 />
               </ng-template>
               <ng-template #output>
@@ -405,7 +405,7 @@
           <td>
             <div>
               <lib-form-select
-                [formControlName]="FORM_GROUP_KEYS.statusId"
+                [formControlName]="FORM_GROUP_KEY.statusId"
                 [options]="(statusDependentTabOptions$ | async)?.['Bug']"
                 (selectOption)="onSelectStatus($event, index)"
               ></lib-form-select>
@@ -416,13 +416,54 @@
             <div>
               <textarea
                 pTextarea
-                [formControlName]="FORM_GROUP_KEYS.note"
+                [formControlName]="FORM_GROUP_KEY.note"
                 rows="1"
                 cols="30"
                 showClear
               ></textarea>
             </div>
           </td>
+
+          @if (sheetName() === ESheetName.IMPROVEMENT) {
+            <td>
+              <div>
+                <lib-form-select
+                  [formControlName]="$any(FORM_GROUP_KEY)?.issueId"
+                  [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
+                  (selectOption)="onSelectStatus($event, index)"
+                ></lib-form-select>
+              </div>
+            </td>
+
+
+            <td>
+              <div>
+                <lib-form-select
+                  [formControlName]="FORM_GROUP_KEYS.deadlineId"
+                  [options]="(deadlineDependentModuleOptions$ | async)?.[moduleId.value]"
+                >
+                  <ng-template
+                    [devTemplate]="FORM_GROUP_KEYS.deadlineId"
+                    let-rowData
+                  >
+                    <div class="line-clamp">
+                      {{ convertISOString(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
+                    </div>
+                  </ng-template>
+
+                  <ng-template
+                    [devTemplate]="'option'"
+                    let-rowData
+                  >
+                    <div class="line-clamp">
+                      {{ convertISOString(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
+                    </div>
+                  </ng-template>
+                </lib-form-select>
+              </div>
+            </td>
+
+          }
 
           <!-- Thời gian bắt đầu -->
           <td>
@@ -439,12 +480,12 @@
                   onSetCurrentTimeForDatepicker(
                     createFormArray,
                     index,
-                    FORM_GROUP_KEYS.startTime
+                    FORM_GROUP_KEY.startTime
                   )
                 "
               />
               <p-datepicker
-                [formControlName]="FORM_GROUP_KEYS.startTime"
+                [formControlName]="FORM_GROUP_KEY.startTime"
                 [showTime]="true"
                 hourFormat="24"
                 dateFormat="dd/mm"
@@ -470,13 +511,13 @@
                   onSetCurrentTimeForDatepicker(
                     createFormArray,
                     index,
-                    FORM_GROUP_KEYS.endTime
+                    FORM_GROUP_KEY.endTime
                   )
                 "
               />
 
               <p-datepicker
-                [formControlName]="FORM_GROUP_KEYS.endTime"
+                [formControlName]="FORM_GROUP_KEY.endTime"
                 [showTime]="true"
                 hourFormat="24"
                 dateFormat="dd/mm"
@@ -491,7 +532,7 @@
             <div>
               <input
                 appWorkDuration
-                [formControlName]="FORM_GROUP_KEYS.duration"
+                [formControlName]="FORM_GROUP_KEY.duration"
                 id="duration"
                 pInputText
               />
@@ -501,7 +542,7 @@
           <td>
             <div>
               <p-check-box
-                [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
+                [formControlName]="FORM_GROUP_KEY.isLunchBreak"
                 [binary]="true"
               ></p-check-box>
             </div>
@@ -617,7 +658,7 @@
             <span>Module</span>
             <lib-form-select
               #moduleId
-              [formControlName]="FORM_GROUP_KEYS.moduleId"
+              [formControlName]="FORM_GROUP_KEY.moduleId"
               [options]="(moduleDependentOptions$ | async)?.[projectFormControl().value]"
             ></lib-form-select>
           </div>
@@ -626,7 +667,7 @@
             <span>Menu</span>
             <lib-form-select
               #menuId
-              [formControlName]="FORM_GROUP_KEYS.menuId"
+              [formControlName]="FORM_GROUP_KEY.menuId"
               [options]="(menuDependentOptions$ | async)?.[moduleId.value]"
             ></lib-form-select>
           </div>
@@ -635,7 +676,7 @@
             <span>Màn hình</span>
             <lib-form-select
               #screenId
-              [formControlName]="FORM_GROUP_KEYS.screenId"
+              [formControlName]="FORM_GROUP_KEY.screenId"
               [options]="(screenDependentOptions$ | async)?.[menuId.value]"
             ></lib-form-select>
           </div>
@@ -643,7 +684,7 @@
           <div>
             <span>Tính năng</span>
             <lib-form-select
-              [formControlName]="FORM_GROUP_KEYS.featureId"
+              [formControlName]="FORM_GROUP_KEY.featureId"
               [options]="(featureDependentOptions$ | async)?.[screenId.value]"
             ></lib-form-select>
           </div>
@@ -651,7 +692,7 @@
           <div>
             <span>Phân loại</span>
             <lib-form-select
-              [formControlName]="FORM_GROUP_KEYS.categoryId"
+              [formControlName]="FORM_GROUP_KEY.categoryId"
               [options]="(categoryOptions$ | async) || []"
             ></lib-form-select>
           </div>
@@ -659,7 +700,7 @@
           <div>
             <span>Hiện trạng</span>
             <lib-form-select
-              [formControlName]="FORM_GROUP_KEYS.statusId"
+              [formControlName]="FORM_GROUP_KEY.statusId"
               [options]="(statusDependentTabOptions$ | async)?.['Bug']"
             ></lib-form-select>
           </div>
@@ -948,7 +989,7 @@
               <div>
                 <lib-form-select
                   #moduleId
-                  [formControlName]="FORM_GROUP_KEYS.moduleId"
+                  [formControlName]="FORM_GROUP_KEY.moduleId"
                   [options]="(moduleDependentOptions$ | async)?.[projectFormControl().value]"
                 ></lib-form-select>
               </div>
@@ -958,7 +999,7 @@
               <div>
                 <lib-form-select
                   #menuId
-                  [formControlName]="FORM_GROUP_KEYS.menuId"
+                  [formControlName]="FORM_GROUP_KEY.menuId"
                   [options]="(menuDependentOptions$ | async)?.[moduleId.value]"
                 ></lib-form-select>
               </div>
@@ -968,7 +1009,7 @@
               <div>
                 <lib-form-select
                   #screenId
-                  [formControlName]="FORM_GROUP_KEYS.screenId"
+                  [formControlName]="FORM_GROUP_KEY.screenId"
                   [options]="(screenDependentOptions$ | async)?.[menuId.value]"
                 ></lib-form-select>
               </div>
@@ -977,7 +1018,7 @@
             <td>
               <div>
                 <lib-form-select
-                  [formControlName]="FORM_GROUP_KEYS.featureId"
+                  [formControlName]="FORM_GROUP_KEY.featureId"
                   [options]="(featureDependentOptions$ | async)?.[screenId.value]"
                 ></lib-form-select>
               </div>
@@ -986,7 +1027,7 @@
             <td>
               <div>
                 <lib-form-select
-                  [formControlName]="FORM_GROUP_KEYS.categoryId"
+                  [formControlName]="FORM_GROUP_KEY.categoryId"
                   [options]="(categoryOptions$ | async) || []"
                 ></lib-form-select>
               </div>
@@ -995,7 +1036,7 @@
             <td>
               <div>
                 <input
-                  [formControlName]="FORM_GROUP_KEYS.code"
+                  [formControlName]="FORM_GROUP_KEY.code"
                   pInputText
                 />
               </div>
@@ -1010,7 +1051,7 @@
             <td>
               <div>
                 <lib-form-select
-                  [formControlName]="FORM_GROUP_KEYS.statusId"
+                  [formControlName]="FORM_GROUP_KEY.statusId"
                   [options]="(statusDependentTabOptions$ | async)?.['Bug']"
                   (selectOption)="onSelectStatus($event, index)"
                 ></lib-form-select>
@@ -1027,13 +1068,54 @@
               <div>
               <textarea
                 pTextarea
-                [formControlName]="FORM_GROUP_KEYS.note"
+                [formControlName]="FORM_GROUP_KEY.note"
                 rows="1"
                 cols="30"
                 showClear
               ></textarea>
               </div>
             </td>
+
+            @if (sheetName() === ESheetName.IMPROVEMENT) {
+              <td>
+                <div>
+                  <lib-form-select
+                    [formControlName]="$any(FORM_GROUP_KEY)?.issueId"
+                    [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
+                    (selectOption)="onSelectStatus($event, index)"
+                  ></lib-form-select>
+                </div>
+              </td>
+
+
+              <td>
+                <div>
+                  <lib-form-select
+                    [formControlName]="FORM_GROUP_KEYS.deadlineId"
+                    [options]="(deadlineDependentModuleOptions$ | async)?.[moduleId.value]"
+                  >
+                    <ng-template
+                      [devTemplate]="FORM_GROUP_KEYS.deadlineId"
+                      let-rowData
+                    >
+                      <div class="line-clamp">
+                        {{ convertISOString(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
+                      </div>
+                    </ng-template>
+
+                    <ng-template
+                      [devTemplate]="'option'"
+                      let-rowData
+                    >
+                      <div class="line-clamp">
+                        {{ convertISOString(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
+                      </div>
+                    </ng-template>
+                  </lib-form-select>
+                </div>
+              </td>
+
+            }
 
             <!-- Thời gian bắt đầu -->
             <td>
@@ -1050,12 +1132,12 @@
                   onSetCurrentTimeForDatepicker(
                     viewUpdateFormArray,
                     index,
-                    FORM_GROUP_KEYS.startTime
+                    FORM_GROUP_KEY.startTime
                   )
                 "
                 />
                 <p-datepicker
-                  [formControlName]="FORM_GROUP_KEYS.startTime"
+                  [formControlName]="FORM_GROUP_KEY.startTime"
                   [showTime]="true"
                   hourFormat="24"
                   dateFormat="dd/mm"
@@ -1081,13 +1163,13 @@
                   onSetCurrentTimeForDatepicker(
                     viewUpdateFormArray,
                     index,
-                    FORM_GROUP_KEYS.endTime
+                    FORM_GROUP_KEY.endTime
                   )
                 "
                 />
 
                 <p-datepicker
-                  [formControlName]="FORM_GROUP_KEYS.endTime"
+                  [formControlName]="FORM_GROUP_KEY.endTime"
                   [showTime]="true"
                   hourFormat="24"
                   dateFormat="dd/mm"
@@ -1102,7 +1184,7 @@
               <div>
                 <input
                   appWorkDuration
-                  [formControlName]="FORM_GROUP_KEYS.duration"
+                  [formControlName]="FORM_GROUP_KEY.duration"
                   id="duration"
                   pInputText
                 />
@@ -1112,7 +1194,7 @@
             <td>
               <div>
                 <p-check-box
-                  [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
+                  [formControlName]="FORM_GROUP_KEY.isLunchBreak"
                   [binary]="true"
                 ></p-check-box>
               </div>
