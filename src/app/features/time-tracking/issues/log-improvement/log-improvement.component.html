@@ -1,0 +1,56 @@
+<div class="form-detail flex flex-column h-screen">  <!-- SECTION : NHỮNG NÚT HÀNH ĐỘNG -->
+  <div class="header-group-btns flex align-items-center justify-content-between p-3">
+    <!-- Những nút bên trái -->
+    <div class="left-action-group">
+      <!-- Nút Đóng -->
+      <div class="close-expand-btn">
+        <p-button
+          (click)="onClose()"
+          severity="secondary"
+          variant="outlined"
+        >
+          <i class="pi pi-times"></i>
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Những nút bên phải -->
+    <div class="right-action-group flex align-items-center justify-content-between gap-1">
+      <!-- Nút Chỉnh sửa -->
+      <p-button
+        (click)="onUpdate()"
+        label="Chỉnh sửa"
+      ></p-button>
+
+      <!-- Nút Xóa -->
+      <p-button
+        (click)="onDelete()"
+        label="Xóa"
+      ></p-button>
+
+    </div>
+  </div>
+
+  <div class="huynx15-drawer-body" [formGroup]="formGroup">
+    <app-improvement
+      hasBatchCreate="false"
+      [projectFormControl]="projectFormControl"
+      [issueRowData]="issueRowData"></app-improvement>
+  </div>
+
+  <div class="flex justify-content-end gap-2 p-3">
+    <!-- Nút Chỉnh sửa -->
+    <p-button
+      (click)="onUpdate()"
+      label="Hủy"
+      severity="secondary"
+      variant="outlined"
+    ></p-button>
+
+    <!-- Nút Xóa -->
+    <p-button
+      (click)="onDelete()"
+      label="Lưu"
+    ></p-button>
+  </div>
+</div>

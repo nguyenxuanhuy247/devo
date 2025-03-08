@@ -1,4 +1,12 @@
-import { Component, computed, Injector, OnInit, signal } from '@angular/core';
+import {
+  booleanAttribute,
+  Component,
+  computed,
+  Injector,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   BUG_COLUMN_FIELD,
@@ -104,6 +112,8 @@ export class BugComponent
   extends TabComponentBaseComponent
   implements OnInit, ITabComponent
 {
+  hasBatchCreate = input(true, { transform: booleanAttribute });
+
   protected readonly FORM_GROUP_KEY = BUG_FORM_GROUP_KEY;
   protected readonly ESheetName = ESheetName;
   sheetName = signal<ESheetName>(ESheetName.BUG);

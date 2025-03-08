@@ -47,6 +47,7 @@ import { getValue } from 'src/app/utils/function';
 import { IssuesComponent } from './issues/issues.component';
 import { BugComponent } from './bug/bug.component';
 import { ImprovementComponent } from './improvement/improvement.component';
+import { EstimateComponent } from './estimate/estimate.component';
 
 @Component({
   selector: 'app-time-tracking',
@@ -82,6 +83,7 @@ import { ImprovementComponent } from './improvement/improvement.component';
     IssuesComponent,
     BugComponent,
     ImprovementComponent,
+    EstimateComponent,
   ],
   templateUrl: './time-tracking.component.html',
   styleUrl: './time-tracking.component.scss',
@@ -90,7 +92,7 @@ import { ImprovementComponent } from './improvement/improvement.component';
   },
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.ISSUE);
+  activeTab = signal<ETabName>(ETabName.ESTIMATE);
   subscription: Subscription = new Subscription();
   SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
   ETabName = ETabName;

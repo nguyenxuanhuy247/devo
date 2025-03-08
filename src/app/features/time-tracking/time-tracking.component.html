@@ -153,6 +153,17 @@
 
       <p-tabpanels>
         <!-- Tab Log work -->
+        @if (activeTab() === ETabName.ESTIMATE) {
+          <p-tabpanel [value]="ETabName.ESTIMATE">
+            <app-estimate
+              #tab
+              [projectFormControl]="projectId"
+            >
+            </app-estimate>
+          </p-tabpanel>
+        }
+
+        <!-- Tab Log work -->
         @if (activeTab() === ETabName.LOG_WORK) {
           <p-tabpanel [value]="ETabName.LOG_WORK">
             <app-log-work
@@ -194,7 +205,6 @@
             </app-improvement>
           </p-tabpanel>
         }
-
       </p-tabpanels>
     </p-tabs>
   </div>

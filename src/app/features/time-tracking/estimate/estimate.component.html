@@ -9,7 +9,7 @@
     }"
   >
     <div
-      *ngIf="hasBatchCreate() && createIndexListBatch?.length"
+      *ngIf="createIndexListBatch?.length"
       class="flex align-items-center justify-content-end gap-3"
     >
       <span>Chọn {{ createIndexListBatch?.length || 0 }} dòng </span>
@@ -108,73 +108,6 @@
         (click)="onRecoverCurrentLog()"
       />
       <p-button
-        *ngIf="hasBatchCreate()"
-        [outlined]="true"
-        severity="secondary"
-        icon="pi pi-file-import"
-        pTooltip="Nhập dữ liệu từ CSV"
-        label="Import CSV"
-        (click)="importCSV.click(); browserEvent = $event"
-      />
-      <input
-        #importCSV
-        type="file"
-        hidden
-        (change)="onFileChange($event, importCSVPopup)"
-        accept=".csv"
-      />
-
-      <p-popover #importCSVPopup>
-        <div
-          class="flex flex-column"
-          style="width: 360px"
-        >
-          <div>Map dữ liệu</div>
-          <div>
-            <span>Mã bug</span>
-            <p-select
-              [(ngModel)]="codeHeaderInCSVFile"
-              [options]="csvHeaderOptions"
-              optionLabel="label"
-              optionValue="value"
-              [filter]="true"
-              filterBy="label"
-            />
-          </div>
-
-          <div>
-            <span>Tên bug</span>
-            <p-select
-              [(ngModel)]="nameHeaderInCSVFile"
-              [options]="csvHeaderOptions"
-              optionLabel="label"
-              optionValue="value"
-              [filter]="true"
-              filterBy="label"
-            />
-          </div>
-
-          <div class="flex justify-content-end gap-3">
-            <p-button
-              [outlined]="true"
-              severity="secondary"
-              icon="pi pi-times"
-              pTooltip="Hủy nhập dữ liệu bằng CSV"
-              label="Hủy"
-              (click)="importCSVPopup.hide()"
-            />
-            <p-button
-              icon="pi pi-save"
-              pTooltip="Xác nhận nhập file CSV"
-              label="Xác nhận"
-              (click)="mapColumnAfterImportCSV(); importCSVPopup.hide()"
-            />
-          </div>
-        </div>
-      </p-popover>
-
-      <p-button
-        *ngIf="hasBatchCreate()"
         [outlined]="true"
         severity="secondary"
         icon="pi pi-plus"
@@ -184,16 +117,6 @@
       />
 
       <p-button
-        *ngIf="hasBatchCreate()"
-        [outlined]="true"
-        severity="secondary"
-        icon="pi pi-trash"
-        pTooltip="Xóa toàn bộ dòng thêm mới"
-        label="Xóa hết"
-        (click)="onRemoveAllCreateRow()"
-      />
-      <p-button
-        *ngIf="hasBatchCreate()"
         icon="pi pi-save"
         label="Lưu tất cả"
         (click)="onBulkCreate()"
@@ -213,14 +136,13 @@
       <!-- TABLE HEADER -->
       <ng-template pTemplate="header">
         <tr class="sticky top-0 z-5">
-          @if (hasBatchCreate()) {
-            <th pResizableColumn>
-              <div class="flex">
-                <div class="flex-1 line-clamp line-clamp-2">
-                  <p-checkbox
-                    [ngModelOptions]="{ standalone: true }"
-                    [ngModel]="isCreateSelectAll"
-                    (onChange)="
+          <th pResizableColumn>
+            <div class="flex">
+              <div class="flex-1 line-clamp line-clamp-2">
+                <p-checkbox
+                  [ngModelOptions]="{ standalone: true }"
+                  [ngModel]="isCreateSelectAll"
+                  (onChange)="
                     toggleSelectAll(
                       $event,
                       createFormArray,
@@ -229,14 +151,12 @@
                       true
                     )
                   "
-                    [binary]="true"
-                  />
-                </div>
+                  [binary]="true"
+                />
               </div>
-            </th>
-          } @else {
-            <th></th>
-          }
+            </div>
+          </th>
+
           @for (col of headerColumnConfigs; track col.field) {
             <!--  -->
             @if (col.field === COLUMN_FIELD.order) {
@@ -375,103 +295,6 @@
             </div>
           </td>
 
-          <td>
-            <div>
-              <input
-                [formControlName]="FORM_GROUP_KEY.code"
-                pInputText
-              />
-            </div>
-          </td>
-
-          <td
-            [pEditableColumn]="control.value.name"
-            pEditableColumnField="name"
-          >
-            <p-cellEditor>
-              <ng-template #input>
-                <input
-                  class="w-full"
-                  pInputText
-                  type="text"
-                  [formControlName]="FORM_GROUP_KEY.name"
-                />
-              </ng-template>
-              <ng-template #output>
-                {{ mapRowDataToType(control.value).name }}
-              </ng-template>
-            </p-cellEditor>
-          </td>
-
-          <!-- <td>
-            <div contenteditable>
-              {{ mapRowDataToType(control.value).name || '--' }}
-            </div>
-          </td> -->
-
-          <td>
-            <div>
-              <lib-form-select
-                [formControlName]="FORM_GROUP_KEY.statusId"
-                [options]="(statusDependentTabOptions$ | async)?.['Bug']"
-                (selectOption)="onSelectStatus($event, index)"
-              ></lib-form-select>
-            </div>
-          </td>
-
-          <td>
-            <div>
-              <textarea
-                pTextarea
-                [formControlName]="FORM_GROUP_KEY.note"
-                rows="1"
-                cols="30"
-                showClear
-              ></textarea>
-            </div>
-          </td>
-
-          @if (sheetName() === ESheetName.IMPROVEMENT) {
-            <td>
-              <div>
-                <lib-form-select
-                  [formControlName]="$any(FORM_GROUP_KEY)?.issueId"
-                  [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
-                  (selectOption)="onSelectStatus($event, index)"
-                ></lib-form-select>
-              </div>
-            </td>
-
-
-            <td>
-              <div>
-                <lib-form-select
-                  [formControlName]="FORM_GROUP_KEYS.deadlineId"
-                  [options]="(deadlineDependentModuleOptions$ | async)?.[moduleId.value]"
-                >
-                  <ng-template
-                    [devTemplate]="FORM_GROUP_KEYS.deadlineId"
-                    let-rowData
-                  >
-                    <div class="line-clamp">
-                      {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
-                    </div>
-                  </ng-template>
-
-                  <ng-template
-                    [devTemplate]="'option'"
-                    let-rowData
-                  >
-                    <div class="line-clamp">
-                      {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
-                    </div>
-                  </ng-template>
-                </lib-form-select>
-              </div>
-            </td>
-
-          }
-
           <!-- Thời gian bắt đầu -->
           <td>
             <div class="flex align-items-center justify-content-center gap-1">
@@ -480,7 +303,6 @@
                 severity="secondary"
                 size="small"
                 icon="pi pi-clock"
-                aria-label="Thời gian hiện tại"
                 pTooltip="Thời gian hiện tại"
                 tooltipPosition="bottom"
                 (click)="
@@ -500,6 +322,33 @@
                 showClear
               >
               </p-datepicker>
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-copy"
+                [pTooltip]="index === 0 ?  null : 'Lấy thời gian hoàn thành của dòng trên'"
+                tooltipPosition="bottom"
+                (click)="
+                  onSetCurrentTimeForDatepicker(
+                    createFormArray,
+                    index,
+                    FORM_GROUP_KEY.startTime
+                  )
+                "
+                [disabled]="index === 0"
+              />
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <input
+                appWorkDuration
+                [formControlName]="FORM_GROUP_KEY.duration"
+                id="duration"
+                pInputText
+              />
             </div>
           </td>
 
@@ -536,26 +385,6 @@
           </td>
 
           <td>
-            <div>
-              <input
-                appWorkDuration
-                [formControlName]="FORM_GROUP_KEY.duration"
-                id="duration"
-                pInputText
-              />
-            </div>
-          </td>
-
-          <td>
-            <div>
-              <p-check-box
-                [formControlName]="FORM_GROUP_KEY.isLunchBreak"
-                [binary]="true"
-              ></p-check-box>
-            </div>
-          </td>
-
-          <td>
             <div class="flex align-items-center justify-content-center gap-1">
               <p-button
                 variant="outlined"
@@ -576,6 +405,15 @@
                 tooltipPosition="bottom"
                 [disabled]="index === createFormArray.length - 1"
                 (click)="onCopyLowerRow(index)"
+              />
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-file-plus"
+                pTooltip="Thêm mới 1 dòng có nội dung tương tự bên dưới"
+                tooltipPosition="bottom"
+                (click)="onAddNewCreateRowHasSameContent(index)"
               />
 
               <p-button
@@ -704,14 +542,6 @@
             ></lib-form-select>
           </div>
 
-          <div>
-            <span>Hiện trạng</span>
-            <lib-form-select
-              [formControlName]="FORM_GROUP_KEY.statusId"
-              [options]="(statusDependentTabOptions$ | async)?.['Bug']"
-            ></lib-form-select>
-          </div>
-
           <div class="flex justify-content-end gap-3">
             <p-button
               [outlined]="true"
@@ -731,6 +561,7 @@
         </div>
       </p-popover>
     </div>
+
     <!-- Danh sách nút bấm -->
     <div class="flex justify-content-end gap-3">
       <p-button
@@ -912,40 +743,6 @@
                         : 'categoryName'
                   }}
                 </td>
-              } @else if (col.field === COLUMN_FIELD.statusId) {
-                <td>
-                  {{
-                    control.value[col.field]
-                      | convertIdToName
-                      : (allDropdownData$ | async)?.statuses
-                        : 'statusName'
-                  }}
-                </td>
-              } @else if (col.field === $any(COLUMN_FIELD)?.issueId) {
-                <td>
-                  {{
-                    control.value[col.field]
-                      | convertIdToName
-                      : (allDropdownData$ | async)?.issues
-                        : 'issueName'
-                  }}
-                </td>
-              } @else if (col.field === $any(COLUMN_FIELD)?.deadlineId) {
-                <td>
-                  {{
-                    (control.value[col.field]
-                      | convertIdToName
-                      : (allDropdownData$ | async)?.deadlines
-                        : 'deadlineTime' : true | date : DATE_FORMAT.FULL_DATE)
-                  }}
-                </td>
-              } @else if (col.field === COLUMN_FIELD.isLunchBreak) {
-                <td>
-                  <p-tag
-                    [severity]="control.value[col.field] ? 'danger' : 'success'"
-                    [value]="control.value[col.field] ? 'Có' : 'Không'"
-                  />
-                </td>
               } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
               COLUMN_FIELD.endTime) {
                 <td>{{ control.value[col.field] | date : 'HH:mm - dd/MM' }}</td>
@@ -1058,90 +855,6 @@
               </div>
             </td>
 
-            <td>
-              <div>
-                <input
-                  [formControlName]="FORM_GROUP_KEY.code"
-                  pInputText
-                />
-              </div>
-            </td>
-
-            <td>
-              <div>
-                {{ mapRowDataToType(control.value).name || '--' }}
-              </div>
-            </td>
-
-            <td>
-              <div>
-                <lib-form-select
-                  [formControlName]="FORM_GROUP_KEY.statusId"
-                  [options]="(statusDependentTabOptions$ | async)?.['Bug']"
-                  (selectOption)="onSelectStatus($event, index)"
-                ></lib-form-select>
-              </div>
-            </td>
-
-            <!-- <td>
-              <div>
-                {{ mapRowDataToType(control.value).statusId || '--' }}
-              </div>
-            </td> -->
-
-            <td>
-              <div>
-              <textarea
-                pTextarea
-                [formControlName]="FORM_GROUP_KEY.note"
-                rows="1"
-                cols="30"
-                showClear
-              ></textarea>
-              </div>
-            </td>
-
-            @if (sheetName() === ESheetName.IMPROVEMENT) {
-              <td>
-                <div>
-                  <lib-form-select
-                    [formControlName]="$any(FORM_GROUP_KEY)?.issueId"
-                    [options]="(issueDependentScreenOptions$ | async)?.[screenId.value]"
-                    (selectOption)="onSelectStatus($event, index)"
-                  ></lib-form-select>
-                </div>
-              </td>
-
-
-              <td>
-                <div>
-                  <lib-form-select
-                    [formControlName]="FORM_GROUP_KEYS.deadlineId"
-                    [options]="(deadlineDependentModuleOptions$ | async)?.[moduleId.value]"
-                  >
-                    <ng-template
-                      [devTemplate]="FORM_GROUP_KEYS.deadlineId"
-                      let-rowData
-                    >
-                      <div class="line-clamp">
-                        {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
-                      </div>
-                    </ng-template>
-
-                    <ng-template
-                      [devTemplate]="'option'"
-                      let-rowData
-                    >
-                      <div class="line-clamp">
-                        {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
-                      </div>
-                    </ng-template>
-                  </lib-form-select>
-                </div>
-              </td>
-
-            }
-
             <!-- Thời gian bắt đầu -->
             <td>
               <div class="flex align-items-center justify-content-center gap-1">
@@ -1213,15 +926,6 @@
                   id="duration"
                   pInputText
                 />
-              </div>
-            </td>
-
-            <td>
-              <div>
-                <p-check-box
-                  [formControlName]="FORM_GROUP_KEY.isLunchBreak"
-                  [binary]="true"
-                ></p-check-box>
               </div>
             </td>
 

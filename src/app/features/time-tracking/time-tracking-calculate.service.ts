@@ -121,4 +121,80 @@ export class TimeTrackingCalculateService {
 
     return totalHours;
   }
+
+  /*
+   * @usage Tính thời gian hoàn thành dựa vào thời gian bắt đầu và thời lượng
+   */
+  calculateEndTime(startDate: string | Date, durationInHours: number): Date {
+    if (!startDate || durationInHours <= 0) return null;
+
+    const start = new Date(startDate);
+    let remainingHours = durationInHours;
+
+    const holidayList: Date[] = getValue(this.allDropdownData$)?.dayoffs?.map(
+      (dayoff) => new Date(dayoff.dayOff),
+    );
+
+    const isHoliday = (date: Date) =>
+      holidayList?.some(
+        (holiday) => holiday.toISOString() === date.toDateString(),
+      );
+
+    const isWeekend = (date: Date) =>
+      date.getDay() === 0 || date.getDay() === 6; // Chủ nhật (0), Thứ bảy (6)
+
+    const businessHours = {
+      start: 8,
+      lunchStart: 12,
+      lunchEnd: 13.5,
+      end: 17.5,
+    };
+
+    let current = new Date(start);
+
+    while (remainingHours > 0) {
+      if (!isWeekend(current) && !isHoliday(current)) {
+        const startOfDay = new Date(current);
+        startOfDay.setHours(businessHours.start, 0, 0, 0);
+
+        const lunchStart = new Date(current);
+        lunchStart.setHours(businessHours.lunchStart, 0, 0, 0);
+
+        const lunchEnd = new Date(current);
+        lunchEnd.setHours(businessHours.lunchEnd, 0, 0, 0);
+
+        const endOfDay = new Date(current);
+        endOfDay.setHours(businessHours.end, 0, 0, 0);
+
+        if (current < lunchStart) {
+          const availableMorningHours =
+            (lunchStart.getTime() - current.getTime()) / 3600000;
+          if (remainingHours <= availableMorningHours) {
+            current.setHours(current.getHours() + remainingHours);
+            return current;
+          }
+          remainingHours -= availableMorningHours;
+          current = new Date(lunchEnd); // Nhảy đến sau giờ nghỉ trưa
+        }
+
+        if (current >= lunchEnd && current < endOfDay) {
+          const availableAfternoonHours =
+            (endOfDay.getTime() - current.getTime()) / 3600000;
+          if (remainingHours <= availableAfternoonHours) {
+            current.setHours(current.getHours() + remainingHours);
+            return current;
+          }
+          remainingHours -= availableAfternoonHours;
+        }
+      }
+
+      // Chuyển sang ngày làm việc tiếp theo
+      do {
+        current.setDate(current.getDate() + 1);
+        current.setHours(businessHours.start, 0, 0, 0);
+      } while (isWeekend(current) || isHoliday(current));
+    }
+
+    return current;
+  }
 }

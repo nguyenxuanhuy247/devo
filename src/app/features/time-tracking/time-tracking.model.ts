@@ -108,7 +108,7 @@ export interface ICommonTimeTrackingRowData {
 }
 
 export const getHeaderColumnConfigsFactory = (
-  configs01: IColumnHeaderConfigs[],
+  configs01: IColumnHeaderConfigs[] = [],
   configs02: IColumnHeaderConfigs[] = [],
 ): IColumnHeaderConfigs[] => {
   return [

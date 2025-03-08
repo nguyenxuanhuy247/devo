@@ -500,6 +500,16 @@
                       variant="outlined"
                       severity="secondary"
                       size="small"
+                      icon="pi pi-clock"
+                      pTooltip="Log work"
+                      tooltipPosition="bottom"
+                      (click)="onOpenLogImprovementDrawer(rowData)"
+                    />
+
+                    <p-button
+                      variant="outlined"
+                      severity="secondary"
+                      size="small"
                       icon="pi pi-check-square"
                       aria-label="Đánh dấu đã xong"
                       pTooltip="Đánh dấu đã xong"
@@ -788,6 +798,7 @@
             <!-- Danh sách nút hành động  -->
             <td>
               <div class="flex align-items-center justify-content-center gap-1">
+
                 <p-button
                   variant="outlined"
                   severity="secondary"
@@ -822,6 +833,7 @@
           <td [attr.colspan]="headerColumnConfigs?.length + 2 || 1">
             <app-improvement
               #logWorkComponent
+              hasBatchCreate="false"
               [projectFormControl]="projectFormControl()"
               [issueRowData]="rowData"
             >

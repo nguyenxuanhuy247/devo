@@ -75,6 +75,7 @@ import { ImprovementComponent } from '../improvement/improvement.component';
 import { ILogWorkRowData } from '../log-work/log-work.model';
 import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
 import { BUG_FORM_GROUP_KEY } from '../bug/bug.model';
+import { LogImprovementComponent } from './log-improvement/log-improvement.component';
 
 @Component({
   selector: 'app-issues',
@@ -510,4 +511,18 @@ export class IssuesComponent
 
   protected readonly DATE_FORMAT = DATE_FORMAT;
   protected readonly FORM_GROUP_KEY = BUG_FORM_GROUP_KEY;
+
+  onOpenLogImprovementDrawer(rowData: IIssuesRowData) {
+    this.drawerService.create({
+      component: LogImprovementComponent,
+      data: {
+        rowData: rowData,
+        projectFormControl: this.projectFormControl(),
+        selectFormGroup: this.formGroupControl,
+      },
+      configs: {
+        width: '100%',
+      },
+    });
+  }
 }
