@@ -8,11 +8,16 @@ export class ConvertIdToNamePipe implements PipeTransform {
     id: string,
     list: any[],
     nameField: string = 'menuName',
+    isDate: boolean = false,
     idField: string = 'id',
   ): string {
-    if (!id || !list || list.length === 0) return '--';
+    if (!id || !list || list.length === 0) return null;
 
     const item = list.find((item) => item[idField] === id);
-    return item ? item[nameField] : '--';
+    let newValue = item[nameField];
+    if (isDate) {
+      newValue = new Date(item[nameField]);
+    }
+    return item ? newValue : null;
   }
 }

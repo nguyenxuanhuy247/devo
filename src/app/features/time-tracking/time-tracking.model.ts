@@ -166,3 +166,14 @@ export const getHeaderColumnConfigsFactory = (
     },
   ];
 };
+
+export interface ICommonRowData {
+  employeeLevelId: ID;
+  employeeId: ID;
+  projectId: ID;
+  moduleId: ID;
+  menuId: ID;
+  screenId: ID;
+  featureId: ID;
+  categoryId: ID;
+}

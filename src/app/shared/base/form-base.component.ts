@@ -94,7 +94,7 @@ export class FormBaseComponent implements OnInit, OnDestroy {
     return rowData as U;
   }
 
-  convertISOString(value: string): Date {
+  convertISOStringToDate(value: string): Date {
     return new Date(value);
   }
 }

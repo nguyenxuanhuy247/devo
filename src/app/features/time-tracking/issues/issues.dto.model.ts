@@ -19,6 +19,7 @@ export interface IIssueResponseDTO {
   deadlineId: ID;
   isBlockProgress: boolean;
   statusId: ID;
+  note: string;
   startTime: string;
   endTime: string;
   duration: number;

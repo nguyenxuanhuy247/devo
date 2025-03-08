@@ -1,4 +1,4 @@
-import { Component, computed, input, OnInit } from '@angular/core';
+import { Component, computed, input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import {
@@ -18,7 +18,7 @@ import {
   DevTemplateDirective,
   WorkDurationDirective,
 } from '../../../directives';
-import { ITabComponent } from '../time-tracking.model';
+import { ICommonRowData, ITabComponent } from '../time-tracking.model';
 import { Checkbox } from 'primeng/checkbox';
 import { IIssuesRowData } from '../issues/issues.model';
 import { BugComponent } from '../bug/bug.component';
@@ -31,6 +31,7 @@ import {
   improvementHeaderColumnConfigs,
   improvementNullableObj,
 } from './improvement.model';
+import { endOfDay, startOfDay } from 'date-fns';
 
 @Component({
   selector: 'app-improvement',
@@ -64,19 +65,50 @@ export class ImprovementComponent
   implements OnInit, ITabComponent
 {
   issueRowData = input<IIssuesRowData>(null);
-
+  issueCommonData = computed<ICommonRowData>(() => {
+    return {
+      employeeLevelId: this.issueRowData()?.employeeLevelId,
+      employeeId: this.issueRowData()?.employeeId,
+      projectId: this.issueRowData()?.projectId,
+      moduleId: this.issueRowData()?.moduleId,
+      menuId: this.issueRowData()?.menuId,
+      screenId: this.issueRowData()?.screenId,
+      featureId: this.issueRowData()?.featureId,
+      categoryId: this.issueRowData()?.categoryId,
+      issueId: this.issueRowData()?.id,
+      deadlineId: this.issueRowData()?.deadlineId,
+    };
+  });
   issueId = computed<ID>(() => {
     return this.issueRowData()?.id;
   });
 
+  override logWorkIssueDoGetRequestDTO = computed(() => {
+    return this.issueId()
+      ? {
+          issueId: this.issueId(),
+          startTime: startOfDay(new Date('1900-01-01')).toISOString(),
+          endTime: endOfDay(new Date('9999-12-31')).toISOString(),
+        }
+      : {};
+  });
+
+  override sheetName = signal<ESheetName>(ESheetName.IMPROVEMENT);
   override readonly FORM_GROUP_KEY: any = IMPROVEMENT_FORM_GROUP_KEY;
   override readonly COLUMN_FIELD: any = IMPROVEMENT_COLUMN_FIELD;
   override headerColumnConfigs: IColumnHeaderConfigs[] =
     improvementHeaderColumnConfigs;
-  override nullableObj = improvementNullableObj;
+  override InitRowDataObj = improvementNullableObj;
 
   override ngOnInit() {
+    this.InitRowDataObj = {
+      ...improvementNullableObj,
+      ...this.issueCommonData(),
+    };
+
     super.ngOnInit();
-    this.sheetName.set(ESheetName.IMPROVEMENT);
+
+    console.log('issueCommonData', this.issueCommonData());
+    console.log('improvementNullableObj', this.InitRowDataObj);
   }
 }

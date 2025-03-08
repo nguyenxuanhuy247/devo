@@ -9,38 +9,23 @@ import { getHeaderColumnConfigsFactory } from '../time-tracking.model';
 
 export type IIssueCreateFormGroup = IIssueResponseDTO;
 
-export const ISSUES_FORM_GROUP_KEYS =
-  CommonService.generateEnumFromInterface<IIssuesRowData>();
-
-export interface IIssuesRowData {
+export interface IIssuesRowData extends IIssueResponseDTO {
   selected: boolean;
   mode: EMode;
-  id: ID;
-  moduleId: ID;
-  menuId: ID;
-  screenId: ID;
-  featureId: ID;
-  categoryId: ID;
-  issueCode: string;
-  issueName: string;
-  issueContent: string;
-  departmentMakeId: ID;
-  employeeMakeId: ID;
-  interruptionReasonId: ID;
   deadlineId: ID;
-  isBlockProgress: boolean;
-  statusId: ID;
-  startTime: string;
-  endTime: string;
-  duration: number;
-  createdDate: Date;
-  updatedDate: Date;
+  note: string;
 }
+
+export const ISSUES_FORM_GROUP_KEYS =
+  CommonService.generateEnumFromInterface<IIssuesRowData>();
 
 export const issuesNullableObj: IIssuesRowData = {
   selected: false,
   mode: EMode.VIEW,
   id: Math.random(),
+  employeeLevelId: null,
+  employeeId: null,
+  projectId: null,
   moduleId: null,
   menuId: null,
   screenId: null,
@@ -55,6 +40,7 @@ export const issuesNullableObj: IIssuesRowData = {
   deadlineId: null,
   isBlockProgress: null,
   statusId: null,
+  note: null,
   startTime: null,
   endTime: null,
   duration: null,
@@ -110,6 +96,11 @@ export const issuesHeaderColumnConfigs: IColumnHeaderConfigs[] =
     {
       label: 'Hiện trạng',
       field: ISSUES_COLUMN_FIELD.statusId,
+      minWidth: 200,
+    },
+    {
+      label: 'Ghi chú',
+      field: ISSUES_COLUMN_FIELD.note,
       minWidth: 200,
     },
     {

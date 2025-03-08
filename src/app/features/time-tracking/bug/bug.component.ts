@@ -1,4 +1,4 @@
-import { Component, Injector, OnInit, signal } from '@angular/core';
+import { Component, computed, Injector, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   BUG_COLUMN_FIELD,
@@ -132,6 +132,7 @@ export class BugComponent
     ids: null,
     data: null,
   });
+  logWorkIssueDoPostRequestDTO = computed(() => ({}));
   createFormArray: FormArray = new FormArray([]);
   viewUpdateFormArray: FormArray = new FormArray([]);
 
@@ -148,6 +149,8 @@ export class BugComponent
     startTime: null,
     endTime: null,
   });
+
+  logWorkIssueDoGetRequestDTO = computed(() => ({}));
   batchUpdateFormGroup: FormGroup;
   batchUpdateViewUpdateFormGroup: FormGroup;
 
@@ -157,7 +160,7 @@ export class BugComponent
   isCreateSelectAll: boolean = false;
   viewUpdateIdListBatch: ID[] = [];
   isViewUpdateSelectAll: boolean = false;
-  nullableObj = bugNullableObj;
+  InitRowDataObj = bugNullableObj;
 
   constructor(override injector: Injector) {
     super(injector);
@@ -210,6 +213,7 @@ export class BugComponent
                   formGroupValue.dateRange[0],
                 ).toISOString(),
                 endTime: endOfDay(formGroupValue.dateRange[1]).toISOString(),
+                ...this.logWorkIssueDoGetRequestDTO(),
               };
             });
 
@@ -236,7 +240,7 @@ export class BugComponent
 
           listData.forEach((rowData) => {
             const formGroup = this.formBuilder.group({
-              ...this.nullableObj,
+              ...this.InitRowDataObj,
               ...rowData,
               mode: EMode.VIEW,
               isLunchBreak: true,
@@ -298,6 +302,7 @@ export class BugComponent
     this.timeTrackingStore.setLoading(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
+      sheetName: this.sheetName(),
       ids: [rowData.id],
       method: EApiMethod.DELETE,
     }));
@@ -312,6 +317,7 @@ export class BugComponent
     this.timeTrackingStore.setLoading(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
+      sheetName: this.sheetName(),
       ids: [...this.viewUpdateIdListBatch],
       method: EApiMethod.DELETE,
     }));
@@ -370,8 +376,10 @@ export class BugComponent
     delete cloneFormValue.mode;
     delete cloneFormValue.name;
 
+    console.log('Thêm mới 1111', this.sheetName(), this.doPostRequestDTO());
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
+      sheetName: this.sheetName(),
       method: EApiMethod.POST,
       data: [
         {
@@ -381,7 +389,7 @@ export class BugComponent
         },
       ],
     }));
-    console.log('Thêm mới ', this.doPostRequestDTO());
+    console.log('Thêm mới 2222', this.sheetName(), this.doPostRequestDTO());
     this.timeTrackingStore.setLoading(true);
     this.timeTrackingService
       .createItemAsync(this.doPostRequestDTO())
@@ -410,7 +418,7 @@ export class BugComponent
           const EStatusNameId = this.convertOptionToEnum(this.statusOption());
           this.createFormArray.setValue([
             {
-              ...this.nullableObj,
+              ...this.InitRowDataObj,
               status: EStatusNameId['CHUA_FIX'],
               mode: EMode.CREATE,
             },
@@ -427,6 +435,7 @@ export class BugComponent
     const value = this.viewUpdateFormArray?.at(index)?.value;
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
+      sheetName: this.sheetName(),
       method: EApiMethod.PUT,
       data: [
         {
@@ -455,6 +464,7 @@ export class BugComponent
       });
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
+      sheetName: this.sheetName(),
       method: EApiMethod.PUT,
       data: [...updateData],
     }));
@@ -572,7 +582,7 @@ export class BugComponent
     const EStatusNameId = this.convertOptionToEnum(this.statusOption());
     this.mapColumnCsvData.forEach((rowData: any, index: number) => {
       const formGroup = this.formBuilder.group({
-        ...this.nullableObj,
+        ...this.InitRowDataObj,
         mode: this.EMode.UPDATE,
         isLunchBreak: true,
         status: EStatusNameId['CHUA_FIX'],
@@ -606,6 +616,7 @@ export class BugComponent
     this.timeTrackingStore.setLoading(true);
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
+      sheetName: this.sheetName(),
       method: EApiMethod.POST,
       data: listData,
     }));
@@ -674,7 +685,7 @@ export class BugComponent
   onAddNewCreateRow() {
     const EStatusNameId = this.convertOptionToEnum(this.statusOption());
     const formGroup = this.formBuilder.group({
-      ...this.nullableObj,
+      ...this.InitRowDataObj,
       status: EStatusNameId['CHUA_FIX'],
       mode: EMode.CREATE,
     });

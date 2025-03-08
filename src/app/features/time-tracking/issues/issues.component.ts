@@ -74,6 +74,7 @@ import { getValue } from '../../../utils/function';
 import { ImprovementComponent } from '../improvement/improvement.component';
 import { ILogWorkRowData } from '../log-work/log-work.model';
 import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
+import { BUG_FORM_GROUP_KEY } from '../bug/bug.model';
 
 @Component({
   selector: 'app-issues',
@@ -154,27 +155,11 @@ export class IssuesComponent
   override ngOnInit() {
     super.ngOnInit();
     this.createFormGroup = this.formBuilder.group({
+      ...issuesNullableObj,
       mode: EMode.VIEW,
-      id: null,
       moduleId: [null, Validators.required],
-      menuId: null,
-      screenId: null,
-      featureId: null,
-      categoryId: null,
       issueCode: `VOFFICE-${this.getRandom8DigitNumber()}`,
-      issueName: null,
-      issueContent: null,
-      departmentMakeId: null,
-      employeeMakeId: null,
-      interruptionReasonId: null,
-      deadlineId: null,
-      isBlockProgress: false,
-      statusId: null,
-      startTime: null,
-      endTime: null,
-      duration: null,
       createdDate: new Date(),
-      updatedDate: null,
     });
 
     this.addCreateRowForm();
@@ -246,6 +231,7 @@ export class IssuesComponent
             this.formArray.push(formGroup);
           });
 
+          console.log('FORM_GROUP_KEYS ', this.FORM_GROUP_KEYS);
           this.tableData = this.formArray.value;
         }),
     );
@@ -317,7 +303,6 @@ export class IssuesComponent
       {
         ...issuesNullableObj,
         mode: EMode.CREATE,
-        createdDate: new Date(),
       },
     ];
   }
@@ -524,4 +509,5 @@ export class IssuesComponent
   }
 
   protected readonly DATE_FORMAT = DATE_FORMAT;
+  protected readonly FORM_GROUP_KEY = BUG_FORM_GROUP_KEY;
 }

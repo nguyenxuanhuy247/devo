@@ -447,7 +447,7 @@
                     let-rowData
                   >
                     <div class="line-clamp">
-                      {{ convertISOString(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
+                      {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
                     </div>
                   </ng-template>
 
@@ -456,7 +456,7 @@
                     let-rowData
                   >
                     <div class="line-clamp">
-                      {{ convertISOString(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
+                      {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
                     </div>
                   </ng-template>
                 </lib-form-select>
@@ -914,6 +914,24 @@
                         : 'statusName'
                   }}
                 </td>
+              } @else if (col.field === $any(COLUMN_FIELD)?.issueId) {
+                <td>
+                  {{
+                    control.value[col.field]
+                      | convertIdToName
+                      : (allDropdownData$ | async)?.issues
+                        : 'issueName'
+                  }}
+                </td>
+              } @else if (col.field === $any(COLUMN_FIELD)?.deadlineId) {
+                <td>
+                  {{
+                    (control.value[col.field]
+                      | convertIdToName
+                      : (allDropdownData$ | async)?.deadlines
+                        : 'deadlineTime' : true | date : DATE_FORMAT.FULL_DATE)
+                  }}
+                </td>
               } @else if (col.field === COLUMN_FIELD.isLunchBreak) {
                 <td>
                   <p-tag
@@ -1099,7 +1117,7 @@
                       let-rowData
                     >
                       <div class="line-clamp">
-                        {{ convertISOString(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
+                        {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
                       </div>
                     </ng-template>
 
@@ -1108,7 +1126,7 @@
                       let-rowData
                     >
                       <div class="line-clamp">
-                        {{ convertISOString(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
+                        {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
                       </div>
                     </ng-template>
                   </lib-form-select>
