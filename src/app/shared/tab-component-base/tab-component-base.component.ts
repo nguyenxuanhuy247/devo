@@ -211,6 +211,7 @@ export class TabComponentBaseComponent extends FormBaseComponent {
 
   protected getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
   callAPIGetTableData(): void {
+    console.log('aaaaaaaaaa');
     this.getTableDataApiRequest$.next();
   }
 

@@ -1,56 +1,354 @@
-<div class="form-detail flex flex-column h-screen">  <!-- SECTION : NHỮNG NÚT HÀNH ĐỘNG -->
-  <div class="header-group-btns flex align-items-center justify-content-between p-3">
-    <!-- Những nút bên trái -->
-    <div class="left-action-group">
-      <!-- Nút Đóng -->
-      <div class="close-expand-btn">
-        <p-button
-          (click)="onClose()"
-          severity="secondary"
-          variant="outlined"
-        >
-          <i class="pi pi-times"></i>
-        </p-button>
-      </div>
-    </div>
+<div
+  class="huynx15-actions flex align-items-center gap-3 mt-3"
+></div>
+<!-- Danh sách nút bấm -->
+<div class="flex justify-content-end gap-3">
+  <p-button
+    [outlined]="true"
+    severity="secondary"
+    icon="pi pi-refresh"
+    pTooltip="Tải lại danh sách"
+    label="Tải lại"
+    (click)="onReloadTableData()"
+  />
+</div>
 
-    <!-- Những nút bên phải -->
-    <div class="right-action-group flex align-items-center justify-content-between gap-1">
-      <!-- Nút Chỉnh sửa -->
-      <p-button
-        (click)="onUpdate()"
-        label="Chỉnh sửa"
-      ></p-button>
+<div class="log-improvement">
+  <p-table
+    [frozenValue]="mode() === EMode.VIEW ? fixedRowData : []"
+    [value]="formArray.controls"
+    [resizableColumns]="true"
+  >
+    <!-- TABLE HEADER -->
+    <ng-template pTemplate="header">
+      <tr>
+        @for (col of headerColumnConfigs; track col.field) {
+          <!--  -->
+          @if (col.field === COLUMN_FIELD.order || col.field === COLUMN_FIELD.actions) {
+            <th
+              [pSortableColumn]="col.field"
+              [style.min-width.px]="col.minWidth"
+            >
+              <div class="flex">
+                <div class="flex-1 line-clamp line-clamp-2">
+                  {{ col.label }}
+                </div>
+              </div>
+            </th>
+          } @else {
+            <th
+              [pSortableColumn]="col.field"
+              pResizableColumn
+              [style.min-width.px]="col.minWidth"
+            >
+              <div class="flex">
+                <div
+                  class="flex-1 line-clamp line-clamp-2"
+                  [pTooltip]="col.label"
+                >
+                  {{ col.label }}
+                </div>
+                <p-sortIcon [field]="col.field" />
+              </div>
+            </th>
+          }
+        }
+      </tr>
+    </ng-template>
 
-      <!-- Nút Xóa -->
-      <p-button
-        (click)="onDelete()"
-        label="Xóa"
-      ></p-button>
+    <!--  TABLE : DÒNG THÊM MỚI -->
+    <ng-template
+      pTemplate="frozenbody"
+      let-rowData
+      let-index="rowIndex"
+    >
+      <tr [formGroup]="createFormGroup">
+        <td>
+          <div>{{ index + 1 }}</div>
+        </td>
+        <td>
+          <!-- Thời gian bắt đầu -->
+          <div class="flex align-items-center gap-1">
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-clock"
+              aria-label="Thời gian hiện tại"
+              pTooltip="Thời gian hiện tại"
+              tooltipPosition="bottom"
+              (click)="
+                onSetCurrentTimeForDatepicker(formArray,index, FORM_GROUP_KEYS.startTime)
+              "
+            />
+            <p-datepicker
+              [formControlName]="FORM_GROUP_KEYS.startTime"
+              [showTime]="true"
+              hourFormat="24"
+              dateFormat="dd/mm"
+              appendTo="body"
+              showClear
+            >
+            </p-datepicker>
+          </div>
+        </td>
 
-    </div>
-  </div>
+        <td>
+          <!-- Thời gian hoàn thành -->
+          <div class="flex align-items-center  gap-1">
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-clock"
+              aria-label="Thời gian hiện tại"
+              pTooltip="Thời gian hiện tại"
+              tooltipPosition="bottom"
+              (click)="
+                onSetCurrentTimeForDatepicker(formArray, index, FORM_GROUP_KEYS.endTime)
+              "
+            />
 
-  <div class="huynx15-drawer-body" [formGroup]="formGroup">
-    <app-improvement
-      hasBatchCreate="false"
-      [projectFormControl]="projectFormControl"
-      [issueRowData]="issueRowData"></app-improvement>
-  </div>
+            <p-datepicker
+              [formControlName]="FORM_GROUP_KEYS.endTime"
+              [showTime]="true"
+              hourFormat="24"
+              dateFormat="dd/mm"
+              appendTo="body"
+              showClear
+            >
+            </p-datepicker>
+          </div>
+        </td>
 
-  <div class="flex justify-content-end gap-2 p-3">
-    <!-- Nút Chỉnh sửa -->
-    <p-button
-      (click)="onUpdate()"
-      label="Hủy"
-      severity="secondary"
-      variant="outlined"
-    ></p-button>
+        <td>
+          <div>
+            <input
+              pInputText
+              appWorkDuration
+              [formControlName]="FORM_GROUP_KEYS.duration"
+              style="width: 100px"
+            />
+          </div>
+        </td>
 
-    <!-- Nút Xóa -->
-    <p-button
-      (click)="onDelete()"
-      label="Lưu"
-    ></p-button>
-  </div>
+        <td>
+          <div>
+            <p-checkbox
+              [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
+              [binary]="true"
+            />
+          </div>
+        </td>
+
+        <!-- Danh sách nút hành động của Thêm mới -->
+        <td>
+          <div class="flex align-items-center justify-content-center gap-1">
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-times"
+              aria-label="Hủy"
+              pTooltip="Hủy"
+              tooltipPosition="bottom"
+              (click)="onResetCreateForm()"
+            />
+            <p-button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              icon="pi pi-save"
+              aria-label="Lưu"
+              pTooltip="Lưu"
+              tooltipPosition="bottom"
+              (click)="onSaveCreate()"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!--  TABLE ROW DATA -->
+    <ng-template
+      pTemplate="body"
+      let-rowData
+      let-index="rowIndex"
+    >
+      @if (rowData.mode === EMode.VIEW) {
+        <!-- Chế độ VIEW chỉ hiển thị text -->
+        <tr>
+          @for (col of headerColumnConfigs; track col.field) {
+            @if (col.field === COLUMN_FIELD.order) {
+              <td>{{ index + 1 }}</td>
+            } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
+            COLUMN_FIELD.endTime) {
+              <td>{{ rowData[col.field] | date : 'HH:mm - dd/MM' }}</td>
+            } @else if (col.field === COLUMN_FIELD.duration) {
+              <td>{{ rowData[col.field] | number : '1.2-2' }}</td>
+            } @else if (col.field === COLUMN_FIELD.isLunchBreak) {
+              <td>
+                <p-tag
+                  [severity]="rowData[col.field] ? 'success' : 'danger'"
+                  [value]="rowData[col.field] ? 'Có' : 'Không'"
+                />
+              </td>
+            } @else if (col.field === COLUMN_FIELD.actions) {
+              <td>
+                <div class="flex align-items-center justify-content-center gap-1">
+                  <p-button
+                    variant="outlined"
+                    severity="secondary"
+                    size="small"
+                    icon="pi pi-copy"
+                    aria-label="Sao chép"
+                    pTooltip="Sao chép"
+                    tooltipPosition="bottom"
+                    (click)="onDuplicateExistingItem(rowData)"
+                  />
+                  <p-button
+                    variant="outlined"
+                    severity="secondary"
+                    size="small"
+                    icon="pi pi-file-edit"
+                    aria-label="Chỉnh sửa"
+                    pTooltip="Chỉnh sửa"
+                    tooltipPosition="bottom"
+                    (click)="onChangeToUpdateMode(index)"
+                  />
+                  <p-button
+                    variant="outlined"
+                    severity="secondary"
+                    size="small"
+                    icon="pi pi-trash"
+                    aria-label="Xóa"
+                    pTooltip="Xóa"
+                    tooltipPosition="bottom"
+                    (click)="onDelete(rowData)"
+                  />
+                </div>
+              </td>
+            } @else {
+              <td>
+                <div
+                  class="line-clamp line-clamp-1"
+                  [pTooltip]="rowData[col.field]"
+                >
+                  {{ rowData[col.field] }}
+                </div>
+              </td>
+            }
+          }
+        </tr>
+      } @else {
+        <!-- Hiển thị Form Update -->
+        <tr [formGroup]="getFormGroup(index)">
+          <td>
+            <div>{{ index + 1 }}</div>
+          </td>
+
+          <!-- Thời gian bắt đầu -->
+          <td>
+            <div class="flex align-items-center  gap-1">
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-clock"
+                aria-label="Thời gian hiện tại"
+                pTooltip="Thời gian hiện tại"
+                tooltipPosition="bottom"
+                (click)="
+                onSetCurrentTimeForDatepicker(formArray, index, FORM_GROUP_KEYS.startTime)
+              "
+              />
+              <p-datepicker
+                [formControlName]="FORM_GROUP_KEYS.startTime"
+                [showTime]="true"
+                hourFormat="24"
+                dateFormat="dd/mm"
+                appendTo="body"
+                showClear
+              >
+              </p-datepicker>
+            </div>
+          </td>
+
+          <!-- Thời gian hoàn thành -->
+          <td>
+            <div class="flex align-items-center  gap-1">
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-clock"
+                aria-label="Thời gian hiện tại"
+                pTooltip="Thời gian hiện tại"
+                tooltipPosition="bottom"
+                (click)="
+                onSetCurrentTimeForDatepicker(formArray, index, FORM_GROUP_KEYS.endTime)
+              "
+              />
+
+              <p-datepicker
+                [formControlName]="FORM_GROUP_KEYS.endTime"
+                [showTime]="true"
+                hourFormat="24"
+                dateFormat="dd/mm"
+                appendTo="body"
+                showClear
+              >
+              </p-datepicker>
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <input
+                appWorkDuration
+                [formControlName]="FORM_GROUP_KEYS.duration"
+                id="duration"
+                pInputText
+                [formGroup]="getSubFormGroupInFormArray(formArray, index)"
+              />
+            </div>
+          </td>
+
+          <td>
+            <div>
+              <p-checkbox
+                [formControlName]="FORM_GROUP_KEYS.isLunchBreak"
+                [binary]="true"
+              />
+            </div>
+          </td>
+
+          <td>
+            <div class="flex align-items-center justify-content-center gap-1">
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-times"
+                aria-label="Hủy"
+                pTooltip="Hủy"
+                tooltipPosition="bottom"
+                (click)="onCancelUpdateMode(index)"
+              />
+              <p-button
+                variant="outlined"
+                severity="secondary"
+                size="small"
+                icon="pi pi-save"
+                aria-label="Lưu"
+                pTooltip="Lưu"
+                tooltipPosition="bottom"
+                (click)="onSaveUpdate(index)"
+              />
+            </div>
+          </td>
+        </tr>
+      }
+    </ng-template>
+  </p-table>
 </div>

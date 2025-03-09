@@ -469,15 +469,16 @@ export class IssuesComponent
   @ViewChildren('logWorkComponent')
   logWorkComponents: QueryList<LogWorkComponent>;
 
-  toggleExpandRow(rowData: IIssuesRowData, index: number) {
+  toggleExpandRow(index: number) {
     setTimeout(() => {
       this.changeDetectorRef.detectChanges();
       this.logWorkComponents.forEach((component, componentIndex) => {
+        console.log('logWorkComponents', index, component);
         if (componentIndex === index) {
           component.callAPIGetTableData();
         }
       });
-    });
+    }, 500);
   }
 
   onDuplicateExistingItem(rowData: ILogWorkRowData) {

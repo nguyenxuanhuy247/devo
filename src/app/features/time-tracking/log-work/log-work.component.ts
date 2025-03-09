@@ -80,9 +80,11 @@ export class LogWorkComponent
   headerColumnConfigs: IColumnHeaderConfigs[] = logWorkHeaderColumnConfigs;
   isLoading = signal(false);
   formArray: FormArray = new FormArray([]);
+  sheetName = signal<ESheetName>(ESheetName.LOG_WORK);
+
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
-    sheetName: ESheetName.LOG_WORK,
+    sheetName: this.sheetName(),
     ids: null,
     data: null,
   });
@@ -104,6 +106,7 @@ export class LogWorkComponent
   protected readonly FORM_GROUP_KEYS = LOG_WORK_CHILD_FORM_GROUP_KEYS;
   protected readonly COLUMN_FIELD = COMMON_COLUMN_FIELD;
   protected readonly EMode = EMode;
+  override initRowDataObj = logWorkNullableObj;
 
   constructor(override injector: Injector) {
     super(injector);
@@ -115,7 +118,7 @@ export class LogWorkComponent
     const formValue = this.formGroupControl.value;
     this.addCreateRowForm();
     this.createFormGroup = this.formBuilder.group({
-      ...logWorkNullableObj,
+      ...this.initRowDataObj,
       ...formValue,
       isLunchBreak: true,
       mode: EMode.CREATE,
@@ -143,7 +146,7 @@ export class LogWorkComponent
                 projectId: formGroupValue.projectId,
                 startTime: formGroupValue.dateRange[0].toISOString(),
                 endTime: formGroupValue.dateRange[1].toISOString(),
-                sheetName: ESheetName.LOG_WORK,
+                sheetName: this.sheetName(),
               };
             });
 
@@ -317,15 +320,6 @@ export class LogWorkComponent
     this.tableData = this.formArray.value;
   }
 
-  // override getCommonValue() {
-  //   const commonValue = _.cloneDeep(this.formGroupControl().value);
-  //   delete commonValue[SELECT_FORM_GROUP_KEY.dateRange];
-  //   delete commonValue[SELECT_FORM_GROUP_KEY.quickDate];
-  //   delete commonValue[SELECT_FORM_GROUP_KEY.formArray];
-  //
-  //   return commonValue;
-  // }
-
   onSaveCreate() {
     const data: ILogWorkRowData = {
       ...this.createFormGroup.value,
@@ -337,7 +331,7 @@ export class LogWorkComponent
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
-      sheetName: ESheetName.LOG_WORK,
+      sheetName: this.sheetName(),
       data: [data],
     }));
 

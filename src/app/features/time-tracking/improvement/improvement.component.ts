@@ -31,7 +31,6 @@ import {
   improvementHeaderColumnConfigs,
   improvementNullableObj,
 } from './improvement.model';
-import { endOfDay, startOfDay } from 'date-fns';
 
 @Component({
   selector: 'app-improvement',
@@ -81,16 +80,6 @@ export class ImprovementComponent
   });
   issueId = computed<ID>(() => {
     return this.issueRowData()?.id;
-  });
-
-  override logWorkIssueDoGetRequestDTO = computed(() => {
-    return this.issueId()
-      ? {
-          issueId: this.issueId(),
-          startTime: startOfDay(new Date('1900-01-01')).toISOString(),
-          endTime: endOfDay(new Date('9999-12-31')).toISOString(),
-        }
-      : {};
   });
 
   override sheetName = signal<ESheetName>(ESheetName.IMPROVEMENT);

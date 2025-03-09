@@ -163,6 +163,7 @@ export interface IModuleDeadlineResponseDTO {
 export interface IDeadlineChildListResponseDTO {
   id: ID;
   deadlineTime: string;
+  isActive: boolean;
   createdDate: string;
   updatedDate: string;
 }

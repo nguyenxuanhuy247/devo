@@ -372,7 +372,7 @@
                 [rounded]="true"
                 [plain]="true"
                 [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-                (click)="toggleExpandRow(rowData, index)"
+                (click)="toggleExpandRow(index)"
               />
             </td>
 
@@ -829,8 +829,9 @@
         let-rowData
       >
         <tr>
-          <td [attr.colspan]="headerColumnConfigs?.length + 2 || 1">
+          <td [attr.colspan]="8">
             <app-log-improvement
+              #logWorkComponent
               [projectFormControl]="projectFormControl()"
               [issueRowData]="rowData"
             >

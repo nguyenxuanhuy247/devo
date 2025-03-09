@@ -160,7 +160,6 @@ export class BugComponent
                   formGroupValue.dateRange[0],
                 ).toISOString(),
                 endTime: endOfDay(formGroupValue.dateRange[1]).toISOString(),
-                ...this.logWorkIssueDoGetRequestDTO(),
               };
             });
 
