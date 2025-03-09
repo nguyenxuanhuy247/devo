@@ -19,7 +19,7 @@
         icon="pi pi-trash"
         pTooltip="Xóa nhiều"
         label="Xóa nhiều"
-        (click)="onBatchRemoveCreateRow()"
+        (click)="onBatchDeleteCreateRow()"
       />
       <p-button
         [outlined]="true"
@@ -97,6 +97,7 @@
         </div>
       </p-popover>
     </div>
+
     <!-- Danh sách nút bấm -->
     <div class="flex justify-content-end gap-3">
       <p-button
@@ -330,10 +331,8 @@
                 [pTooltip]="index === 0 ?  null : 'Lấy thời gian hoàn thành của dòng trên'"
                 tooltipPosition="bottom"
                 (click)="
-                  onSetCurrentTimeForDatepicker(
-                    createFormArray,
-                    index,
-                    FORM_GROUP_KEY.startTime
+                  onTakeUpperRowStartTimeDatepicker(
+                  index
                   )
                 "
                 [disabled]="index === 0"
@@ -454,7 +453,7 @@
 
       <ng-template pTemplate="footer">
         <tr>
-          <td [attr.colspan]="headerColumnConfigs?.length">
+          <td [attr.colspan]="headerColumnConfigs?.length + 2">
             <div class="font-bold">
               Tổng số bug : {{ createFormArray.value.length }}
             </div>
@@ -758,15 +757,7 @@
               } @else if (col.field === COLUMN_FIELD.actions) {
                 <td>
                   <div class="flex align-items-center justify-content-center gap-1">
-                    <p-button
-                      variant="outlined"
-                      severity="secondary"
-                      size="small"
-                      icon="pi pi-caret-right"
-                      pTooltip="Fix tiếp bug này"
-                      tooltipPosition="bottom"
-                      (click)="onContinueFixThisBug(index)"
-                    />
+                
                     <p-button
                       variant="outlined"
                       severity="secondary"
@@ -959,7 +950,7 @@
 
       <ng-template pTemplate="footer">
         <tr>
-          <td [attr.colspan]="headerColumnConfigs?.length">
+          <td [attr.colspan]="headerColumnConfigs?.length + 2">
             <div class="font-bold">
               Tổng số giờ : {{ totalDuration | number : '1.1-1' }}
             </div>

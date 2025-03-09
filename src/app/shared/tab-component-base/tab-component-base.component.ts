@@ -12,12 +12,14 @@ import { CheckboxChangeEvent } from 'primeng/checkbox';
 import { SELECT_FORM_GROUP_KEY } from 'src/app/features/time-tracking/time-tracking.model';
 import * as _ from 'lodash';
 import { LibFormSelectComponent } from '../../components';
+import { TimeTrackingStore } from '../../features/time-tracking/time-tracking.store';
+import { Subject, Subscription } from 'rxjs';
+import { bugNullableObj } from '../../features/time-tracking/bug/bug.model';
 
 @Component({
   selector: 'app-tab-component-base',
   imports: [CommonModule],
-  templateUrl: './tab-component-base.component.html',
-  styleUrl: './tab-component-base.component.scss',
+  template: '',
 })
 export class TabComponentBaseComponent extends FormBaseComponent {
   projectFormControl = input<LibFormSelectComponent>();
@@ -27,6 +29,28 @@ export class TabComponentBaseComponent extends FormBaseComponent {
   private warningTitle = '⚠️ Chưa điền thời gian bắt đầu';
   formGroupControl!: FormGroup;
   controlContainer = this.injector.get(ControlContainer);
+  protected timeTrackingStore = this.injector.get(TimeTrackingStore);
+
+  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
+  moduleDependentOptions$ = this.timeTrackingStore.moduleDependentOptions$;
+  menuDependentOptions$ = this.timeTrackingStore.menuDependentOptions$;
+  screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
+  featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
+  categoryOptions$ = this.timeTrackingStore.categoryOptions$;
+  statusDependentTabOptions$ =
+    this.timeTrackingStore.statusDependentTabOptions$;
+  issueDependentScreenOptions$ =
+    this.timeTrackingStore.issueDependentScreenOptions$;
+  deadlineDependentModuleOptions$ =
+    this.timeTrackingStore.deadlineDependentModuleOptions$;
+  departmentOptions$ = this.timeTrackingStore.departmentOptions$;
+  employeeInDepartmentOptions$ =
+    this.timeTrackingStore.employeeInDepartmentOptions$;
+  interruptionReasonDependentOptions$ =
+    this.timeTrackingStore.interruptionReasonDependentOptions;
+  statusOptions$ = this.timeTrackingStore.statusOptions;
+
+  subscription: Subscription = new Subscription();
 
   constructor(override injector: Injector) {
     super(injector);
@@ -140,6 +164,7 @@ export class TabComponentBaseComponent extends FormBaseComponent {
       }
     });
     this[listBatchName].sort((a: number, b: number) => b - a);
+    console.log('getSelectedNumberAndIds ', formArray, this[listBatchName]);
   }
 
   toggleSelectAll(
@@ -183,4 +208,11 @@ export class TabComponentBaseComponent extends FormBaseComponent {
 
     return commonValue;
   }
+
+  protected getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
+  callAPIGetTableData(): void {
+    this.getTableDataApiRequest$.next();
+  }
+
+  initRowDataObj: any = bugNullableObj;
 }

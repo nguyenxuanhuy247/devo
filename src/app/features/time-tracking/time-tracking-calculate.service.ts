@@ -15,6 +15,7 @@ export class TimeTrackingCalculateService {
     endDate: string | Date,
     isLunchBreak: boolean = true,
   ): number {
+    if (!startDate || !endDate) return null;
     const start = new Date(startDate);
     const end = new Date(endDate);
 

@@ -92,7 +92,7 @@ import { EstimateComponent } from './estimate/estimate.component';
   },
 })
 export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
-  activeTab = signal<ETabName>(ETabName.ESTIMATE);
+  activeTab = signal<ETabName>(ETabName.ISSUE);
   subscription: Subscription = new Subscription();
   SELECT_FORM_GROUP_KEY = SELECT_FORM_GROUP_KEY;
   ETabName = ETabName;
@@ -261,11 +261,11 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
         EStatsBy.TODAY,
       );
     }
-
-    setTimeout(() => {
-      console.log('onChangeTab ', this.tabComponent);
-      this.tabComponent.callAPIGetTableData();
-    }, 600);
+    //
+    // setTimeout(() => {
+    //   console.log('onChangeTab ', this.tabComponent);
+    //   this.tabComponent.callAPIGetTableData();
+    // }, 600);
   }
 
   onReload() {

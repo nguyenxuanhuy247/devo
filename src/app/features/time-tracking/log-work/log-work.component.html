@@ -64,7 +64,6 @@
       let-index="rowIndex"
     >
       <tr [formGroup]="createFormGroup">
-        <td></td>
         <td>
           <div class="flex align-items-center justify-content-between gap-1">
             <p-button
@@ -141,7 +140,7 @@
 
         <td>
           <!-- Thời gian bắt đầu -->
-          <div class="flex align-items-center justify-content-center gap-1">
+          <div class="flex align-items-center gap-1">
             <p-button
               variant="outlined"
               severity="secondary"
@@ -160,6 +159,7 @@
               hourFormat="24"
               dateFormat="dd/mm"
               appendTo="body"
+              showClear
             >
             </p-datepicker>
           </div>
@@ -167,7 +167,7 @@
 
         <td>
           <!-- Thời gian hoàn thành -->
-          <div class="flex align-items-center justify-content-center gap-1">
+          <div class="flex align-items-center  gap-1">
             <p-button
               variant="outlined"
               severity="secondary"
@@ -187,6 +187,7 @@
               hourFormat="24"
               dateFormat="dd/mm"
               appendTo="body"
+              showClear
             >
             </p-datepicker>
           </div>
@@ -442,7 +443,7 @@
 
           <!-- Thời gian bắt đầu -->
           <td>
-            <div class="flex align-items-center justify-content-center gap-1">
+            <div class="flex align-items-center  gap-1">
               <p-button
                 variant="outlined"
                 severity="secondary"
@@ -461,6 +462,7 @@
                 hourFormat="24"
                 dateFormat="dd/mm"
                 appendTo="body"
+                showClear
               >
               </p-datepicker>
             </div>
@@ -468,7 +470,7 @@
 
           <!-- Thời gian hoàn thành -->
           <td>
-            <div class="flex align-items-center justify-content-center gap-1">
+            <div class="flex align-items-center  gap-1">
               <p-button
                 variant="outlined"
                 severity="secondary"
@@ -488,6 +490,7 @@
                 hourFormat="24"
                 dateFormat="dd/mm"
                 appendTo="body"
+                showClear
               >
               </p-datepicker>
             </div>

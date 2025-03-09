@@ -36,8 +36,6 @@ import {
   EMPTY,
   filter,
   finalize,
-  Subject,
-  Subscription,
   switchMap,
 } from 'rxjs';
 import { message } from 'src/app/contants/api.contant';
@@ -47,7 +45,6 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ConvertIdToNamePipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
-import { TimeTrackingStore } from '../time-tracking.store';
 import { WorkDurationDirective } from '../../../directives';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
@@ -101,24 +98,12 @@ export class LogWorkComponent
     endTime: null,
   });
   timeTrackingService = this.injector.get(TimeTrackingApiService);
-  subscription: Subscription = new Subscription();
   tableData: ILogWorkRowData[] = [];
   createFormGroup!: FormGroup;
   fixedRowData: ILogWorkRowData[] = [];
   protected readonly FORM_GROUP_KEYS = LOG_WORK_CHILD_FORM_GROUP_KEYS;
   protected readonly COLUMN_FIELD = COMMON_COLUMN_FIELD;
   protected readonly EMode = EMode;
-  private timeTrackingStore = this.injector.get(TimeTrackingStore);
-  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
-  moduleDependentOptions$ = this.timeTrackingStore.moduleDependentOptions$;
-  menuDependentOptions$ = this.timeTrackingStore.menuDependentOptions$;
-  screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
-  featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
-  categoryOptions$ = this.timeTrackingStore.categoryOptions$;
-  issueDependentScreenOptions$ =
-    this.timeTrackingStore.issueDependentScreenOptions$;
-
-  private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
 
   constructor(override injector: Injector) {
     super(injector);
@@ -271,10 +256,6 @@ export class LogWorkComponent
         this.mode.set(EMode.VIEW);
         this.callAPIGetTableData();
       });
-  }
-
-  callAPIGetTableData(): void {
-    this.getTableDataApiRequest$.next();
   }
 
   getFormGroup(index: number): FormGroup {

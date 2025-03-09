@@ -503,7 +503,6 @@
                       icon="pi pi-clock"
                       pTooltip="Log work"
                       tooltipPosition="bottom"
-                      (click)="onOpenLogImprovementDrawer(rowData)"
                     />
 
                     <p-button
@@ -831,13 +830,11 @@
       >
         <tr>
           <td [attr.colspan]="headerColumnConfigs?.length + 2 || 1">
-            <app-improvement
-              #logWorkComponent
-              hasBatchCreate="false"
+            <app-log-improvement
               [projectFormControl]="projectFormControl()"
               [issueRowData]="rowData"
             >
-            </app-improvement>
+            </app-log-improvement>
           </td>
         </tr>
       </ng-template>

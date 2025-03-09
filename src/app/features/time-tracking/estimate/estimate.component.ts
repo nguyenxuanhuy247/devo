@@ -1,6 +1,5 @@
 import { Component, Injector, OnInit, signal } from '@angular/core';
 import {
-  FormArray,
   FormControl,
   FormGroup,
   FormsModule,
@@ -15,7 +14,6 @@ import {
   EGetApiMode,
   ESheetName,
   ITimeTrackingDoGetRequestDTO,
-  ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
 import {
   DATE_FORMAT,
@@ -25,10 +23,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
-import {
-  IColumnHeaderConfigs,
-  ID,
-} from 'src/app/shared/interface/common.interface';
+import { IColumnHeaderConfigs } from 'src/app/shared/interface/common.interface';
 import {
   ESTIMATE_COLUMN_FIELD,
   ESTIMATE_FORM_GROUP_KEY,
@@ -36,15 +31,12 @@ import {
   estimateNullableObj,
   IEstimateRowData,
 } from './estimate.model';
-import { TimeTrackingApiService } from '../time-tracking-api.service';
 import {
   catchError,
   debounceTime,
   EMPTY,
   filter,
   finalize,
-  Subject,
-  Subscription,
   switchMap,
 } from 'rxjs';
 import { message } from 'src/app/contants/api.contant';
@@ -54,15 +46,14 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ConvertIdToNamePipe } from '../../../pipes';
 import { TagModule } from 'primeng/tag';
-import { TimeTrackingStore } from '../time-tracking.store';
 import { WorkDurationDirective } from '../../../directives';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
 import { IEstimateResponseDTO } from './estimate.dto.model';
 import { PopoverModule } from 'primeng/popover';
 import { ISSUES_FORM_GROUP_KEYS } from '../issues/issues.model';
-import { IBugRowData } from '../bug/bug.model';
+import { IBugFormGroup, IBugRowData } from '../bug/bug.model';
+import { TwoSeparateTableBaseComponent } from '../../../shared/tab-component-base/two-separate-table-base/two-separate-table-base.component';
 
 @Component({
   selector: 'app-estimate',
@@ -87,20 +78,19 @@ import { IBugRowData } from '../bug/bug.model';
   styleUrl: './estimate.component.scss',
 })
 export class EstimateComponent
-  extends TabComponentBaseComponent
+  extends TwoSeparateTableBaseComponent
   implements OnInit, ITabComponent
 {
   mode = signal<EMode.VIEW | EMode.CREATE | EMode.UPDATE>(EMode.VIEW);
   headerColumnConfigs: IColumnHeaderConfigs[] = estimateHeaderColumnConfigs;
   isLoading = signal(false);
-  createFormArray: FormArray = new FormArray([]);
-  viewUpdateFormArray: FormArray = new FormArray([]);
-  doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
-    method: EApiMethod.POST,
-    sheetName: ESheetName.ESTIMATE,
-    ids: null,
-    data: null,
-  });
+
+  // doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
+  //   method: EApiMethod.POST,
+  //   sheetName: ESheetName.ESTIMATE,
+  //   ids: null,
+  //   data: null,
+  // });
   doGetRequestDTO = signal<ITimeTrackingDoGetRequestDTO>({
     method: EApiMethod.GET,
     mode: EGetApiMode.TABLE_DATA,
@@ -112,26 +102,12 @@ export class EstimateComponent
     startTime: null,
     endTime: null,
   });
-  timeTrackingService = this.injector.get(TimeTrackingApiService);
-  subscription: Subscription = new Subscription();
-  tableData: IEstimateRowData[] = [];
+  // timeTrackingService = this.injector.get(TimeTrackingApiService);
+
   createFormGroup!: FormGroup;
-  fixedRowData: IEstimateRowData[] = [];
   protected readonly FORM_GROUP_KEY = ESTIMATE_FORM_GROUP_KEY;
   protected readonly COLUMN_FIELD = ESTIMATE_COLUMN_FIELD;
   protected readonly EMode = EMode;
-  private timeTrackingStore = this.injector.get(TimeTrackingStore);
-  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
-  moduleDependentOptions$ = this.timeTrackingStore.moduleDependentOptions$;
-  menuDependentOptions$ = this.timeTrackingStore.menuDependentOptions$;
-  screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
-  featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
-  categoryOptions$ = this.timeTrackingStore.categoryOptions$;
-  issueDependentScreenOptions$ =
-    this.timeTrackingStore.issueDependentScreenOptions$;
-
-  private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
-  batchUpdateFormGroup: FormGroup;
 
   constructor(override injector: Injector) {
     super(injector);
@@ -139,14 +115,6 @@ export class EstimateComponent
 
   override ngOnInit() {
     super.ngOnInit();
-
-    this.batchUpdateFormGroup = this.formBuilder.group({
-      moduleId: null,
-      menuId: null,
-      screenId: null,
-      featureId: null,
-      categoryId: null,
-    });
 
     this.onAddNewCreateRow();
 
@@ -198,6 +166,7 @@ export class EstimateComponent
 
           listData.forEach((rowData) => {
             const formGroup = this.formBuilder.group({
+              ...this.initRowDataObj,
               ...rowData,
               mode: EMode.VIEW,
               isLunchBreak: true,
@@ -247,6 +216,7 @@ export class EstimateComponent
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.PUT,
+      sheetName: this.sheetName(),
       data: [
         {
           ...value,
@@ -281,13 +251,10 @@ export class EstimateComponent
       });
   }
 
-  callAPIGetTableData(): void {
-    this.getTableDataApiRequest$.next();
-  }
-
-  getFormGroup(index: number, formArray: FormArray): FormGroup {
-    return this.getSubFormGroupInFormArray(formArray, index);
-  }
+  //
+  // getFormGroup(index: number, formArray: FormArray): FormGroup {
+  //   return this.getSubFormGroupInFormArray(formArray, index);
+  // }
 
   getFormControl(index: number, formControlName: string): FormControl {
     return this.createFormArray?.at(index)?.get(formControlName) as FormControl;
@@ -296,6 +263,7 @@ export class EstimateComponent
   onDelete(rowData: IEstimateRowData) {
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
+      sheetName: this.sheetName(),
       ids: [rowData.id],
       method: EApiMethod.DELETE,
     }));
@@ -319,12 +287,12 @@ export class EstimateComponent
       });
   }
 
-  onChangeToUpdateMode(index: number) {
-    this.mode.set(EMode.UPDATE);
-
-    const formGroup = this.getFormGroup(index, this.viewUpdateFormArray);
-    formGroup.patchValue({ mode: EMode.UPDATE });
-  }
+  // onChangeToUpdateMode(index: number) {
+  //   this.mode.set(EMode.UPDATE);
+  //
+  //   const formGroup = this.getFormGroup(index, this.viewUpdateFormArray);
+  //   formGroup.patchValue({ mode: EMode.UPDATE });
+  // }
 
   onSaveCreate(index: number) {
     const data: IEstimateRowData = {
@@ -337,7 +305,7 @@ export class EstimateComponent
     this.doPostRequestDTO.update((oldValue) => ({
       ...oldValue,
       method: EApiMethod.POST,
-      sheetName: ESheetName.ESTIMATE,
+      sheetName: this.sheetName(),
       data: [data],
     }));
 
@@ -375,28 +343,7 @@ export class EstimateComponent
     this.createFormGroup.patchValue(rowData);
   }
 
-  onBatchRemoveCreateRow() {
-    this.createIndexListBatch.forEach((index: number) => {
-      this.createFormArray.removeAt(index);
-    });
-    this.createIndexListBatch = [];
-  }
-
-  onBatchUpdateCreateRow() {
-    const batchUpdateFormValue = this.batchUpdateFormGroup.value;
-    this.createFormArray.controls.forEach((control, index: number) => {
-      if (this.createIndexListBatch.includes(index)) {
-        control.patchValue({
-          ...batchUpdateFormValue,
-        });
-      }
-    });
-    this.batchUpdateFormGroup.reset();
-  }
-
-  onRecoverCurrentLog() {}
-
-  onAddNewCreateRow() {
+  override onAddNewCreateRow() {
     const formGroup = this.formBuilder.group({
       ...estimateNullableObj,
       ...this.getCommonValue(),
@@ -408,7 +355,49 @@ export class EstimateComponent
 
   onRemoveAllCreateRow() {}
 
-  onBulkCreate() {}
+  onBulkCreate() {
+    const createTableData = this.createFormArray.value;
+    const listData = createTableData.map((rowData: IBugFormGroup) => {
+      return {
+        ...rowData,
+        ...this.getCommonValue(),
+        createdDate: new Date(),
+      };
+    });
+    this.timeTrackingStore.setLoading(true);
+    this.doPostRequestDTO.update((oldValue) => ({
+      ...oldValue,
+      sheetName: this.sheetName(),
+      method: EApiMethod.POST,
+      data: listData,
+    }));
+
+    this.timeTrackingService
+      .createItemAsync(this.doPostRequestDTO())
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Thất bại',
+            detail: `Thêm mới hàng loạt dự toán thất bại, kiểm tra hàm onBulkCreate`,
+          });
+          this.timeTrackingStore.setLoading(false);
+          return EMPTY;
+        }),
+      )
+      .subscribe((res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: res?.message,
+        });
+
+        this.createFormArray.clear();
+        this.createIndexListBatch = [];
+        this.onAddNewCreateRow();
+        this.callAPIGetTableData();
+      });
+  }
 
   protected readonly DATE_FORMAT = DATE_FORMAT;
   protected readonly FORM_GROUP_KEYS = ISSUES_FORM_GROUP_KEYS;
@@ -438,6 +427,7 @@ export class EstimateComponent
       this.createFormArray,
       index,
     ).value;
+
     const formGroup = this.formBuilder.group({
       ...estimateNullableObj,
       ...this.getCommonValue(),
@@ -445,7 +435,7 @@ export class EstimateComponent
       mode: EMode.CREATE,
     });
 
-    this.createFormArray.push(formGroup);
+    this.createFormArray.insert(index + 1, formGroup); // Chèn ngay sau index hiện tại
   }
 
   onClearRowData(index: number) {
@@ -459,58 +449,51 @@ export class EstimateComponent
     this.createFormArray.removeAt(index);
   }
 
-  createIndexListBatch: number[] = [];
-  isCreateSelectAll: boolean = false;
-  viewUpdateIdListBatch: ID[] = [];
-  isViewUpdateSelectAll: boolean = false;
-
-  sheetName = signal<ESheetName>(ESheetName.ESTIMATE);
-
-  /*
-   * @usage Xóa nhiều
-   */
-  onBatchDeleteViewRow() {
-    this.timeTrackingStore.setLoading(true);
-    this.doPostRequestDTO.update((oldValue) => ({
-      ...oldValue,
-      sheetName: this.sheetName(),
-      ids: [...this.viewUpdateIdListBatch],
-      method: EApiMethod.DELETE,
-    }));
-
-    this.callAPIDeleteRows();
-  }
-
-  callAPIDeleteRows() {
-    this.timeTrackingStore.setLoading(true);
-    this.timeTrackingService
-      .deleteItemAsync(this.doPostRequestDTO())
-      .pipe(
-        catchError(() => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Thất bại',
-            detail: `Xóa bug thất bại, kiểm tra hàm onDelete`,
-          });
-
-          this.timeTrackingStore.setLoading(false);
-          return EMPTY;
-        }),
-      )
-      .subscribe((res) => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Thành công',
-          detail: res?.message,
-        });
-
-        this.viewUpdateIdListBatch = [];
-        this.isViewUpdateSelectAll = false;
-        this.callAPIGetTableData();
-      });
-  }
-
-  batchUpdateViewUpdateFormGroup: FormGroup;
+  override sheetName = signal<ESheetName>(ESheetName.ESTIMATE);
+  //
+  // /*
+  //  * @usage Xóa nhiều
+  //  */
+  // onBatchDeleteViewRow() {
+  //   this.timeTrackingStore.setLoading(true);
+  //   this.doPostRequestDTO.update((oldValue) => ({
+  //     ...oldValue,
+  //     sheetName: this.sheetName(),
+  //     ids: [...this.viewUpdateIdListBatch],
+  //     method: EApiMethod.DELETE,
+  //   }));
+  //
+  //   this.callAPIDeleteRows();
+  // }
+  //
+  // callAPIDeleteRows() {
+  //   this.timeTrackingStore.setLoading(true);
+  //   this.timeTrackingService
+  //     .deleteItemAsync(this.doPostRequestDTO())
+  //     .pipe(
+  //       catchError(() => {
+  //         this.messageService.add({
+  //           severity: 'error',
+  //           summary: 'Thất bại',
+  //           detail: `Xóa bug thất bại, kiểm tra hàm onDelete`,
+  //         });
+  //
+  //         this.timeTrackingStore.setLoading(false);
+  //         return EMPTY;
+  //       }),
+  //     )
+  //     .subscribe((res) => {
+  //       this.messageService.add({
+  //         severity: 'success',
+  //         summary: 'Thành công',
+  //         detail: res?.message,
+  //       });
+  //
+  //       this.viewUpdateIdListBatch = [];
+  //       this.isViewUpdateSelectAll = false;
+  //       this.callAPIGetTableData();
+  //     });
+  // }
 
   onBatchUpdateViewRow() {
     const value = this.batchUpdateViewUpdateFormGroup.getRawValue();
@@ -565,21 +548,6 @@ export class EstimateComponent
       });
   }
 
-  onContinueFixThisBug(index: number) {
-    const formGroup = this.viewUpdateFormArray.at(index);
-    formGroup.patchValue({
-      startTime: new Date(),
-      endTime: null,
-      duration: null,
-    });
-
-    if (this.createFormArray.controls.length > 1) {
-      this.createFormArray.insert(0, formGroup);
-    } else {
-      this.createFormArray.patchValue([formGroup.value]);
-    }
-  }
-
   totalDuration: number = 0;
 
   onReloadTableData() {
@@ -599,4 +567,24 @@ export class EstimateComponent
       duration,
     );
   }
+
+  onTakeUpperRowStartTimeDatepicker(index: number) {
+    const upperFormGroupControl = this.getSubFormGroupInFormArray(
+      this.createFormArray,
+      index - 1,
+    ) as FormGroup;
+    const currentFormGroupControl = this.getSubFormGroupInFormArray(
+      this.createFormArray,
+      index,
+    ) as FormGroup;
+    const endTimeUpperFormControlValue = upperFormGroupControl.get(
+      this.FORM_GROUP_KEY.endTime,
+    ).value;
+    const startTimeUpperFormControl = currentFormGroupControl.get(
+      this.FORM_GROUP_KEY.startTime,
+    );
+    startTimeUpperFormControl.setValue(endTimeUpperFormControlValue);
+  }
+
+  override initRowDataObj = estimateNullableObj;
 }

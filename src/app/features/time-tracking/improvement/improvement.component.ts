@@ -98,10 +98,10 @@ export class ImprovementComponent
   override readonly COLUMN_FIELD: any = IMPROVEMENT_COLUMN_FIELD;
   override headerColumnConfigs: IColumnHeaderConfigs[] =
     improvementHeaderColumnConfigs;
-  override InitRowDataObj = improvementNullableObj;
+  override initRowDataObj = improvementNullableObj;
 
   override ngOnInit() {
-    this.InitRowDataObj = {
+    this.initRowDataObj = {
       ...improvementNullableObj,
       ...this.issueCommonData(),
     };
@@ -109,6 +109,6 @@ export class ImprovementComponent
     super.ngOnInit();
 
     console.log('issueCommonData', this.issueCommonData());
-    console.log('improvementNullableObj', this.InitRowDataObj);
+    console.log('improvementNullableObj', this.initRowDataObj);
   }
 }

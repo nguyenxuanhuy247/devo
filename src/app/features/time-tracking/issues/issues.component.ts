@@ -39,11 +39,8 @@ import {
   EMPTY,
   filter,
   finalize,
-  Subject,
-  Subscription,
   switchMap,
 } from 'rxjs';
-import { TimeTrackingStore } from '../time-tracking.store';
 import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
@@ -71,7 +68,6 @@ import { message } from 'src/app/contants/api.contant';
 import { IIssueResponseDTO } from './issues.dto.model';
 import { Checkbox } from 'primeng/checkbox';
 import { getValue } from '../../../utils/function';
-import { ImprovementComponent } from '../improvement/improvement.component';
 import { ILogWorkRowData } from '../log-work/log-work.model';
 import { TabComponentBaseComponent } from 'src/app/shared/tab-component-base/tab-component-base.component';
 import { BUG_FORM_GROUP_KEY } from '../bug/bug.model';
@@ -98,7 +94,7 @@ import { LogImprovementComponent } from './log-improvement/log-improvement.compo
     RippleModule,
     DevTemplateDirective,
     Checkbox,
-    ImprovementComponent,
+    LogImprovementComponent,
   ],
   templateUrl: './issues.component.html',
   styleUrl: './issues.component.scss',
@@ -116,22 +112,6 @@ export class IssuesComponent
   fixedRowData: IIssuesRowData[] = [];
 
   createFormGroup!: FormGroup;
-  subscription: Subscription = new Subscription();
-  private timeTrackingStore = this.injector.get(TimeTrackingStore);
-  allDropdownData$ = this.timeTrackingStore.allDropdownData$;
-  moduleDependentOptions$ = this.timeTrackingStore.moduleDependentOptions$;
-  deadlineDependentModuleOptions$ =
-    this.timeTrackingStore.deadlineDependentModuleOptions$;
-  menuDependentOptions$ = this.timeTrackingStore.menuDependentOptions$;
-  screenDependentOptions$ = this.timeTrackingStore.screenDependentOptions$;
-  featureDependentOptions$ = this.timeTrackingStore.featureDependentOptions$;
-  categoryOptions$ = this.timeTrackingStore.categoryOptions$;
-  departmentOptions$ = this.timeTrackingStore.departmentOptions$;
-  employeeInDepartmentOptions$ =
-    this.timeTrackingStore.employeeInDepartmentOptions$;
-  interruptionReasonDependentOptions$ =
-    this.timeTrackingStore.interruptionReasonDependentOptions;
-  statusOptions$ = this.timeTrackingStore.statusOptions;
 
   formArray: FormArray = new FormArray([]);
 
@@ -376,11 +356,6 @@ export class IssuesComponent
     this.callAPIUpdateIssue();
   }
 
-  private getTableDataApiRequest$ = new Subject<void>(); // Subject để trigger API call
-  callAPIGetTableData(): void {
-    this.getTableDataApiRequest$.next();
-  }
-
   doPostRequestDTO = signal<ITimeTrackingDoPostRequestDTO<any>>({
     method: EApiMethod.POST,
     sheetName: ESheetName.ISSUE,
@@ -512,17 +487,17 @@ export class IssuesComponent
   protected readonly DATE_FORMAT = DATE_FORMAT;
   protected readonly FORM_GROUP_KEY = BUG_FORM_GROUP_KEY;
 
-  onOpenLogImprovementDrawer(rowData: IIssuesRowData) {
-    this.drawerService.create({
-      component: LogImprovementComponent,
-      data: {
-        rowData: rowData,
-        projectFormControl: this.projectFormControl(),
-        selectFormGroup: this.formGroupControl,
-      },
-      configs: {
-        width: '100%',
-      },
-    });
-  }
+  // onOpenLogImprovementDrawer(rowData: IIssuesRowData) {
+  //   this.drawerService.create({
+  //     component: LogImprovementComponent,
+  //     data: {
+  //       rowData: rowData,
+  //       projectFormControl: this.projectFormControl(),
+  //       selectFormGroup: this.formGroupControl,
+  //     },
+  //     configs: {
+  //       width: '80%',
+  //     },
+  //   });
+  // }
 }

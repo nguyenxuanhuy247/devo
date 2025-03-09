@@ -1,63 +1,47 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
-import { SelectModule } from 'primeng/select';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DatePickerModule } from 'primeng/datepicker';
-import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
-import { FormBaseComponent } from '../../../../shared';
-import { CUSTOM_DRAWER_DATA } from '../../../../components/drawer/drawer-wrapper.model';
-import { EClosePopupCode } from '../../../../contants/common.constant';
-import { ImprovementComponent } from '../../improvement/improvement.component';
+import { LogWorkComponent } from '../../log-work/log-work.component';
 import { IIssuesRowData } from '../issues.model';
+import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
 import { LibFormSelectComponent } from '../../../../components';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TagModule } from 'primeng/tag';
+import { ConvertIdToNamePipe } from '../../../../pipes';
+import { WorkDurationDirective } from '../../../../directives';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
   selector: 'app-log-improvement',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
-    SelectModule,
-    DatePickerModule,
-    InputNumberModule,
+    TableModule,
+    TooltipModule,
+    LibFormSelectComponent,
     ButtonModule,
-    ImprovementComponent,
+    CheckboxModule,
+    DatePickerModule,
+    TagModule,
+    ConvertIdToNamePipe,
+    WorkDurationDirective,
+    InputTextModule,
+    TextareaModule,
   ],
-  templateUrl: './log-improvement.component.html',
-  styleUrl: './log-improvement.component.scss',
+  templateUrl: '../../log-work/log-work.component.html',
+  styleUrl: '../../log-work/log-work.component.scss',
   host: {
     style: 'display: block; min-height: 100%',
   },
 })
 export class LogImprovementComponent
-  extends FormBaseComponent
+  extends LogWorkComponent
   implements OnInit
 {
-  @Input(CUSTOM_DRAWER_DATA) inputData: { data: any; close: () => void };
-  data: any;
-  onClosePopup: (params: { code: EClosePopupCode; data: any }) => void;
-  issueRowData: IIssuesRowData;
-  projectFormControl: LibFormSelectComponent;
-
-  override ngOnInit() {
-    super.ngOnInit();
-
-    this.data = this.inputData?.['data'];
-    this.onClosePopup = this.inputData?.['close'];
-    this.issueRowData = this.data.rowData;
-    this.projectFormControl = this.data.projectFormControl;
-    this.projectFormControl = this.data.selectFormGroup;
-  }
-
-  submitForm() {}
-
-  getDetailById() {}
-
-  onClose() {
-    this.onClosePopup({ code: EClosePopupCode.CANCEL, data: null });
-  }
-
-  onUpdate() {}
-
-  onDelete() {}
+  issueRowData = input<IIssuesRowData>(null);
 }
