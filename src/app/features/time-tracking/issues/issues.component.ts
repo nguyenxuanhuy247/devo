@@ -63,7 +63,6 @@ import {
   ITimeTrackingDoGetRequestDTO,
   ITimeTrackingDoPostRequestDTO,
 } from '../time-tracking.dto';
-import { TimeTrackingApiService } from '../time-tracking-api.service';
 import { message } from 'src/app/contants/api.contant';
 import { IIssueResponseDTO } from './issues.dto.model';
 import { Checkbox } from 'primeng/checkbox';
@@ -126,7 +125,6 @@ export class IssuesComponent
     startTime: null,
     endTime: null,
   });
-  timeTrackingService = this.injector.get(TimeTrackingApiService);
   expandedRows = {};
 
   constructor(override injector: Injector) {
@@ -470,15 +468,15 @@ export class IssuesComponent
   logWorkComponents: QueryList<LogWorkComponent>;
 
   toggleExpandRow(index: number) {
-    setTimeout(() => {
-      this.changeDetectorRef.detectChanges();
-      this.logWorkComponents.forEach((component, componentIndex) => {
-        console.log('logWorkComponents', index, component);
-        if (componentIndex === index) {
-          component.callAPIGetTableData();
-        }
-      });
-    }, 500);
+    // setTimeout(() => {
+    //   this.changeDetectorRef.detectChanges();
+    //   this.logWorkComponents.forEach((component, componentIndex) => {
+    //     console.log('logWorkComponents', index, component);
+    //     if (componentIndex === index) {
+    //       component.callAPIGetTableData();
+    //     }
+    //   });
+    // }, 500);
   }
 
   onDuplicateExistingItem(rowData: ILogWorkRowData) {

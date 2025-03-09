@@ -29,7 +29,6 @@ import {
   logWorkHeaderColumnConfigs,
   logWorkNullableObj,
 } from './log-work.model';
-import { TimeTrackingApiService } from '../time-tracking-api.service';
 import {
   catchError,
   debounceTime,
@@ -99,7 +98,6 @@ export class LogWorkComponent
     startTime: null,
     endTime: null,
   });
-  timeTrackingService = this.injector.get(TimeTrackingApiService);
   tableData: ILogWorkRowData[] = [];
   createFormGroup!: FormGroup;
   fixedRowData: ILogWorkRowData[] = [];

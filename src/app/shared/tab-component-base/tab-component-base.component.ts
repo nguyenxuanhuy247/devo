@@ -15,6 +15,7 @@ import { LibFormSelectComponent } from '../../components';
 import { TimeTrackingStore } from '../../features/time-tracking/time-tracking.store';
 import { Subject, Subscription } from 'rxjs';
 import { bugNullableObj } from '../../features/time-tracking/bug/bug.model';
+import { TimeTrackingApiService } from '../../features/time-tracking/time-tracking-api.service';
 
 @Component({
   selector: 'app-tab-component-base',
@@ -30,6 +31,7 @@ export class TabComponentBaseComponent extends FormBaseComponent {
   formGroupControl!: FormGroup;
   controlContainer = this.injector.get(ControlContainer);
   protected timeTrackingStore = this.injector.get(TimeTrackingStore);
+  timeTrackingService = this.injector.get(TimeTrackingApiService);
 
   allDropdownData$ = this.timeTrackingStore.allDropdownData$;
   moduleDependentOptions$ = this.timeTrackingStore.moduleDependentOptions$;
@@ -216,4 +218,8 @@ export class TabComponentBaseComponent extends FormBaseComponent {
   }
 
   initRowDataObj: any = bugNullableObj;
+
+  onReloadTableData() {
+    this.callAPIGetTableData();
+  }
 }

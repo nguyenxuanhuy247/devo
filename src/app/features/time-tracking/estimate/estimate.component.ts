@@ -550,24 +550,6 @@ export class EstimateComponent
 
   totalDuration: number = 0;
 
-  onReloadTableData() {
-    this.callAPIGetTableData();
-  }
-
-  getEndTime(index: number) {
-    const formGroup = this.getSubFormGroupInFormArray(
-      this.createFormArray,
-      index,
-    ) as FormGroup;
-    const startTime = formGroup.get(this.FORM_GROUP_KEY.startTime).value;
-    const duration = formGroup.get(this.FORM_GROUP_KEY.duration).value;
-
-    return this.timeTrackingCalculateService.calculateEndTime(
-      startTime,
-      duration,
-    );
-  }
-
   onTakeUpperRowStartTimeDatepicker(index: number) {
     const upperFormGroupControl = this.getSubFormGroupInFormArray(
       this.createFormArray,

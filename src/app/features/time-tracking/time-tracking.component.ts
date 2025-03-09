@@ -268,7 +268,7 @@ export class TimeTrackingComponent extends FormBaseComponent implements OnInit {
     // }, 600);
   }
 
-  onReload() {
-    this.tabComponent.callAPIGetTableData();
+  onReloadDropdown() {
+    this.timeTrackingStore.getAllDropdownData();
   }
 }

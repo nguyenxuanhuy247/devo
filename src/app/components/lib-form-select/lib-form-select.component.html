@@ -17,15 +17,15 @@
   >
     <div class="flex align-items-center gap-2">
       @if (isTemplateRef(templateName)) {
-      <!-- Render ra Template -->
-      <ng-container
-        *ngTemplateOutlet="
+        <!-- Render ra Template -->
+        <ng-container
+          *ngTemplateOutlet="
           getTemplateRef(templateName);
           context: { $implicit: data }
         "
-      ></ng-container>
+        ></ng-container>
       } @else {
-      <div class="line-clamp">{{ data.label }}</div>
+        <div class="line-clamp huynx">{{ data.label }}</div>
       }
     </div>
   </ng-template>
@@ -36,15 +36,15 @@
   >
     <div class="flex align-items-center gap-2">
       @if (isTemplateRef('option')) {
-      <!-- Render ra Template -->
-      <ng-container
-        *ngTemplateOutlet="
+        <!-- Render ra Template -->
+        <ng-container
+          *ngTemplateOutlet="
           getTemplateRef('option');
           context: { $implicit: data }
         "
-      ></ng-container>
+        ></ng-container>
       } @else {
-      <div>{{ data.label }}</div>
+        <div>{{ data.label }}</div>
       }
     </div>
   </ng-template>

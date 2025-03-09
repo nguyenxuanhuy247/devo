@@ -1,17 +1,22 @@
 import { IColumnHeaderConfigs } from 'src/app/shared/interface/common.interface';
 import { CommonService } from 'src/app/services';
-import { IImprovementRowData } from '../../improvement/improvement.model';
 import { COMMON_COLUMN_FIELD } from '../../time-tracking.model';
 import { LOG_WORK_COLUMN_FIELD } from '../../log-work/log-work.model';
+import { IImprovementResponseDTO } from '../../improvement/improvement.dto.model';
 
-export const LOG_IMPROVEMENT_FORM_GROUP_KEY =
-  CommonService.generateEnumFromInterface<IImprovementRowData>();
+export const LOG_IMPROVEMENT_FORM_GROUP_KEY = Object.assign(
+  CommonService.generateEnumFromInterface<IImprovementResponseDTO>(),
+  {
+    isLunchBreak: 'isLunchBreak',
+  },
+);
 
 export const LOG_IMPROVEMENT_COLUMN_FIELD = Object.assign(
-  CommonService.generateEnumFromInterface<IImprovementRowData>(),
+  CommonService.generateEnumFromInterface<IImprovementResponseDTO>(),
   {
     order: 'order',
     actions: 'actions',
+    isLunchBreak: 'isLunchBreak',
   },
 );
 

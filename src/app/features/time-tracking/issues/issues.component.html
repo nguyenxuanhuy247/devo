@@ -1,4 +1,15 @@
 <div class="issues">
+  <div class="flex justify-content-end gap-3">
+    <p-button
+      [outlined]="true"
+      severity="secondary"
+      icon="pi pi-refresh"
+      pTooltip="Tải lại danh sách"
+      label="Tải lại"
+      (click)="onReloadTableData()"
+    />
+  </div>
+
   <div class="log-work">
     <p-table
       [frozenValue]="mode() === EMode.VIEW ? fixedRowData : []"
@@ -166,6 +177,7 @@
               ></textarea>
             </div>
           </td>
+
           <td>
             <div>
               <lib-form-select
@@ -205,7 +217,7 @@
                   let-rowData
                 >
                   <div class="line-clamp">
-                    {{ rowData.label | formatDate : DATE_FORMAT.FULL_DATE }}
+                    {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
                   </div>
                 </ng-template>
 
@@ -214,7 +226,7 @@
                   let-rowData
                 >
                   <div class="line-clamp">
-                    {{ rowData.label | formatDate : DATE_FORMAT.FULL_DATE }}
+                    {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
                   </div>
                 </ng-template>
               </lib-form-select>
@@ -249,7 +261,6 @@
                 [formControlName]="FORM_GROUP_KEYS.isBlockProgress"
                 [binary]="true"
               ></p-check-box>
-              {{ isBlockProgress.value }}
             </div>
           </td>
 
@@ -674,8 +685,9 @@
             <td>
               <div>
                 <lib-form-select
+                  #departmentMakeId
                   [formControlName]="FORM_GROUP_KEYS.departmentMakeId"
-                  [options]="(categoryOptions$ | async) || []"
+                  [options]="(departmentOptions$ | async) || []"
                 ></lib-form-select>
               </div>
             </td>
@@ -684,7 +696,7 @@
               <div>
                 <lib-form-select
                   [formControlName]="FORM_GROUP_KEYS.employeeMakeId"
-                  [options]="(categoryOptions$ | async) || []"
+                  [options]="(employeeInDepartmentOptions$ | async)?.[departmentMakeId.value]"
                 ></lib-form-select>
               </div>
             </td>
@@ -693,7 +705,7 @@
               <div>
                 <lib-form-select
                   [formControlName]="FORM_GROUP_KEYS.interruptionReasonId"
-                  [options]="(categoryOptions$ | async) || []"
+                  [options]="(interruptionReasonDependentOptions$ | async)?.[departmentMakeId.value]"
                 ></lib-form-select>
               </div>
             </td>
@@ -702,23 +714,57 @@
               <div>
                 <lib-form-select
                   [formControlName]="FORM_GROUP_KEYS.deadlineId"
-                  [options]="(categoryOptions$ | async) || []"
-                ></lib-form-select>
+                  [options]="(deadlineDependentModuleOptions$ | async)?.[moduleId.value]"
+                >
+                  <ng-template
+                    [devTemplate]="FORM_GROUP_KEYS.deadlineId"
+                    let-rowData
+                  >
+                    <div class="line-clamp">
+                      {{ rowData.label }}
+                      {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
+                    </div>
+                  </ng-template>
+
+                  <ng-template
+                    [devTemplate]="'option'"
+                    let-rowData
+                  >
+                    <div class="line-clamp">
+                      {{ convertISOStringToDate(rowData.label) | date : DATE_FORMAT.FULL_DATE }}
+                    </div>
+                  </ng-template>
+                </lib-form-select>
               </div>
             </td>
+
 
             <td>
               <div>
                 <lib-form-select
                   [formControlName]="FORM_GROUP_KEYS.statusId"
-                  [options]="(categoryOptions$ | async) || []"
+                  [options]="(statusOptions$ | async) || []"
                 ></lib-form-select>
               </div>
             </td>
 
             <td>
               <div>
+              <textarea
+                pTextarea
+                [formControlName]="$any(FORM_GROUP_KEY)?.note"
+                rows="1"
+                cols="30"
+                showClear
+              ></textarea>
+              </div>
+            </td>
+
+
+            <td>
+              <div>
                 <p-check-box
+                  #isBlockProgress
                   [formControlName]="FORM_GROUP_KEYS.isBlockProgress"
                   [binary]="true"
                 ></p-check-box>
@@ -829,7 +875,7 @@
         let-rowData
       >
         <tr>
-          <td [attr.colspan]="8">
+          <td [attr.colspan]="10">
             <app-log-improvement
               #logWorkComponent
               [projectFormControl]="projectFormControl()"

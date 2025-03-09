@@ -663,10 +663,6 @@ export class BugComponent
     this.warningWhenChangeChromeTab();
   }
 
-  onReloadTableData() {
-    this.callAPIGetTableData();
-  }
-
   protected readonly FORM_GROUP_KEYS = ISSUES_FORM_GROUP_KEYS;
   protected readonly DATE_FORMAT = DATE_FORMAT;
 

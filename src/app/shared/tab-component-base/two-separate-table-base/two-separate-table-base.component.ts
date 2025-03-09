@@ -10,7 +10,6 @@ import {
   ITimeTrackingDoPostRequestDTO,
 } from '../../../features/time-tracking/time-tracking.dto';
 import { catchError, EMPTY } from 'rxjs';
-import { TimeTrackingApiService } from '../../../features/time-tracking/time-tracking-api.service';
 
 @Component({
   selector: 'app-two-separate-table-base',
@@ -38,7 +37,6 @@ export class TwoSeparateTableBaseComponent extends TabComponentBaseComponent {
     ids: null,
     data: null,
   });
-  timeTrackingService = this.injector.get(TimeTrackingApiService);
 
   override ngOnInit() {
     super.ngOnInit();

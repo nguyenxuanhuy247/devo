@@ -172,10 +172,10 @@
     <!--  TABLE ROW DATA -->
     <ng-template
       pTemplate="body"
-      let-rowData
+      let-control
       let-index="rowIndex"
     >
-      @if (rowData.mode === EMode.VIEW) {
+      @if (control.value.mode === EMode.VIEW) {
         <!-- Chế độ VIEW chỉ hiển thị text -->
         <tr>
           @for (col of headerColumnConfigs; track col.field) {
@@ -183,14 +183,14 @@
               <td>{{ index + 1 }}</td>
             } @else if (col.field === COLUMN_FIELD.startTime || col.field ===
             COLUMN_FIELD.endTime) {
-              <td>{{ rowData[col.field] | date : 'HH:mm - dd/MM' }}</td>
+              <td>{{ control.value[col.field] | date : 'HH:mm - dd/MM' }}</td>
             } @else if (col.field === COLUMN_FIELD.duration) {
-              <td>{{ rowData[col.field] | number : '1.2-2' }}</td>
+              <td>{{ control.value[col.field] | number : '1.2-2' }}</td>
             } @else if (col.field === COLUMN_FIELD.isLunchBreak) {
               <td>
                 <p-tag
-                  [severity]="rowData[col.field] ? 'success' : 'danger'"
-                  [value]="rowData[col.field] ? 'Có' : 'Không'"
+                  [severity]="control.value[col.field] ? 'success' : 'danger'"
+                  [value]="control.value[col.field] ? 'Có' : 'Không'"
                 />
               </td>
             } @else if (col.field === COLUMN_FIELD.actions) {
@@ -204,7 +204,7 @@
                     aria-label="Sao chép"
                     pTooltip="Sao chép"
                     tooltipPosition="bottom"
-                    (click)="onDuplicateExistingItem(rowData)"
+                    (click)="onDuplicateExistingItem(control.value)"
                   />
                   <p-button
                     variant="outlined"
@@ -224,7 +224,7 @@
                     aria-label="Xóa"
                     pTooltip="Xóa"
                     tooltipPosition="bottom"
-                    (click)="onDelete(rowData)"
+                    (click)="onDelete(control.value)"
                   />
                 </div>
               </td>
@@ -232,9 +232,9 @@
               <td>
                 <div
                   class="line-clamp line-clamp-1"
-                  [pTooltip]="rowData[col.field]"
+                  [pTooltip]="control.value[col.field]"
                 >
-                  {{ rowData[col.field] }}
+                  {{ control.value[col.field] }}
                 </div>
               </td>
             }
